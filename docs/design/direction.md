@@ -133,6 +133,16 @@ An SVG lockup in `src/components/Logo.tsx`, with the mark repeated in `src/app/i
 - Animate only `transform` and `opacity`, and name the properties (no `transition: all`). No scroll-reveal on every section, no parallax, no infinite loops apart from the Task 8 hero scene, which pauses off-screen.
 - `prefers-reduced-motion: reduce` sets transition and animation durations to zero.
 
+## Home page and 3D hero (Task 8)
+
+- **Section order (Catalogue):** hero (inventory header) → who we are → product range (`ProductFinder`, the full 19-row index) → how ordering and export work (four ordinal steps) → FAQ → closing quote panel. No feature grid, no stats band, no testimonials. Task 9 adds latest posts before the closing panel.
+- **Hero copy:** the h1 is an inventory header with a real count ("19 industrial chemicals, listed by HSN code"), not a slogan. Under the buttons, a one-line ledger of the four groups with their product counts, computed from the catalogue data.
+- **Hero concept:** a single ball-and-stick molecule (a six-membered ring in a chair shape with a branched side chain) that turns slowly, about 70 seconds a turn, with a slight rocking tilt. It sits in a 4:3 `brand-50` panel beside the text on desktop and below it on phones. Atoms are `brand-400`/`brand-500` with one `brand-600` heteroatom; light terminal atoms are `brand-200`/`brand-300`; bonds are `brand-300`. Matte standard material, hemisphere light plus one key light, no shadows, no post-processing, transparent canvas so the panel colour shows through.
+- **Why this:** it reads as "chemistry" at a glance without naming or depicting any specific product, so it claims nothing. It is calm enough to sit beside the h1 without competing with it.
+- **Cost:** two instanced meshes (atoms, bonds), so two draw calls; 18 atoms, 18 bonds. `three` is dynamically imported, so it is not in the initial bundle.
+- **Loading:** the server renders only `public/hero-fallback.webp`, a frame captured from the scene at its starting pose. The scene mounts only when WebGL works, reduced motion is off, the panel is in view and the browser is idle. Its canvas fades in over the still (300ms, `--ease-out`, opacity only); the still steps out after the fade. The scene pauses off-screen and in hidden tabs, caps the pixel ratio at 1.5 (1 when `hardwareConcurrency <= 4`), and disposes every GPU resource on unmount. Turning reduced motion on mid-visit removes it.
+- **Motion elsewhere on the home page:** none beyond the existing button press and FAQ icon. No scroll reveals.
+
 ## Interaction and accessibility
 
 - The mobile menu is a disclosure: a "Menu" button with `aria-expanded` and `aria-controls`, a `<nav aria-label="Site">` panel and a scrim. While open, Tab cycles between the button and the menu links; Escape closes the menu and returns focus to the button. It also closes when a link is clicked, when the route changes, when the scrim is tapped, or when the window grows to desktop width. Page scroll is locked while it's open.
