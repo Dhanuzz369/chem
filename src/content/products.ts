@@ -341,7 +341,7 @@ export const products: Product[] = [
       "Highly flammable liquids and vapours; flash points are well below 0 °C (about −22 °C for n-hexane and −4 °C for n-heptane).",
       "May be fatal if swallowed and enters the airways (aspiration hazard).",
       "Prolonged or repeated exposure to n-hexane can damage the peripheral nerves; n-hexane is also suspected of damaging fertility.",
-      "Very toxic to aquatic life with long-lasting effects; vapours may cause drowsiness.",
+      "Toxic to very toxic to aquatic life with long-lasting effects (n-hexane H411, n-heptane H410); vapours may cause drowsiness.",
     ],
     faqs: [
       {
@@ -415,6 +415,10 @@ export const products: Product[] = [
       {
         q: "What HSN code covers diisopropylamine?",
         a: "Diisopropylamine is classified under HSN 29211990, other acyclic monoamines.",
+      },
+      {
+        q: "Is DIPA always diisopropylamine?",
+        a: "No. \"DIPA\" is also used for diisopropanolamine (CAS 110-97-4), a different chemical. Quote the CAS number 108-18-9 when you ask for diisopropylamine.",
       },
       {
         q: "Is an SDS available for diisopropylamine?",
@@ -826,7 +830,7 @@ export const products: Product[] = [
     name: "SLS / Sodium Lauryl Sulphate",
     hsn: "340239",
     group: "Surfactants",
-    cas: ["151-21-3"],
+    cas: ["151-21-3", "68585-47-7"],
     synonyms: [
       "Sodium lauryl sulfate",
       "Sodium dodecyl sulphate",
@@ -870,7 +874,7 @@ export const products: Product[] = [
       },
       {
         q: "Is SLS the same as SDS used in laboratories?",
-        a: "Yes, chemically. Sodium dodecyl sulphate (SDS) is the same compound; laboratory grades are simply purer.",
+        a: "Closely related. Commercial SLS is a blend of C12–14 alkyl sulphates, while laboratory SDS is essentially pure C12 sodium dodecyl sulphate.",
       },
       {
         q: "What HSN code does SLS use?",
@@ -1021,7 +1025,6 @@ export const products: Product[] = [
       "Hard-surface, metal and industrial degreasing cleaners",
       "Wetting, scouring and levelling agents in textile processing",
       "Emulsifiers for agrochemicals, cosmetics and polymer emulsions",
-      "Common replacements for nonylphenol ethoxylates",
     ],
     industries: ["Detergents", "Industrial cleaning", "Textiles", "Agrochemicals", "Paints and coatings", "Cosmetics"],
     form: "Clear liquids at low EO numbers, turning to pastes and waxy solids as the EO number rises. Commonly based on C12–14, C12–15 or C16–18 alcohols.",
@@ -1148,7 +1151,8 @@ export function searchProducts(query: string, group?: ProductGroup): Product[] {
       p.name.toLowerCase().includes(q) ||
       p.synonyms.some((s) => s.toLowerCase().includes(q)) ||
       (digits.length > 0 && p.hsn.startsWith(digits)) ||
-      p.cas.some((c) => c.includes(q))
+      // Short digit strings would match inside almost any CAS number, so CAS needs 4+ characters or a dash.
+      ((q.length >= 4 || q.includes("-")) && p.cas.some((c) => c.includes(q)))
     );
   });
 }

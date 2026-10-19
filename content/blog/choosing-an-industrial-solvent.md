@@ -31,7 +31,7 @@ Evaporation rate controls drying time, film quality and how much solvent you los
 
 | Solvent | Boiling point | Flash point | Water miscibility |
 | --- | --- | --- | --- |
-| Methylene chloride | about 40 °C | none under standard tests | Slight |
+| Methylene chloride | about 40 °C | none under standard tests | Slightly soluble |
 | Methanol | about 65 °C | about 11 °C | Complete |
 | n-Hexane | about 69 °C | about −22 °C | Practically none |
 | Ethyl acetate | about 77 °C | about −4 °C | Partial (about 8%) |
@@ -57,7 +57,7 @@ Water miscibility affects cleaning, extraction and waste handling.
 
 - **Fully miscible solvents** like methanol and IPA are useful when water is part of the process, for example in cleaning, disinfection or as a co-solvent. They are harder to separate from aqueous waste.
 - **Immiscible solvents** like toluene, heptane and hexane separate from water into a second layer. That makes them useful for liquid-liquid extraction and easier to recover.
-- **Partly miscible solvents** like ethyl acetate and methylene chloride are common in extraction too, but some solvent dissolves in the water phase, so plan for losses and treatment.
+- **Partly miscible or slightly soluble solvents** like ethyl acetate and methylene chloride are common in extraction too, but some solvent dissolves in the water phase, so plan for losses and treatment.
 
 Density matters in extraction as well. Methylene chloride is denser than water and forms the bottom layer; the hydrocarbons and ethyl acetate float on top.
 

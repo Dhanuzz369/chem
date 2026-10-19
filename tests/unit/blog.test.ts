@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getAllPosts, getPost, renderMarkdown } from "@/lib/blog";
 import { getProduct } from "@/content/products";
-
-const banned = /certified|ISO \d|since \d{4}|years of experience|REACH[- ]compliant|guarantee/i;
+import { bannedClaims } from "../helpers/claims";
 
 function words(html: string) {
   return html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
@@ -42,7 +41,7 @@ describe("blog", () => {
   it("no invented claims", () => {
     for (const post of getAllPosts()) {
       const full = getPost(post.slug)!;
-      for (const t of [full.title, full.description, full.html]) expect(t, post.slug).not.toMatch(banned);
+      for (const t of [full.title, full.description, full.html]) expect(t, post.slug).not.toMatch(bannedClaims);
     }
   });
 

@@ -1,7 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-
-const banned = /certified|ISO \d|since \d{4}|years of experience|REACH[- ]compliant|guarantee|leading|trusted|premier/i;
+import { bannedPageClaims as banned } from "../helpers/claims";
 
 test("about renders without claims", async ({ page }) => {
   await page.goto("/about");

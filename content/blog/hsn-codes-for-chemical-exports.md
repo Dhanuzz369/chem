@@ -55,7 +55,7 @@ The two extra digits are not always meaningful on their own. In many headings th
 Different documents ask for different levels of detail.
 
 - **Export shipping bills from India** use the 8-digit ITC-HS code. It links the shipment to India's export policy and to any incentive or restriction on that tariff line.
-- **GST invoices in India** show HSN codes at 4, 6 or 8 digits, depending on the supplier's turnover and the type of supply.
+- **GST invoices in India** show HSN codes at 4, 6 or 8 digits. As a general rule, suppliers with turnover up to ₹5 crore show 4 digits on B2B invoices and larger suppliers show 6, but India requires the full 8-digit HSN on GST invoices for notified chemicals regardless of turnover (CBIC Notification 90/2020-Central Tax).
 - **The importing country** classifies the goods again under its own tariff. The first six digits normally carry across, and the importer's customs broker adds the national digits for the destination.
 
 Because each country applies its own national digits, the importer is responsible for the final classification at destination. Matching the first six digits on both sides is a good first check that everyone means the same product.

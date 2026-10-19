@@ -6,6 +6,7 @@ import {
   searchProducts,
   type Product,
 } from "@/content/products";
+import { bannedClaims } from "../helpers/claims";
 
 const specTable: [string, string, Product["group"]][] = [
   ["ethyl-acetate", "29153100", "Solvents"],
@@ -87,9 +88,8 @@ describe("product catalogue", () => {
   });
 
   it("no invented claims", () => {
-    const banned = /certified|ISO \d|since \d{4}|years of experience|REACH[- ]compliant|guarantee/i;
     for (const p of products) {
-      for (const t of allText(p)) expect(t, p.slug).not.toMatch(banned);
+      for (const t of allText(p)) expect(t, p.slug).not.toMatch(bannedClaims);
     }
   });
 
@@ -107,5 +107,24 @@ describe("product catalogue", () => {
     expect(searchProducts("methylene").map((p) => p.slug)).toContain("methylene-chloride");
     expect(searchProducts("DICHLOROMETHANE").map((p) => p.slug)).toEqual(["methylene-chloride"]);
     expect(searchProducts("67-56-1").map((p) => p.slug)).toEqual(["methanol"]);
+  });
+
+  it("searchProducts only matches CAS numbers on 4+ characters or a dash", () => {
+    // "75" sits inside several CAS numbers, but is not a name, synonym or HSN prefix.
+    expect(searchProducts("75")).toEqual([]);
+    expect(searchProducts("75-0").map((p) => p.slug)).toEqual(["methylene-chloride"]);
+    expect(searchProducts("7758").map((p) => p.slug)).toEqual(["copper-sulphate"]);
+  });
+
+  it("states the heptane/hexane aquatic hazard by isomer", () => {
+    expect(getProduct("n-heptane-hexane")!.hazards.join(" ")).toMatch(/n-hexane H411, n-heptane H410/);
+  });
+
+  it("warns that DIPA can also mean diisopropanolamine", () => {
+    expect(getProduct("diisopropylamine")!.faqs.map((f) => f.a).join(" ")).toMatch(/diisopropanolamine \(CAS 110-97-4\)/);
+  });
+
+  it("lists the commercial SLS CAS number", () => {
+    expect(getProduct("sodium-lauryl-sulphate")!.cas).toContain("68585-47-7");
   });
 });
