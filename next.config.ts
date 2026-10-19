@@ -31,7 +31,12 @@ export default function config(phase: string): NextConfig {
   if (phase === PHASE_PRODUCTION_BUILD) {
     assertSiteUrlForIndexing(process.env);
     const warning = missingContactWarning(process.env, site.contact);
-    if (warning) console.warn(warning);
+    // Next loads this config more than once per build; say it once.
+    const shown = globalThis as { __goodbizContactWarned?: boolean };
+    if (warning && !shown.__goodbizContactWarned) {
+      shown.__goodbizContactWarned = true;
+      console.warn(warning);
+    }
   }
   return nextConfig;
 }
