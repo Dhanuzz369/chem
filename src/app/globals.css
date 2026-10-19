@@ -1,26 +1,115 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Catalogue (home, Task 8) · theme: custom
+ * vibe: "pastel lab, clean spec sheet, export desk" · paper #FFFFFF · surface #F4F9F6
+ * accent: brand-700 #176140 (chromatic-green ~155°) · display: Bricolage Grotesque · body: IBM Plex Sans · outlier: IBM Plex Mono (codes only)
+ * axes: light / geometric-sans / chromatic-green · nav: N1b (4 links, no dropdowns, always-solid) · footer: Ft1 mast-headed + group ledger
+ * See docs/design/direction.md for every value and its contrast ratio.
+ */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Neutrals: white paper, green-tinted ink. */
+  --color-bg: #ffffff;
+  --color-surface: #f4f9f6;
+  --color-line: #d9e6de;
+  --color-ink: #0e2a1e;
+  --color-ink-muted: #4a6156;
+
+  /* Brand greens. 50-300 are pastel fills; 600-900 carry text and buttons. */
+  --color-brand-50: #f0f8f3;
+  --color-brand-100: #dcf0e3;
+  --color-brand-200: #bce2cb;
+  --color-brand-300: #8fcda9;
+  --color-brand-400: #57b083;
+  --color-brand-500: #2e9263;
+  --color-brand-600: #1e7a50;
+  --color-brand-700: #176140;
+  --color-brand-800: #134e34;
+  --color-brand-900: #0e3a27;
+
+  /* Pastel accents. Backgrounds only, one per product group. Never text. */
+  --color-accent-mint: #e2f4ea;
+  --color-accent-sky: #e4f0f8;
+  --color-accent-butter: #f8f2d8;
+  --color-accent-lilac: #eeeaf7;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 160ms;
+  --duration-menu: 180ms;
 }
 
+/* next/font exposes the families as variables on <html>; map them to tokens. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-style: normal;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-ink);
+}
+
+/* Mobile menu: opens with a short ease-out fade and drop; closing is instant
+   because it is often keyboard-driven (Escape). */
+.menu-panel {
+  transition:
+    opacity var(--duration-menu) var(--ease-out),
+    transform var(--duration-menu) var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
 }
