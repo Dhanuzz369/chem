@@ -14,7 +14,13 @@ export function isSpam(input: Pick<QuoteInput, "website" | "startedAt">, now: nu
   return now - input.startedAt < MIN_FILL_MS;
 }
 
+const MAX_KEYS = 5000;
 const hits = new Map<string, number[]>();
+
+/** Test-only: number of keys currently tracked. */
+export function rateLimitSize(): number {
+  return hits.size;
+}
 
 /** In-memory, per-instance and best-effort. Returns true when the request is allowed. */
 export function rateLimit(key: string, now: number): boolean {
@@ -23,10 +29,27 @@ export function rateLimit(key: string, now: number): boolean {
     hits.set(key, recent);
     return false;
   }
+  if (!hits.has(key) && hits.size >= MAX_KEYS) {
+    for (const [k, v] of hits) if (v.every((t) => now - t >= WINDOW_MS)) hits.delete(k);
+    if (hits.size >= MAX_KEYS) {
+      const oldest = hits.keys().next().value;
+      if (oldest !== undefined) hits.delete(oldest);
+    }
+  }
   recent.push(now);
   hits.set(key, recent);
-  if (hits.size > 5000) {
-    for (const [k, v] of hits) if (v.every((t) => now - t >= WINDOW_MS)) hits.delete(k);
-  }
   return true;
+}
+
+/**
+ * Rate-limit identity. x-forwarded-for's left-most entry is client-controlled,
+ * so prefer platform headers and otherwise take the right-most (proxy-appended) entry.
+ */
+export function clientKey(headers: Headers): string {
+  const vercel = headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+  if (vercel) return vercel;
+  const real = headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  const xff = headers.get("x-forwarded-for")?.split(",").pop()?.trim();
+  return xff || "unknown";
 }

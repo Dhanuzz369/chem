@@ -1,5 +1,6 @@
-import { isSpam, rateLimit } from "@/lib/quote/guard";
+import { clientKey, isSpam, rateLimit } from "@/lib/quote/guard";
 import { quoteSchema } from "@/lib/quote/schema";
+import { SheetsStoreError } from "@/lib/quote/sheets-store";
 import { getQuoteStore, type QuoteRecord } from "@/lib/quote/store";
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -8,7 +9,7 @@ function json(body: Record<string, unknown>, status = 200) {
 
 export async function POST(request: Request) {
   const now = Date.now();
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = clientKey(request.headers);
 
   if (!rateLimit(ip, now)) return json({ ok: false, error: "rate_limited" }, 429);
 
@@ -36,8 +37,11 @@ export async function POST(request: Request) {
   try {
     await getQuoteStore().save(record);
   } catch (e) {
-    // Messages hold only env var names and HTTP statuses; never log the submission.
-    console.error("quote save failed:", e instanceof Error ? e.message : "unknown");
+    // Only our own store errors are safe to log in full; others may contain arbitrary text.
+    console.error(
+      "quote save failed:",
+      e instanceof SheetsStoreError ? e.message : e instanceof Error ? e.name : "unknown",
+    );
     return json({ ok: false, error: "save_failed" }, 500);
   }
   return json({ ok: true });

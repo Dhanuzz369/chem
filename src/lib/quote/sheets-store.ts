@@ -6,9 +6,22 @@ const SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
 type Env = Record<string, string | undefined>;
 
+/** Errors thrown by this store carry only env var names and HTTP statuses, so they are safe to log. */
+export class SheetsStoreError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SheetsStoreError";
+  }
+}
+
+/** Neutralise spreadsheet formula injection by prefixing risky leading characters. */
+export function safeCell(v: string): string {
+  return /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+}
+
 function need(env: Env, key: string): string {
   const v = env[key];
-  if (!v) throw new Error(`Missing env var ${key}`);
+  if (!v) throw new SheetsStoreError(`Missing env var ${key}`);
   return v;
 }
 
@@ -22,21 +35,21 @@ export function createSheetsStore(env: Env): QuoteStore {
 
       const jwt = new JWT({ email, key, scopes: [SCOPE] });
       const { token } = await jwt.getAccessToken();
-      if (!token) throw new Error("No Google access token");
+      if (!token) throw new SheetsStoreError("No Google access token");
 
       const row = [
         r.submittedAt,
-        r.name,
-        r.company ?? "",
-        r.email,
-        r.phone ?? "",
-        r.country,
+        safeCell(r.name),
+        safeCell(r.company ?? ""),
+        safeCell(r.email),
+        safeCell(r.phone ?? ""),
+        safeCell(r.country),
         r.products.map((s) => getProduct(s)?.name ?? s).join(", "),
         r.quantity,
         r.quantityUnit,
-        r.packaging ?? "",
-        r.port ?? "",
-        r.message ?? "",
+        safeCell(r.packaging ?? ""),
+        safeCell(r.port ?? ""),
+        safeCell(r.message ?? ""),
         r.source,
       ];
 
@@ -48,7 +61,7 @@ export function createSheetsStore(env: Env): QuoteStore {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ values: [row] }),
       });
-      if (!res.ok) throw new Error(`Sheets append failed: ${res.status}`);
+      if (!res.ok) throw new SheetsStoreError(`Sheets append failed: ${res.status}`);
     },
   };
 }
