@@ -1,6 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { products } from "../../src/content/products";
+import { products, searchProducts } from "../../src/content/products";
+
+const inGroup = (group: string) => products.filter((p) => p.group === group).length;
+const matches = (query: string) => searchProducts(query).length;
 
 const cards = (page: Page) => page.getByRole("list", { name: "Products" }).getByRole("listitem");
 
@@ -20,19 +23,19 @@ test("filter and search", async ({ page }) => {
   await openFinder(page);
   await page.getByRole("button", { name: "Surfactants" }).click();
   await expect(page.getByRole("button", { name: "Surfactants" })).toHaveAttribute("aria-pressed", "true");
-  await expect(cards(page)).toHaveCount(8);
+  await expect(cards(page)).toHaveCount(inGroup("Surfactants"));
   await expect(page).toHaveURL(/[?&]group=surfactants/);
 
   await page.getByRole("button", { name: "All", exact: true }).click();
   await page.getByRole("searchbox", { name: "Search products" }).fill("3402");
-  await expect(cards(page)).toHaveCount(8);
-  await expect(page.getByRole("status")).toContainText("8 products");
+  await expect(cards(page)).toHaveCount(matches("3402"));
+  await expect(page.getByRole("status")).toContainText(`${matches("3402")} products`);
 });
 
 test("group query param preselects the chip", async ({ page }) => {
   await openFinder(page, "/products?group=Solvents");
   await expect(page.getByRole("button", { name: "Solvents" })).toHaveAttribute("aria-pressed", "true");
-  await expect(cards(page)).toHaveCount(6);
+  await expect(cards(page)).toHaveCount(inGroup("Solvents"));
 });
 
 test("search with no match offers a way out", async ({ page }) => {

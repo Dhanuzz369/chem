@@ -47,13 +47,17 @@ function allText(p: Product): string[] {
 }
 
 describe("product catalogue", () => {
-  it("has 19 products with spec HSN codes", () => {
-    expect(products.map((p) => [p.slug, p.hsn, p.group])).toEqual(specTable);
+  it("still lists the spec's 19 products with their HSN codes (more may be added)", () => {
+    expect(products.map((p) => [p.slug, p.hsn, p.group])).toEqual(expect.arrayContaining(specTable));
   });
 
   it("slugs are url-safe and unique", () => {
     for (const p of products) expect(p.slug).toMatch(/^[a-z0-9-]+$/);
-    expect(new Set(products.map((p) => p.slug)).size).toBe(19);
+    expect(new Set(products.map((p) => p.slug)).size).toBe(products.length);
+  });
+
+  it("every HSN code is a string of digits", () => {
+    for (const p of products) expect(p.hsn, p.slug).toMatch(/^\d+$/);
   });
 
   it("lists the groups in navigation order", () => {
@@ -99,7 +103,9 @@ describe("product catalogue", () => {
   });
 
   it("searchProducts matches partial HSN and case-insensitive name", () => {
-    expect(searchProducts("3402").length).toBe(8);
+    const surfactants = specTable.filter(([, , group]) => group === "Surfactants").map(([slug]) => slug);
+    expect(surfactants).toHaveLength(8);
+    expect(searchProducts("3402").map((p) => p.slug)).toEqual(expect.arrayContaining(surfactants));
     const sles = searchProducts("sles").map((p) => p.slug);
     expect(sles).toContain("sles-70");
     expect(sles).toContain("sles-28");
