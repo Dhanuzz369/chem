@@ -10,6 +10,8 @@ export function GET() {
     "",
     `> ${site.tagline} Product information, HSN codes and quote requests for industrial and specialty chemicals.`,
     "",
+    `${site.name} can also source and supply chemicals that are not listed. Describe what you need on the quote form: ${absoluteUrl("/quote#other")}`,
+    "",
     "## Products",
     "",
     ...products.map(

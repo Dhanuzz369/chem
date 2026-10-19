@@ -173,6 +173,12 @@ describe("robots, sitemap, llms.txt", () => {
     }
   });
 
+  it("llms.txt says chemicals not on the list can be sourced", async () => {
+    const text = await (await GET()).text();
+    expect(text).toMatch(/source and supply chemicals that are not listed/i);
+    expect(text).toContain("/quote#other");
+  });
+
   it("llms.txt has no contact section while contact details are empty", async () => {
     const real = site.contact;
     try {

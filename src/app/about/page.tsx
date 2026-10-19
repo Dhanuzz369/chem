@@ -49,7 +49,8 @@ export default function AboutPage() {
         </h2>
         <p className="mt-3 max-w-[58ch] text-ink-muted">
           Industrial chemicals in four groups: solvents, amines, inorganics and surfactants. Each product page gives its
-          HSN code, general applications and handling notes.
+          HSN code, general applications and handling notes. If you need a chemical that isn&apos;t listed, tell us
+          what you need and we&apos;ll source and supply it.
         </p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {productGroups.map((group) => (

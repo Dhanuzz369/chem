@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useId, useState, useSyncExternalStore } from "react";
 import { productGroups, searchProducts, type ProductGroup } from "@/content/products";
 import { ProductCard } from "./ProductCard";
+import { sourcingLine } from "./SourcingCallout";
 
 /** Matches `?group=solvents` (any case) to a group; anything else means "All". */
 export function parseGroup(value: string | null | undefined): ProductGroup | undefined {
@@ -166,6 +167,7 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
           <p className="text-ink">
             Nothing in {group ?? "the catalogue"} matches “{trimmed}”. Try a synonym, the first digits of an HSN code, or a CAS number.
           </p>
+          <p className="mt-2 text-ink-muted">Need a chemical that isn&apos;t listed? {sourcingLine}</p>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
             <button
               type="button"
@@ -178,10 +180,10 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
               Clear search and filters
             </button>
             <Link
-              href="/quote"
+              href="/quote#other"
               className="inline-flex h-11 items-center font-medium text-brand-700 underline-offset-4 [@media(hover:hover)]:hover:underline"
             >
-              Ask for a product we don&apos;t list
+              Ask us to source it
             </Link>
           </div>
         </div>

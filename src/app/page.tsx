@@ -6,6 +6,7 @@ import { Hero } from "@/components/Hero";
 import { JsonLd } from "@/components/JsonLd";
 import { PostList } from "@/components/PostList";
 import { ProductFinder } from "@/components/ProductFinder";
+import { SourcingCallout, sourcingLine } from "@/components/SourcingCallout";
 import { site } from "@/config/site";
 import type { Faq } from "@/content/products";
 import { getAllPosts } from "@/lib/blog";
@@ -59,8 +60,8 @@ const faqs: Faq[] = [
     a: "HSN codes classify goods for customs and tax. They follow the Harmonized System used in international trade. Each product lists the code it is traded under, so your team can check the classification before ordering.",
   },
   {
-    q: "Can I ask for a product that is not listed?",
-    a: "Yes. Mention it in the “Anything else” field of the quote form, with the name, CAS number or specification, and we will tell you whether we can quote for it.",
+    q: "Can you supply a chemical that isn't on your list?",
+    a: `Yes. ${sourcingLine} Use the “Chemical not on our list?” field on the quote form and give the name, grade, CAS number or specification.`,
   },
 ];
 
@@ -121,6 +122,9 @@ export default function Home() {
         }
       >
         <ProductFinder headingLevel={3} />
+        <div className="mt-10 md:mt-12">
+          <SourcingCallout headingLevel={3} />
+        </div>
       </Section>
 
       <Section

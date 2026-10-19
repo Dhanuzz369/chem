@@ -220,3 +220,39 @@ test("product picker announces results and describes the chosen products", async
   await picker.fill("sles");
   await expect(page.locator('[aria-live="polite"]').filter({ hasText: "2 products available." })).toBeAttached();
 });
+
+test("/quote#other scrolls to and focuses the other-chemical field", async ({ page }) => {
+  await openQuote(page, "/quote#other");
+  const other = page.getByLabel("Chemical not on our list?");
+  await expect(other).toHaveAttribute("id", "other");
+  await expect(other).toBeFocused();
+  await expect(other).toBeInViewport();
+});
+
+test("submits with only a chemical that is not listed", async ({ page }) => {
+  const bodies = await stubQuote(page, { status: 200, body: { ok: true } });
+  await openQuote(page);
+  await fillValid(page);
+  await page.getByLabel("Chemical not on our list?").fill("Glycerine, USP grade");
+  await page.getByRole("button", { name: "Send quote request" }).click();
+
+  await expect(page.getByText(/Thank you/)).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("Glycerine, USP grade");
+  expect(bodies).toHaveLength(1);
+  expect(bodies[0].products).toEqual([]);
+  expect(bodies[0].otherProduct).toBe("Glycerine, USP grade");
+});
+
+test("asks for a product or another chemical when both are empty", async ({ page }) => {
+  await openQuote(page);
+  await fillValid(page);
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  const picker = page.getByLabel("Products", { exact: true });
+  await expect(picker).toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByText("Choose a product or describe the chemical you need.")).toBeVisible();
+  await expect(picker).toBeFocused();
+
+  // Describing another chemical clears the products error.
+  await page.getByLabel("Chemical not on our list?").fill("Glycerine");
+  await expect(picker).not.toHaveAttribute("aria-invalid", "true");
+});

@@ -3,18 +3,45 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { site } from "@/config/site";
 import { products } from "@/content/products";
-import { quantityUnits, quoteSchema } from "@/lib/quote/schema";
+import { hasProductOrOther, OTHER_PRODUCT_MAX, productOrOtherMessage, quantityUnits, quoteSchema } from "@/lib/quote/schema";
 import { buttonClasses } from "./Button";
 import { ProductPicker, type ProductOption } from "./ProductPicker";
 
-type TextField = "name" | "company" | "email" | "phone" | "country" | "quantity" | "quantityUnit" | "packaging" | "port" | "message";
+type TextField =
+  | "name"
+  | "company"
+  | "email"
+  | "phone"
+  | "country"
+  | "otherProduct"
+  | "quantity"
+  | "quantityUnit"
+  | "packaging"
+  | "port"
+  | "message";
 type Field = TextField | "products";
 type Values = Record<TextField, string>;
 type Errors = Partial<Record<Field, string>>;
 type Status = { kind: "idle" | "sending" | "success" } | { kind: "failed"; reason: "rate_limited" | "server" | "invalid" };
 
 /** DOM order, so focus always lands on the first invalid field. */
-const fieldOrder: Field[] = ["name", "company", "email", "phone", "country", "products", "quantity", "quantityUnit", "packaging", "port", "message"];
+const fieldOrder: Field[] = [
+  "name",
+  "company",
+  "email",
+  "phone",
+  "country",
+  "products",
+  "otherProduct",
+  "quantity",
+  "quantityUnit",
+  "packaging",
+  "port",
+  "message",
+];
+
+/** Fixed id, so `/quote#other` (linked from product pages and the catalogue) lands on this field. */
+export const OTHER_PRODUCT_ID = "other";
 
 const maxLengths: Partial<Record<TextField, number>> = {
   name: 100,
@@ -22,6 +49,7 @@ const maxLengths: Partial<Record<TextField, number>> = {
   email: 200,
   phone: 40,
   country: 60,
+  otherProduct: OTHER_PRODUCT_MAX,
   packaging: 200,
   port: 100,
   message: 2000,
@@ -42,6 +70,7 @@ const emptyValues: Values = {
   email: "",
   phone: "",
   country: "",
+  otherProduct: "",
   quantity: "",
   quantityUnit: "kg",
   packaging: "",
@@ -61,7 +90,7 @@ export function errorMessage(field: Field, values: Values): string {
     case "country":
       return "Enter the country you are buying for.";
     case "products":
-      return "Choose at least one product.";
+      return productOrOtherMessage;
     case "quantity":
       if (values.quantity.trim() !== "" && !Number.isFinite(Number(values.quantity))) return "Enter a number, e.g. 1000.";
       return Number(values.quantity) > 10_000_000
@@ -81,6 +110,7 @@ function toPayload(values: Values, chosen: string[], website: string, startedAt:
     email: values.email.trim(),
     country: values.country.trim(),
     products: chosen,
+    otherProduct: optional(values.otherProduct),
     quantity: values.quantity.trim() === "" ? undefined : Number(values.quantity),
     quantityUnit: values.quantityUnit,
     company: optional(values.company),
@@ -136,7 +166,7 @@ type QuoteFormProps = {
 
 export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormProps) {
   const uid = useId();
-  const id = (field: string) => `${uid}-${field}`;
+  const id = (field: string) => (field === "otherProduct" ? OTHER_PRODUCT_ID : `${uid}-${field}`);
   const [values, setValues] = useState<Values>(emptyValues);
   const [chosen, setChosen] = useState<string[]>(() => defaultProducts.filter((s) => knownSlugs.has(s)));
   const [errors, setErrors] = useState<Errors>({});
@@ -162,11 +192,23 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
     if (status.kind === "success" || status.kind === "failed") resultRef.current?.focus();
   }, [status.kind]);
 
+  // "Request a chemical not listed" links point at /quote#other: focus that field, on arrival and on later hash changes.
+  useEffect(() => {
+    const focusOther = () => {
+      if (window.location.hash === `#${OTHER_PRODUCT_ID}`) document.getElementById(OTHER_PRODUCT_ID)?.focus();
+    };
+    focusOther();
+    window.addEventListener("hashchange", focusOther);
+    return () => window.removeEventListener("hashchange", focusOther);
+  }, []);
+
   /** Runs one field through the shared schema; returns an error message or undefined. */
   function check(field: Field, nextValues = values, nextChosen = chosen): string | undefined {
     const payload = toPayload(nextValues, nextChosen, "", 0);
     const result = quoteSchema.shape[field].safeParse(payload[field]);
-    return result.success ? undefined : errorMessage(field, nextValues);
+    // A listed product or a described chemical will do, so "products" also looks at the other field.
+    const ok = result.success && (field !== "products" || hasProductOrOther(payload));
+    return ok ? undefined : errorMessage(field, nextValues);
   }
 
   function setError(field: Field, message: string | undefined) {
@@ -184,6 +226,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
     setValues(next);
     // Once a field has shown an error, re-check it as the buyer types so it clears straight away.
     if (errors[field]) setError(field, check(field, next));
+    if (field === "otherProduct" && errors.products) setError("products", check("products", next));
   }
 
   function updateProducts(next: string[]) {
@@ -253,6 +296,8 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
 
   if (status.kind === "success") {
     const names = chosen.map((s) => productOptions.find((o) => o.slug === s)?.name ?? s);
+    const other = values.otherProduct.trim();
+    const requested = [...names, ...(other ? [`“${other}”`] : [])].join(", ");
     return (
       <div
         ref={resultRef}
@@ -266,7 +311,8 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
         </svg>
         <h2 className="mt-4 text-2xl font-semibold text-ink">Thank you. Your request is in.</h2>
         <p className="mt-2 max-w-[56ch] text-ink-muted">
-          The Goodbiz Chem team will review your request for {names.join(", ")} and reply to{" "}
+          The Goodbiz Chem team will review your request for {requested}
+          {other && ", including sourcing the chemical that is not on our list,"} and reply to{" "}
           <span className="font-medium text-ink">{values.email.trim()}</span>.
         </p>
         <button type="button" onClick={startOver} className={buttonClasses("secondary", "md", "mt-6")}>
@@ -280,7 +326,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
   const grid = compact ? "grid gap-5" : "grid gap-5 sm:grid-cols-2 sm:gap-x-6";
 
   const text = (field: TextField, label: string, props: Partial<Omit<FieldProps, "id" | "label">> & InputExtras = {}) => {
-    const { type = "text", autoComplete, inputMode, required, hint, className } = props;
+    const { type = "text", autoComplete, inputMode, required, hint, className, inputClassName = "" } = props;
     return (
       <FieldShell
         id={id(field)}
@@ -305,7 +351,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
             value={values[field]}
             onChange={(e) => update(field, e.target.value)}
             onBlur={() => setError(field, check(field))}
-            className="field-input"
+            className={`field-input ${inputClassName}`.trim()}
           />
         )}
       </FieldShell>
@@ -332,7 +378,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
             id={id("products")}
             label="Products"
             required
-            hint="Choose one or more. Search by name, HSN code or CAS number."
+            hint="Choose one or more. Search by name, HSN code or CAS number. Not listed? Use the next field."
             error={errors.products}
             className={compact ? "" : "sm:col-span-2"}
           >
@@ -348,6 +394,14 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
               />
             )}
           </FieldShell>
+
+          {text("otherProduct", "Chemical not on our list?", {
+            hint: "Name, grade, CAS number or specification. We'll source and supply it.",
+            autoComplete: "off",
+            className: compact ? "" : "sm:col-span-2",
+            // Clear the sticky header and keep the label in view when /quote#other scrolls here.
+            inputClassName: "scroll-mt-10",
+          })}
 
           <div className={`grid grid-cols-[minmax(0,1fr)_8.5rem] gap-3 ${compact ? "" : "sm:col-span-2 sm:max-w-md"}`}>
             {text("quantity", "Quantity", { required: true, inputMode: "decimal" })}
@@ -478,6 +532,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
 
 type InputExtras = {
   type?: "text" | "email" | "tel";
+  inputClassName?: string;
   autoComplete?: string;
   inputMode?: "text" | "email" | "tel" | "decimal";
 };

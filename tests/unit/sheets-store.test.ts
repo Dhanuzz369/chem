@@ -39,6 +39,7 @@ const record: QuoteRecord = {
   packaging: "Drums",
   port: "Nhava Sheva",
   message: "Hello",
+  otherProduct: "=Glycerine USP",
   source: "website",
 };
 
@@ -123,11 +124,12 @@ describe("sheets store", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it("writes one row in the README's A to M column order", async () => {
+  it("writes one row in the README's A to N column order", async () => {
     await createSheetsStore(env).save(record);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("/spreadsheets/sheet/values/Quotes!A%3AM:append");
-    // Submitted at, Name, Company, Email, Phone, Country, Products, Quantity, Unit, Packaging, Port, Message, Source
+    expect(url).toContain("/spreadsheets/sheet/values/Quotes!A%3AN:append");
+    // Submitted at, Name, Company, Email, Phone, Country, Products, Quantity, Unit, Packaging, Port, Message, Source,
+    // then the other chemical requested in N (through safeCell), so the owner's A to M header stays valid.
     expect(JSON.parse(String(init.body))).toEqual({
       values: [
         [
@@ -144,9 +146,24 @@ describe("sheets store", () => {
           "Nhava Sheva",
           "Hello",
           "website",
+          "'=Glycerine USP",
         ],
       ],
     });
+  });
+
+  it("leaves column N empty when no other chemical was asked for", async () => {
+    const { otherProduct: _omit, ...rest } = record;
+    void _omit;
+    await createSheetsStore(env).save(rest);
+    const row = JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body)).values[0];
+    expect(row).toHaveLength(14);
+    expect(row[13]).toBe("");
+  });
+
+  it("keeps a GOOGLE_SHEET_RANGE override", async () => {
+    await createSheetsStore({ ...env, GOOGLE_SHEET_RANGE: "Leads!A:N" }).save(record);
+    expect(fetchMock.mock.calls[0][0]).toContain("/values/Leads!A%3AN:append");
   });
 
   it("reports a failed append with its status only", async () => {

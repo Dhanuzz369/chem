@@ -53,6 +53,29 @@ describe("POST /api/quote", () => {
     }
   });
 
+  it("accepts a request for a chemical not on the list, with no products chosen", async () => {
+    const res = await POST(req(valid({ products: [], otherProduct: "  Glycerine, USP grade  " })));
+    expect(res.status).toBe(200);
+    expect(saved).toHaveLength(1);
+    expect(saved[0].products).toEqual([]);
+    expect(saved[0].otherProduct).toBe("Glycerine, USP grade");
+  });
+
+  it("rejects a request with neither a product nor another chemical, on the products field", async () => {
+    for (const over of [{ products: [] }, { products: [], otherProduct: "   " }]) {
+      const res = await POST(req(valid(over)));
+      expect(res.status).toBe(400);
+      expect((await res.json()).fields.products).toBe("Choose a product or describe the chemical you need.");
+    }
+    expect(saved).toHaveLength(0);
+  });
+
+  it("caps the other chemical at 300 characters", async () => {
+    const res = await POST(req(valid({ otherProduct: "x".repeat(301) })));
+    expect(res.status).toBe(400);
+    expect(Object.keys((await res.json()).fields)).toContain("otherProduct");
+  });
+
   it("rejects unknown product slug", async () => {
     const res = await POST(req(valid({ products: ["not-a-chemical"] })));
     expect(res.status).toBe(400);

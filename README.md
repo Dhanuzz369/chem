@@ -64,7 +64,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | The email address of the Google service account that writes quote requests to your sheet. | `quotes@goodbiz-site.iam.gserviceaccount.com` |
 | `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value). Keep the `\n` sequences as they are. In `.env.local`, put it in double quotes. In the Vercel dashboard, paste it **without** the surrounding quotes. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
 | `GOOGLE_SHEET_ID` | The long ID in your Google Sheet's web address, between `/d/` and `/edit`. | `1AbC...xYz` |
-| `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to M. | `Quotes!A:M` |
+| `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to N. | `Quotes!A:N` |
 
 If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: invalid_grant`, `Google auth timed out` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
 
@@ -87,20 +87,22 @@ Every quote request becomes one new row in a Google Sheet you own. A "service ac
 
 1. Create a new Google Sheet, for example "Goodbiz quote requests".
 2. Rename the first tab to **Quotes** (exactly, with a capital Q).
-3. Type this header row into row 1, one word per column from A to M:
+3. Type this header row into row 1, one heading per column from A to N:
 
-   | A | B | C | D | E | F | G | H | I | J | K | L | M |
-   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-   | Submitted at | Name | Company | Email | Phone | Country | Products | Quantity | Unit | Packaging | Port | Message | Source |
+   | A | B | C | D | E | F | G | H | I | J | K | L | M | N |
+   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+   | Submitted at | Name | Company | Email | Phone | Country | Products | Quantity | Unit | Packaging | Port | Message | Source | Other chemical requested |
 
    Or paste this line into cell A1 and use **Data** > **Split text to columns** (comma):
    ```
-   Submitted at,Name,Company,Email,Phone,Country,Products,Quantity,Unit,Packaging,Port,Message,Source
+   Submitted at,Name,Company,Email,Phone,Country,Products,Quantity,Unit,Packaging,Port,Message,Source,Other chemical requested
    ```
+
+   **Already set up with columns A to M?** Keep them as they are and type `Other chemical requested` into cell N1. If you set `GOOGLE_SHEET_RANGE` to `Quotes!A:M` yourself, change it to `Quotes!A:N`.
 4. Click **Share**, paste the service account's email address, give it **Editor** access and untick "Notify people".
 5. Copy the Sheet ID from the address bar into `GOOGLE_SHEET_ID`.
 
-"Submitted at" is in UTC (international time). "Products" lists the product names separated by commas. "Source" is always `website`. Do not reorder the columns; the website writes them in this order.
+"Submitted at" is in UTC (international time). "Products" lists the product names separated by commas. "Source" is always `website`. "Other chemical requested" holds what the buyer typed in the quote form's "Chemical not on our list?" field (name, grade, CAS number or specification), and is empty when they only chose listed products. A request always has at least one listed product or an other chemical. Do not reorder the columns; the website writes them in this order.
 
 To test it, run the site, send a quote request from <http://localhost:3000/quote> and check that a row appears.
 

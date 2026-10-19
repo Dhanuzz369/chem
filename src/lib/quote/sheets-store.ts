@@ -78,7 +78,7 @@ export function createSheetsStore(env: Env): QuoteStore {
       const sheetId = need(env, "GOOGLE_SHEET_ID");
       const email = need(env, "GOOGLE_SERVICE_ACCOUNT_EMAIL");
       const key = parsePrivateKey(need(env, "GOOGLE_PRIVATE_KEY"));
-      const range = env.GOOGLE_SHEET_RANGE || "Quotes!A:M";
+      const range = env.GOOGLE_SHEET_RANGE || "Quotes!A:N";
 
       const token = await getToken(email, key);
 
@@ -96,6 +96,8 @@ export function createSheetsStore(env: Env): QuoteStore {
         safeCell(r.port ?? ""),
         safeCell(r.message ?? ""),
         r.source,
+        // N: added after launch, so A to M keep their original meaning.
+        safeCell(r.otherProduct ?? ""),
       ];
 
       const url =

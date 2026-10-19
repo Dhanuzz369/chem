@@ -42,7 +42,7 @@ test("search with no match offers a way out", async ({ page }) => {
   await openFinder(page);
   await page.getByRole("searchbox", { name: "Search products" }).fill("zzzz");
   await expect(cards(page)).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Ask for a product we don't list" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ask us to source it" })).toHaveAttribute("href", "/quote#other");
 });
 
 test("both SLES pages render", async ({ page }) => {

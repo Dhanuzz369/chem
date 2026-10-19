@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/Button";
@@ -218,6 +219,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 </ul>
               </Section>
             )}
+
+            <p className="border-t border-line py-6 text-ink-muted">
+              Looking for something else?{" "}
+              <Link href="/quote#other" className="font-medium text-brand-700 underline underline-offset-4">
+                We also source chemicals not listed here
+              </Link>
+              .
+            </p>
 
             <section id={QUOTE_ID} aria-labelledby="quote-title" className="border-t border-line pt-10 md:pt-12">
               <h2 id="quote-title" className="text-2xl font-semibold text-ink md:text-[1.75rem]">

@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductFinder } from "@/components/ProductFinder";
+import { SourcingCallout } from "@/components/SourcingCallout";
 import { productGroups } from "@/content/products";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -41,6 +42,10 @@ export default function ProductsPage() {
         <Suspense fallback={<ProductFinder syncUrl />}>
           <ProductFinderFromQuery />
         </Suspense>
+      </div>
+
+      <div className="mt-12 md:mt-16">
+        <SourcingCallout />
       </div>
 
       <JsonLd data={breadcrumbJsonLd(crumbs)} />
