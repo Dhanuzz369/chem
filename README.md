@@ -6,11 +6,23 @@ This guide is written for the business owner. You do not need to be a developer 
 
 > **Nothing is live yet.** The site has not been deployed. Putting it on the internet waits for your go-ahead; see [Going live](#going-live-waits-for-your-go-ahead) at the end.
 
+## Pre-launch checklist
+
+Do these in order. Each step links to the section that explains it.
+
+1. [ ] **Fill in the contact details** (at least an email) in `src/config/site.ts`. See [section 5](#5-contact-details).
+2. [ ] **Set the Google Sheets settings** (`GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEET_ID`). See [sections 2 and 3](#2-settings-environment-variables).
+3. [ ] **Set `SITE_URL`** to the real web address. See [section 2](#2-settings-environment-variables).
+4. [ ] **Deploy**, only once you have given the go-ahead. See [Going live](#going-live-waits-for-your-go-ahead).
+5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet.
+6. [ ] **Run `npm audit --omit=dev`** in Terminal and deal with anything it reports.
+7. [ ] **Only then set `ALLOW_INDEXING=true`** and redeploy. See [section 4](#4-the-allow_indexing-switch).
+
 ---
 
 ## 1. Run the site on your own computer
 
-You need [Node.js](https://nodejs.org) version 20 or newer (the "LTS" download is fine).
+You need [Node.js](https://nodejs.org) version 22 or newer (the "LTS" download is fine).
 
 1. Open Terminal and go to the project folder:
    ```
@@ -47,14 +59,14 @@ Settings live in a file called `.env.local` in the project folder on your comput
 
 | Setting | What to put in it | Example |
 | --- | --- | --- |
-| `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. | `https://www.example.com` |
+| `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. After setting or changing it on Vercel, **redeploy** (it is read when the site is built). If `ALLOW_INDEXING` is `true` and `SITE_URL` is empty, the build stops with a message saying so. | `https://www.example.com` |
 | `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | The email address of the Google service account that writes quote requests to your sheet. | `quotes@goodbiz-site.iam.gserviceaccount.com` |
-| `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value), in double quotes. Keep the `\n` sequences as they are. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
+| `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value). Keep the `\n` sequences as they are. In `.env.local`, put it in double quotes. In the Vercel dashboard, paste it **without** the surrounding quotes. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
 | `GOOGLE_SHEET_ID` | The long ID in your Google Sheet's web address, between `/d/` and `/edit`. | `1AbC...xYz` |
 | `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to M. | `Quotes!A:M` |
 
-If the Google settings are missing, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live.
+If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: ...` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
 
 ---
 
@@ -127,7 +139,43 @@ Delete any line you do not want to show. Phone and WhatsApp numbers should inclu
 
 ---
 
-## 6. Adding a blog post
+## 6. Adding or editing a product
+
+All products live in one file, `src/content/products.ts`. Each product is one block between `{` and `},` in the `products` list. The product page, the product finder, the quote form's product list, the sitemap and `llms.txt` are all built from it, so there is nothing else to update.
+
+1. Copy an existing product block from the same group and paste it where you want the new product to appear in the list.
+2. Change every field. All of these are required:
+
+   | Field | What it is |
+   | --- | --- |
+   | `slug` | The page address: `/products/<slug>`. Lowercase words and dashes only, and different from every other product. |
+   | `name` | The product name as buyers know it. |
+   | `hsn` | The HSN code, in quotes, exactly as you use it (6 or 8 digits). It is shown as typed. |
+   | `group` | One of `"Solvents"`, `"Amines"`, `"Inorganics"` or `"Surfactants"`. A new group needs a developer. |
+   | `cas` | One or more CAS numbers, for example `["67-56-1"]`. |
+   | `synonyms` | Other names buyers search for. Can be empty: `[]`. |
+   | `summary` | The first paragraph on the page: 120 to 320 characters that say what the chemical is and what it is used for. |
+   | `metaSummary` | A short phrase for Google's search snippet (see below). |
+   | `applications` | At least 3 uses. |
+   | `industries` | The industries that buy it. |
+   | `form` | What it looks like and how it behaves, in a sentence or two. |
+   | `packaging` | Common pack types, for example drums or IBCs. |
+   | `handling` | At least 2 storage and handling points. |
+   | `hazards` | At least 1 general hazard fact about the chemical. |
+   | `faqs` | At least 4 questions and answers (`q` and `a`). |
+   | `related` | At least 1 other product's `slug`, for the "Related products" links. Each must match an existing slug exactly, and not the product's own. |
+   | `notes` | Optional. Extra points such as market restrictions. |
+
+3. **`metaSummary` and the 160-character rule.** Google's snippet is built as `<name> (HSN <hsn>) — <metaSummary>. SDS available on request.` The whole line must be 160 characters or fewer, so keep `metaSummary` to a short lowercase phrase with no full stop, for example `a water-miscible solvent for disinfectants, electronics cleaning, inks and coatings`.
+4. **No claims.** Write only general facts about the chemical. Do not mention certifications, years in business, volumes, countries served, purity guarantees or regulatory compliance. The checks reject the most common ones.
+5. **"SDS available on request"** is added to every product page and snippet automatically.
+6. **Run the checks**: `npm test` (and `npm run e2e` if you can). They confirm every field is filled in, slugs are unique, `related` slugs exist, snippets fit in 160 characters and no banned claims slipped in. Then look at the page at `http://localhost:3000/products/<slug>`.
+
+To edit a product, change its fields the same way and run the checks. Changing a `slug` changes the page address, so also update any `related` lists and blog posts that mention it.
+
+---
+
+## 7. Adding a blog post
 
 Posts are plain text files in `content/blog/`. Each file becomes a page at `/blog/<file name>`.
 
@@ -152,13 +200,13 @@ Posts are plain text files in `content/blog/`. Each file becomes a page at `/blo
 
 ---
 
-## 7. Vercel Web Analytics
+## 8. Vercel Web Analytics
 
 The site includes Vercel Web Analytics, which counts visits and page views without cookies or cookie banners. It only runs on Vercel; on your computer it is switched off. It relies on Vercel's default **Automatically expose System Environment Variables** setting (under **Settings** > **Environment Variables**), so leave that switched on. After the site is live, open the project in the Vercel dashboard, go to the **Analytics** tab and click **Enable**. Numbers start appearing after the next deployment.
 
 ---
 
-## 8. Google Search Console
+## 9. Google Search Console
 
 Search Console shows how the site appears in Google and lets you ask Google to read it.
 
@@ -173,12 +221,13 @@ Search Console shows how the site appears in Google and lets you ask Google to r
 
 The site has **not** been deployed, and nothing in this project deploys it automatically. When you are ready and have given the go-ahead, going live on [Vercel](https://vercel.com) looks like this:
 
+0. **Fill in the contact details first**, before any deploy: at least an email in `src/config/site.ts` (see [section 5](#5-contact-details)). Until then buyers have no way to reach you except the quote form. A production build with no contact details prints a warning in the Vercel build log.
 1. **Connect the code to Vercel.** Sign in to Vercel, choose **Add New** > **Project** and import this project's Git repository. Vercel recognises it as a Next.js site; the default build settings are correct.
 2. **Add the settings.** In the project's **Settings** > **Environment Variables**, add every setting from [section 2](#2-settings-environment-variables) with its real value. Leave `ALLOW_INDEXING` empty for now.
-3. **Add the domain.** In **Settings** > **Domains**, add your domain and follow Vercel's instructions to point it there at your registrar. Set `SITE_URL` to that domain.
-4. **Check the live site** with a real quote request and confirm the row lands in the Sheet.
+3. **Add the domain.** In **Settings** > **Domains**, add your domain and follow Vercel's instructions to point it there at your registrar. Set `SITE_URL` to that domain, then **redeploy** (Deployments > Redeploy) so links, the sitemap and `llms.txt` use it.
+4. **Check the live site** with a real quote request and confirm the row lands in the Sheet. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
 5. **Open the site to Google.** Once the real contact details are in and you are happy with the content, set `ALLOW_INDEXING=true` and redeploy (see [section 4](#4-the-allow_indexing-switch)).
-6. **Submit the sitemap** in Google Search Console ([section 8](#8-google-search-console)) and enable Web Analytics ([section 7](#7-vercel-web-analytics)).
+6. **Submit the sitemap** in Google Search Console ([section 9](#9-google-search-console)) and enable Web Analytics ([section 8](#8-vercel-web-analytics)).
 
 ---
 
