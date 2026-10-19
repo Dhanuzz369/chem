@@ -178,3 +178,45 @@ test("no axe violations on /quote", async ({ page }) => {
   const open = await new AxeBuilder({ page }).analyze();
   expect(open.violations).toEqual([]);
 });
+
+test("explains each kind of invalid value accurately", async ({ page }) => {
+  await openQuote(page);
+  const name = page.getByLabel("Name", { exact: true });
+  await name.fill("A");
+  await name.blur();
+  await expect(page.getByText("Enter your full name, at least 2 characters.")).toBeVisible();
+
+  const quantity = page.getByLabel("Quantity", { exact: true });
+  await quantity.fill("lots");
+  await quantity.blur();
+  await expect(page.getByText("Enter a number, e.g. 1000.")).toBeVisible();
+
+  await expect(page.locator("form")).toHaveAttribute("method", "post");
+});
+
+test("a failed banner clears when the next attempt fails client-side checks", async ({ page }) => {
+  await stubQuote(page, { status: 500, body: { ok: false, error: "save_failed" } });
+  await openQuote(page, "/quote?product=toluene");
+  await expect(page.getByRole("button", { name: "Remove Toluene" })).toBeVisible();
+  await fillValid(page);
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: /not sent/i })).toBeVisible();
+
+  await page.getByLabel("Name", { exact: true }).fill("");
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect(page.getByLabel("Name", { exact: true })).toBeFocused();
+  await expect(page.getByRole("alert").filter({ hasText: /not sent/i })).toHaveCount(0);
+});
+
+test("product picker announces results and describes the chosen products", async ({ page }) => {
+  await openQuote(page, "/quote?product=toluene");
+  const picker = page.getByRole("combobox", { name: "Products" });
+  const describedBy = (await picker.getAttribute("aria-describedby")) ?? "";
+  const chosen = describedBy.split(" ").map((id) => page.locator(`[id="${id}"]`));
+  await expect(chosen.at(-1)!).toHaveText("Chosen: Toluene.");
+
+  await picker.fill("zzzz");
+  await expect(page.locator('[aria-live="polite"]').filter({ hasText: "No products match zzzz." })).toBeAttached();
+  await picker.fill("sles");
+  await expect(page.locator('[aria-live="polite"]').filter({ hasText: "2 products available." })).toBeAttached();
+});

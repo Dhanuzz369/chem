@@ -12,17 +12,25 @@ export const groupSwatch: Record<ProductGroup, string> = {
 type ProductCardProps = {
   product: Pick<Product, "slug" | "name" | "hsn" | "group" | "cas" | "synonyms">;
   headingLevel?: 2 | 3 | 4;
+  /** Drops the Group column, for short lists inside a narrower column (related products). */
+  compact?: boolean;
 };
 
 /**
  * A spec-sheet row: name and synonyms, group, HSN code and CAS numbers. The whole
  * row is one link. The grid columns line up with the header row in ProductFinder.
  */
-export function ProductCard({ product, headingLevel = 3 }: ProductCardProps) {
+export function ProductCard({ product, headingLevel = 3, compact = false }: ProductCardProps) {
   const Heading = `h${headingLevel}` as const;
   const aka = product.synonyms.slice(0, 3).join(" · ");
   return (
-    <article className="group relative grid gap-x-6 gap-y-2 py-4 md:grid-cols-[minmax(0,1fr)_8rem_7.5rem_10rem_1.25rem] md:items-center md:py-3.5">
+    <article
+      className={`group relative grid gap-x-6 gap-y-2 py-4 md:items-center md:py-3.5 ${
+        compact
+          ? "md:grid-cols-[minmax(0,1fr)_7.5rem_9rem_1.25rem]"
+          : "md:grid-cols-[minmax(0,1fr)_8rem_7.5rem_10rem_1.25rem]"
+      }`}
+    >
       <div className="min-w-0">
         <Heading className="font-display text-lg font-semibold leading-snug text-ink">
           <Link
@@ -36,10 +44,12 @@ export function ProductCard({ product, headingLevel = 3 }: ProductCardProps) {
       </div>
 
       <dl className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm md:contents">
-        <div>
-          <dt className="sr-only">Group</dt>
-          <dd className="text-ink-muted">{product.group}</dd>
-        </div>
+        {!compact && (
+          <div>
+            <dt className="sr-only">Group</dt>
+            <dd className="text-ink-muted">{product.group}</dd>
+          </div>
+        )}
         <div>
           <dt className="sr-only">HSN code</dt>
           <dd>

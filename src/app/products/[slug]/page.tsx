@@ -212,14 +212,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 <ul className="border-t border-line">
                   {related.map((p) => (
                     <li key={p.slug} className="border-b border-line">
-                      <ProductCard product={p} headingLevel={3} />
+                      <ProductCard product={p} headingLevel={3} compact />
                     </li>
                   ))}
                 </ul>
               </Section>
             )}
 
-            <section id={QUOTE_ID} aria-labelledby="quote-title" className="scroll-mt-24 border-t border-line pt-10 md:pt-12">
+            <section id={QUOTE_ID} aria-labelledby="quote-title" className="border-t border-line pt-10 md:pt-12">
               <h2 id="quote-title" className="text-2xl font-semibold text-ink md:text-[1.75rem]">
                 Request a quote for {product.name}
               </h2>

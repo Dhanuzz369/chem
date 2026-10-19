@@ -23,6 +23,11 @@ type ProductPickerProps = {
 
 const normalise = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
 
+function filterOptions(options: ProductOption[], query: string) {
+  const q = normalise(query);
+  return q ? options.filter((o) => o.terms.includes(q)) : options;
+}
+
 /**
  * A searchable multi-select following the ARIA combobox pattern: type to filter,
  * arrow keys to move, Enter to add or remove, Escape to close, Backspace on an
@@ -41,10 +46,8 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
   const optionId = (slug: string) => `${id}-opt-${slug}`;
   const chipId = (slug: string) => `${id}-chip-${slug}`;
 
-  const results = useMemo(() => {
-    const q = normalise(query);
-    return q ? options.filter((o) => o.terms.includes(q)) : options;
-  }, [options, query]);
+  const results = useMemo(() => filterOptions(options, query), [options, query]);
+  const chosenId = `${id}-chosen`;
 
   const groups = useMemo(() => {
     const byGroup = new Map<string, ProductOption[]>();
@@ -86,6 +89,24 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
     setAnnouncement(`${name} ${next.includes(slug) ? "added" : "removed"}. ${count}`);
   }
 
+  /** Closing also forgets the highlighted option, so reopening starts fresh. */
+  function closeList() {
+    setOpen(false);
+    setActive(-1);
+  }
+
+  function search(next: string) {
+    setQuery(next);
+    setOpen(true);
+    setActive(next ? 0 : -1);
+    const found = filterOptions(options, next).length;
+    setAnnouncement(
+      found === 0
+        ? `No products match ${next.trim()}.`
+        : `${found} ${found === 1 ? "product" : "products"} available.`,
+    );
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     switch (e.key) {
       case "ArrowDown":
@@ -112,7 +133,7 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
       case "Escape":
         if (open) {
           e.preventDefault();
-          setOpen(false);
+          closeList();
         } else if (query) {
           e.preventDefault();
           setQuery("");
@@ -122,7 +143,7 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
         if (query === "" && value.length > 0) toggle(value[value.length - 1]);
         break;
       case "Tab":
-        setOpen(false);
+        closeList();
         break;
     }
   }
@@ -153,20 +174,16 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
           aria-autocomplete="list"
           aria-activedescendant={activeOption ? optionId(activeOption.slug) : undefined}
           aria-invalid={invalid || undefined}
-          aria-describedby={describedBy}
+          aria-describedby={[describedBy, value.length > 0 && chosenId].filter(Boolean).join(" ") || undefined}
           autoComplete="off"
           spellCheck={false}
           placeholder="Search by name, HSN or CAS number"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-            setActive(e.target.value ? 0 : -1);
-          }}
+          onChange={(e) => search(e.target.value)}
           onClick={() => setOpen(true)}
           onKeyDown={onKeyDown}
           onBlur={() => {
-            setOpen(false);
+            closeList();
             onBlur?.();
           }}
           className="field-input pl-10"
@@ -179,7 +196,9 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
           aria-multiselectable="true"
           aria-label="Product list"
           hidden={!showList}
-          className="absolute inset-x-0 top-full z-20 mt-1.5 max-h-72 overflow-y-auto overscroll-contain rounded-lg border border-line bg-bg p-1.5 shadow-lg shadow-ink/10"
+          // Clicks anywhere in the list (options, group labels, padding) must not blur the input.
+          onMouseDown={(e) => e.preventDefault()}
+          className="absolute inset-x-0 top-full z-20 mt-1.5 max-h-72 overflow-y-auto overscroll-contain rounded-lg border border-line bg-bg p-1.5 shadow-popover"
         >
           {groups.map(([group, items]) => (
             <div key={group} role="group" aria-labelledby={`${id}-g-${group}`}>
@@ -200,7 +219,6 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
                     role="option"
                     aria-selected={selected}
                     data-active={isActive || undefined}
-                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => toggle(o.slug)}
                     onMouseMove={() => setActive(results.indexOf(o))}
                     className="flex min-h-11 cursor-pointer items-center gap-3 rounded-sm px-2.5 py-2 text-ink data-active:bg-brand-50"
@@ -236,6 +254,11 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
         )}
       </div>
 
+      {value.length > 0 && (
+        <p id={chosenId} className="sr-only">
+          Chosen: {value.map((slug) => byslug.get(slug)?.name ?? slug).join(", ")}.
+        </p>
+      )}
       {value.length > 0 && (
         <ul aria-label="Chosen products" className="mt-3 flex flex-wrap gap-2">
           {value.map((slug) => {

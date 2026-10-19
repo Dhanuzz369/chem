@@ -72,7 +72,7 @@ function Section({ id, title, intro, children, className = "" }: {
   className?: string;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className={`scroll-mt-20 py-14 md:py-20 ${className}`}>
+    <section id={id} aria-labelledby={`${id}-title`} className={`py-14 md:py-20 ${className}`}>
       <Container>
         <h2 id={`${id}-title`} className="text-[clamp(1.75rem,1.5vw+1.25rem,2.5rem)] font-semibold text-ink">
           {title}

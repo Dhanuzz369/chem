@@ -26,6 +26,7 @@ export function StickyQuoteBar({ name, hsn, targetId }: StickyQuoteBarProps) {
 
   return (
     <div
+      data-sticky-quote-bar
       inert={hidden}
       className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg pb-[env(safe-area-inset-bottom)] transition-[transform,opacity] duration-200 ease-(--ease-out) lg:hidden ${
         hidden ? "translate-y-full opacity-0" : ""

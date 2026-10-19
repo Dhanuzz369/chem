@@ -50,10 +50,12 @@ const emptyValues: Values = {
 };
 
 /** Plain-language errors. The schema decides validity; these words explain it. */
-function errorMessage(field: Field, values: Values): string {
+export function errorMessage(field: Field, values: Values): string {
+  const max = field === "products" || field === "quantityUnit" ? undefined : maxLengths[field];
+  if (max !== undefined && values[field as TextField].trim().length > max) return `Keep this under ${max} characters.`;
   switch (field) {
     case "name":
-      return "Enter your name.";
+      return values.name.trim() === "" ? "Enter your name." : "Enter your full name, at least 2 characters.";
     case "email":
       return "Enter an email address like name@company.com.";
     case "country":
@@ -61,6 +63,7 @@ function errorMessage(field: Field, values: Values): string {
     case "products":
       return "Choose at least one product.";
     case "quantity":
+      if (values.quantity.trim() !== "" && !Number.isFinite(Number(values.quantity))) return "Enter a number, e.g. 1000.";
       return Number(values.quantity) > 10_000_000
         ? "Enter a quantity of 10,000,000 or less."
         : "Enter a quantity greater than 0.";
@@ -201,6 +204,8 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
         if (isField(key)) next[key] ??= errorMessage(key, values);
       }
       setErrors(next);
+      // A failure banner from an earlier attempt no longer applies; the field errors say what to fix.
+      setStatus({ kind: "idle" });
       focusTarget.current = fieldOrder.find((f) => next[f]) ?? null;
       return;
     }
@@ -308,7 +313,7 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
   };
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-busy={sending} className="grid gap-10">
+    <form method="post" noValidate onSubmit={onSubmit} aria-busy={sending} className="grid gap-10">
       <fieldset className="min-w-0">
         <legend className="font-display text-xl font-semibold tracking-[-0.02em] text-ink">Your details</legend>
         <div className={`mt-5 ${grid}`}>

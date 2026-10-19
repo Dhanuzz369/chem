@@ -45,7 +45,7 @@ export function Logo({ className = "", variant = "full" }: LogoProps) {
         fontSize="20"
         letterSpacing="-0.4"
         textLength="135"
-        lengthAdjust="spacingAndGlyphs"
+        lengthAdjust="spacing"
         style={{ fontFamily: "var(--font-display)", fill: "var(--color-ink, #0e2a1e)" }}
       >
         <tspan fontWeight="700">Goodbiz</tspan>

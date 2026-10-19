@@ -38,6 +38,10 @@
   --color-danger-50: #fdf1ef;
   --color-danger-700: #b42318;
 
+  /* Elevation for things that float over the page (mobile menu, picker list). Ink-tinted, never grey. */
+  --shadow-float: 0 16px 32px -24px rgb(14 42 30 / 0.45);
+  --shadow-popover: 0 10px 24px -8px rgb(14 42 30 / 0.16);
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -64,6 +68,18 @@
 html,
 body {
   overflow-x: clip;
+}
+
+/* Keep anchor targets and keyboard focus clear of the sticky header (4.5rem at most). */
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+/* Below lg, product pages pin a quote bar to the bottom; keep focused fields above it. */
+@media (width < 64rem) {
+  html:has([data-sticky-quote-bar]) {
+    scroll-padding-bottom: 6rem;
+  }
 }
 
 body {

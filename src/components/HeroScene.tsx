@@ -82,10 +82,13 @@ function buildMolecule() {
   return { atoms, bonds };
 }
 
+/** Probes for WebGL, then releases the probe's context so it does not count against the browser's limit. */
 function webglAvailable() {
   try {
     const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return gl !== null;
   } catch {
     return false;
   }
@@ -233,14 +236,24 @@ export function HeroScene() {
     const host = hostRef.current;
     if (!host) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches || !webglAvailable()) return;
+    if (reduce.matches) return;
 
     let cancelled = false;
     let stop: (() => void) | undefined;
     let idle: number | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
+    const cancelPending = () => {
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+      if (timer !== undefined) clearTimeout(timer);
+      idle = timer = undefined;
+    };
+
+    // Runs only once the panel is in view and the browser is idle, so the WebGL probe and
+    // the three download never compete with the first paint.
     const begin = () => {
+      idle = timer = undefined;
+      if (cancelled || !webglAvailable()) return;
       startScene(host, () => setLive(true))
         .then((dispose) => {
           if (cancelled) dispose();
@@ -265,6 +278,7 @@ export function HeroScene() {
       if (!reduce.matches) return;
       cancelled = true;
       view.disconnect();
+      cancelPending();
       stop?.();
       stop = undefined;
       setLive(false);
@@ -275,8 +289,7 @@ export function HeroScene() {
       cancelled = true;
       view.disconnect();
       reduce.removeEventListener("change", onReduce);
-      if (idle !== undefined) window.cancelIdleCallback(idle);
-      if (timer !== undefined) clearTimeout(timer);
+      cancelPending();
       stop?.();
     };
   }, []);
@@ -294,7 +307,8 @@ export function HeroScene() {
         loading="eager"
         sizes="(min-width: 1024px) 45vw, 100vw"
         // Once the canvas has faded in over it, the still steps out so the two never double up.
-        className={`object-cover transition-opacity delay-300 duration-0 ${live ? "opacity-0" : ""}`}
+        // The delay applies only to hiding; when the scene is removed the still returns at once.
+        className={`object-cover transition-opacity duration-0 ${live ? "opacity-0 delay-300" : ""}`}
       />
     </div>
   );

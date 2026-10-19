@@ -130,7 +130,7 @@ An SVG lockup in `src/components/Logo.tsx`, with the mark repeated in `src/app/i
 - Buttons: `scale(0.97)` on `:active`, 160ms (`--duration-press`). Colour changes on hover only under `@media (hover: hover)`, so taps never leave a stuck hover state.
 - Mobile menu: opens with a 180ms (`--duration-menu`) opacity fade and a 6px drop via `@starting-style`. It closes instantly, because closing is often keyboard-driven (Escape), and keyboard actions are never animated.
 - Focus rings are never animated (2px brand-600 outline, 2px offset).
-- Animate only `transform` and `opacity`, and name the properties (no `transition: all`). No scroll-reveal on every section, no parallax, no infinite loops apart from the Task 8 hero scene, which pauses off-screen.
+- Use `transform` and `opacity` for movement; short colour fades (background, border, text colour, at most `--duration-press`) are allowed. Name the properties (no `transition: all`) and always use `ease-(--ease-out)`, never Tailwind's default easing. No scroll-reveal on every section, no parallax, no infinite loops apart from the Task 8 hero scene, which pauses off-screen.
 - `prefers-reduced-motion: reduce` sets transition and animation durations to zero.
 
 ## Home page and 3D hero (Task 8)

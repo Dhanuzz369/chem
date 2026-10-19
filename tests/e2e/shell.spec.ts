@@ -41,6 +41,25 @@ test("mobile menu opens, traps focus, closes on Escape", async ({ page }, testIn
   await expect(menuButton).toBeFocused();
 });
 
+test("mobile menu handles Escape and Tab even when focus has left the header", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "mobile only");
+  await page.goto("/");
+  const menuButton = page.getByRole("button", { name: "Menu" });
+  await menuButton.click();
+  const menu = page.getByRole("navigation", { name: "Site" });
+  await expect(menu).toBeVisible();
+
+  // Focus drifts to <body>, outside the header.
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.keyboard.press("Tab");
+  await expect(menuButton).toBeFocused();
+
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await expect(menuButton).toBeFocused();
+});
+
 test("no axe violations on shell", async ({ page }, testInfo) => {
   await page.goto("/");
   const closed = await new AxeBuilder({ page }).analyze();

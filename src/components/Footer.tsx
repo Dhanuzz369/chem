@@ -74,7 +74,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="inline-flex h-10 items-center text-ink underline-offset-4 [@media(hover:hover)]:hover:text-brand-700 [@media(hover:hover)]:hover:underline"
+                    className="inline-flex h-11 items-center text-ink underline-offset-4 [@media(hover:hover)]:hover:text-brand-700 [@media(hover:hover)]:hover:underline"
                   >
                     {link.label}
                   </Link>

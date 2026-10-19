@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "./Button";
 import { Container } from "./Container";
 import { Logo } from "./Logo";
@@ -64,29 +64,36 @@ export function Header() {
     if (returnFocus) buttonRef.current?.focus();
   }
 
-  // Escape closes; Tab cycles between the menu button and the menu links.
-  function onKeyDown(event: KeyboardEvent) {
+  // While open, listen on the document so Escape and the focus trap work wherever focus is
+  // (for example after a click on the backdrop moved it to <body>). Escape closes; Tab cycles
+  // between the menu button and the menu links.
+  useEffect(() => {
     if (!open) return;
-    if (event.key === "Escape") {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        buttonRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const links = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("a[href]") ?? []);
+      const cycle = [buttonRef.current, ...links].filter((el): el is HTMLElement => el !== null);
+      if (cycle.length === 0) return;
       event.preventDefault();
-      close(true);
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const links = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("a[href]") ?? []);
-    const cycle = [buttonRef.current, ...links].filter((el): el is HTMLElement => el !== null);
-    const index = cycle.indexOf(document.activeElement as HTMLElement);
-    if (index === -1) return;
-    event.preventDefault();
-    const next = (index + (event.shiftKey ? -1 : 1) + cycle.length) % cycle.length;
-    cycle[next].focus();
-  }
+      const index = cycle.indexOf(document.activeElement as HTMLElement);
+      const next =
+        index === -1
+          ? event.shiftKey ? cycle.length - 1 : 0
+          : (index + (event.shiftKey ? -1 : 1) + cycle.length) % cycle.length;
+      cycle[next].focus();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
-    <header
-      onKeyDown={onKeyDown}
-      className="sticky top-0 z-40 border-b border-line bg-bg"
-    >
+    <header className="sticky top-0 z-40 border-b border-line bg-bg">
       <Container className="flex h-16 items-center gap-2 md:h-[4.5rem] md:gap-8">
         <Link
           href="/"
@@ -105,7 +112,7 @@ export function Header() {
                   <Link
                     href={link.href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative inline-flex h-11 items-center rounded-sm px-3 text-[0.9375rem] transition-colors duration-(--duration-press) ${
+                    className={`relative inline-flex h-11 items-center rounded-sm px-3 text-[0.9375rem] transition-colors duration-(--duration-press) ease-(--ease-out) ${
                       active
                         ? "font-medium text-brand-800"
                         : "text-ink-muted [@media(hover:hover)]:hover:text-ink"
@@ -151,7 +158,7 @@ export function Header() {
             ref={panelRef}
             id={panelId}
             aria-label="Site"
-            className="menu-panel absolute inset-x-0 top-full border-b border-line bg-bg pb-4 shadow-[0_16px_32px_-24px_rgb(14_42_30/0.45)] md:hidden"
+            className="menu-panel absolute inset-x-0 top-full border-b border-line bg-bg pb-4 shadow-float md:hidden"
           >
             <Container as="ul" className="flex flex-col">
               {navLinks.map((link) => {
