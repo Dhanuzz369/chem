@@ -75,11 +75,20 @@ N-Heptane and Hexane stay on one page because the owner listed them together und
 
 The grouping is my call. It drives navigation and filtering.
 
+## Owner changes after first review (2026-10-19)
+
+These supersede anything above that conflicts with them.
+
+- **No product counts in visible copy.** Pages never tell visitors how many products there are, either in total or per group. A result count after the visitor searches or filters is fine.
+- **Sourcing unlisted chemicals.** The owner states that Goodbiz Chem can source and supply chemicals that are not on the list. The site says this on home (in a callout and the FAQ), /products, product pages, About and llms.txt.
+- **"Other chemical" on the quote form.** The quote form has an optional "Other chemical" field. A request needs either a listed product or that field. It is saved to Sheet column N.
+- **No physical form on product pages.** Product pages no longer show the product's physical form. The data field stays, for internal use only.
+
 ## Pages
 
 1. **Home:** who Goodbiz Chem is (in neutral wording, no invented claims), the product range grouped and searchable by name or HSN code, how ordering and export works in general terms, an FAQ, a quote request call to action, and a short list of the latest blog posts.
 2. **Products index:** every product, filterable by group and searchable by name or HSN code.
-3. **Product page (×19):** name, HSN code, group, common synonyms and CAS number, typical applications and industries, general physical form, typical packaging options in general terms, general handling and storage notes, an FAQ, related products, and a quote request form with this product already selected.
+3. **Product page (one per product):** name, HSN code, group, common synonyms and CAS number, typical applications and industries, typical packaging options in general terms, general handling and storage notes, an FAQ, related products, and a quote request form with this product already selected.
 4. **Blog index and blog post pages:** 3–5 starter posts, for example a guide to HSN codes for chemical exports, SLES 70% vs 28%, solvent selection, and LABSA in detergents. The topics are my call.
 5. **Request a Quote:** the standalone form.
 6. **About** and **Contact:** placeholder text where the owner has not supplied facts.
