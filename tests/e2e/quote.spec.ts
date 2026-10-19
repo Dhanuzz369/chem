@@ -82,6 +82,33 @@ test("product picker is searchable and keyboard operable", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Remove SLES 70%" })).toBeVisible();
 });
 
+test("removing a chip with the keyboard keeps focus in the picker", async ({ page }) => {
+  await openQuote(page, "/quote?product=toluene");
+  const picker = page.getByRole("combobox", { name: "Products" });
+  await picker.fill("methanol");
+  await picker.press("Enter");
+  await picker.fill("sles 70");
+  await picker.press("Enter");
+  await picker.press("Escape");
+  const remove = (name: string) => page.getByRole("button", { name: `Remove ${name}` });
+
+  // A middle chip: focus moves to the next chip.
+  await remove("Methanol").focus();
+  await page.keyboard.press("Enter");
+  await expect(remove("Methanol")).toHaveCount(0);
+  await expect(remove("SLES 70%")).toBeFocused();
+
+  // The last chip: focus moves to the previous chip.
+  await page.keyboard.press("Enter");
+  await expect(remove("SLES 70%")).toHaveCount(0);
+  await expect(remove("Toluene")).toBeFocused();
+
+  // The only chip: focus returns to the search input.
+  await page.keyboard.press("Enter");
+  await expect(remove("Toluene")).toHaveCount(0);
+  await expect(picker).toBeFocused();
+});
+
 test("submits and shows success", async ({ page }) => {
   const bodies = await stubQuote(page, { status: 200, body: { ok: true } });
   await openQuote(page, "/quote?product=toluene");

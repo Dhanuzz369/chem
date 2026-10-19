@@ -71,6 +71,12 @@ describe("POST /api/quote", () => {
     expect(saved).toHaveLength(0);
   });
 
+  it("saves a quick autofilled submit after 2s", async () => {
+    const res = await POST(req(valid({ startedAt: Date.now() - 2000 })));
+    expect(res.status).toBe(200);
+    expect(saved).toHaveLength(1);
+  });
+
   it("accepts large and decimal quantities", async () => {
     expect((await POST(req(valid({ quantity: 500 })))).status).toBe(200);
     expect((await POST(req(valid({ quantity: 1.5 })))).status).toBe(200);

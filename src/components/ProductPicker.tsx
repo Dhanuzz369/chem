@@ -34,8 +34,12 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
   const [active, setActive] = useState(-1);
   const [announcement, setAnnouncement] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  /** After a chip is removed: the chip whose button takes focus next, or null for the input. */
+  const focusAfterRemove = useRef<string | null | undefined>(undefined);
   const listId = `${id}-list`;
   const optionId = (slug: string) => `${id}-opt-${slug}`;
+  const chipId = (slug: string) => `${id}-chip-${slug}`;
 
   const results = useMemo(() => {
     const q = normalise(query);
@@ -58,6 +62,21 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
     // optionId is derived from id, which never changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeOption]);
+
+  // The removed chip's button unmounts while focused; without this, focus falls to <body>.
+  useEffect(() => {
+    if (focusAfterRemove.current === undefined) return;
+    const next = focusAfterRemove.current;
+    focusAfterRemove.current = undefined;
+    if (next) document.getElementById(`${id}-chip-${next}`)?.focus();
+    else inputRef.current?.focus();
+  }, [id, value]);
+
+  function removeChip(slug: string) {
+    const i = value.indexOf(slug);
+    focusAfterRemove.current = value[i + 1] ?? value[i - 1] ?? null;
+    toggle(slug);
+  }
 
   function toggle(slug: string) {
     const name = byslug.get(slug)?.name ?? slug;
@@ -125,6 +144,7 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
           <path d="m13 13 4 4" strokeLinecap="round" />
         </svg>
         <input
+          ref={inputRef}
           id={id}
           type="text"
           role="combobox"
@@ -223,9 +243,10 @@ export function ProductPicker({ id, options, value, onChange, onBlur, invalid, d
             return (
               <li key={slug}>
                 <button
+                  id={chipId(slug)}
                   type="button"
                   aria-label={`Remove ${name}`}
-                  onClick={() => toggle(slug)}
+                  onClick={() => removeChip(slug)}
                   className="inline-flex h-11 items-center gap-2 rounded-sm border border-brand-200 bg-brand-100 pr-2.5 pl-3 text-[0.9375rem] text-brand-900 transition-[transform,background-color] duration-(--duration-press) ease-(--ease-out) active:scale-[0.97] sm:h-9 [@media(hover:hover)]:hover:bg-brand-200"
                 >
                   {name}

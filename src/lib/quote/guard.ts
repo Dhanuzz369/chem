@@ -1,6 +1,6 @@
 import type { QuoteInput } from "./schema";
 
-const MIN_FILL_MS = 3000;
+const MIN_FILL_MS = 1500;
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
 
