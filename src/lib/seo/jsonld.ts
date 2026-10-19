@@ -83,13 +83,20 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): JsonL
 
 export function blogPostingJsonLd(post: PostMeta): JsonLdObject {
   const url = absoluteUrl(`/blog/${post.slug}`);
-  const organization = { "@id": absoluteUrl("/#organization") };
+  const organization = {
+    "@type": "Organization",
+    "@id": absoluteUrl("/#organization"),
+    name: site.name,
+    url: absoluteUrl("/"),
+  };
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
     datePublished: post.date,
+    // Posts carry one date; until they are revised, modified equals published.
+    dateModified: post.date,
     url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     author: organization,

@@ -9,7 +9,7 @@ import { ProductCard, groupSwatch } from "@/components/ProductCard";
 import { QuoteForm } from "@/components/QuoteForm";
 import { getProduct, products, type Product } from "@/content/products";
 import { breadcrumbJsonLd, faqJsonLd, productJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, productMetaDescription } from "@/lib/seo/metadata";
 import { StickyQuoteBar } from "./StickyQuoteBar";
 
 // `dynamicParams = false` is not allowed with cacheComponents; unknown slugs call notFound() instead.
@@ -21,17 +21,12 @@ export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
-function firstSentence(text: string) {
-  const end = text.indexOf(". ");
-  return end === -1 ? text : text.slice(0, end + 1);
-}
-
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">) {
   const product = getProduct((await params).slug);
   if (!product) return {};
   return buildMetadata({
     title: `${product.name} (HSN ${product.hsn}) Exporter`,
-    description: `${firstSentence(product.summary)} HSN ${product.hsn}, CAS ${product.cas.join(", ")}. SDS available on request. Request a quote from Goodbiz Chem.`,
+    description: productMetaDescription(product),
     path: `/products/${product.slug}`,
   });
 }

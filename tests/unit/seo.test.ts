@@ -11,7 +11,8 @@ import {
   productJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, productMetaDescription } from "@/lib/seo/metadata";
+import { absoluteUrl } from "@/config/site";
 import { getAllPosts } from "@/lib/blog";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -35,6 +36,24 @@ describe("metadata", () => {
     vi.stubEnv("ALLOW_INDEXING", "true");
     const m = buildMetadata({ title: "T", description: "D", path: "/" });
     expect((m.robots as { index: boolean }).index).toBe(true);
+  });
+
+  it("absoluteUrl joins SITE_URL and a path with exactly one slash", () => {
+    vi.stubEnv("SITE_URL", "https://ex.com/");
+    expect(absoluteUrl("/products")).toBe("https://ex.com/products");
+    expect(absoluteUrl("blog/a")).toBe("https://ex.com/blog/a");
+    expect(absoluteUrl("/")).toBe("https://ex.com/");
+  });
+
+  it("every product meta description leads with HSN and stays within 160 characters", () => {
+    const descriptions = products.map(productMetaDescription);
+    for (const [i, d] of descriptions.entries()) {
+      const p = products[i];
+      expect(d.length, p.slug).toBeLessThanOrEqual(160);
+      expect(d.startsWith(`${p.name} (HSN ${p.hsn}) — `), p.slug).toBe(true);
+      expect(d.endsWith(". SDS available on request."), p.slug).toBe(true);
+    }
+    expect(new Set(descriptions).size).toBe(products.length);
   });
 });
 
@@ -76,8 +95,9 @@ describe("json-ld", () => {
       datePublished: "2026-10-05",
       url: "https://ex.com/blog/a-post",
       mainEntityOfPage: { "@type": "WebPage", "@id": "https://ex.com/blog/a-post" },
-      author: { "@id": "https://ex.com/#organization" },
-      publisher: { "@id": "https://ex.com/#organization" },
+      dateModified: "2026-10-05",
+      author: { "@type": "Organization", "@id": "https://ex.com/#organization", name: "Goodbiz Chem", url: "https://ex.com/" },
+      publisher: { "@type": "Organization", "@id": "https://ex.com/#organization", name: "Goodbiz Chem", url: "https://ex.com/" },
       inLanguage: "en",
     });
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAllPosts, getPost, renderMarkdown } from "@/lib/blog";
+import { getAllPosts, getPost, renderMarkdown, toIsoDate } from "@/lib/blog";
 import { getProduct } from "@/content/products";
 import { bannedClaims } from "../helpers/claims";
 
@@ -70,6 +70,14 @@ describe("blog", () => {
   it("wraps tables in a focusable scroll region", () => {
     const html = renderMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |");
     expect(html).toMatch(/^<div class="table-scroll" role="region" aria-label="Table" tabindex="0"><table>/);
+  });
+
+  it("accepts real dates and rejects impossible ones", () => {
+    expect(toIsoDate("2026-10-05")).toBe("2026-10-05");
+    expect(toIsoDate(new Date("2024-02-29T00:00:00Z"))).toBe("2024-02-29");
+    expect(() => toIsoDate("2026-13-45")).toThrow(/Invalid post date/);
+    expect(() => toIsoDate("2026-02-30")).toThrow(/Invalid post date/);
+    expect(() => toIsoDate("5 Oct 2026")).toThrow(/Invalid post date/);
   });
 
   it("returns null for an unknown slug", () => {

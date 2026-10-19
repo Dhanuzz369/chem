@@ -46,10 +46,14 @@ export function renderMarkdown(source: string): string {
   return markdown.parse(source, { async: false });
 }
 
-function toIsoDate(value: unknown): string {
+/** A post's date as YYYY-MM-DD. Throws on a malformed or impossible date such as 2026-13-45. */
+export function toIsoDate(value: unknown): string {
   // YAML parses an unquoted 2026-10-05 as a Date; quoted dates stay strings.
-  const iso = value instanceof Date ? value.toISOString().slice(0, 10) : String(value ?? "");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) throw new Error(`Invalid post date: ${String(value)}`);
+  const iso = value instanceof Date && !Number.isNaN(value.getTime()) ? value.toISOString().slice(0, 10) : String(value ?? "");
+  // A real calendar date survives the round trip through Date unchanged; 2026-02-30 does not.
+  const parsed = new Date(`${iso}T00:00:00Z`);
+  const real = /^\d{4}-\d{2}-\d{2}$/.test(iso) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(iso);
+  if (!real) throw new Error(`Invalid post date: ${String(value)}`);
   return iso;
 }
 

@@ -30,6 +30,8 @@ const mono = IBM_Plex_Mono({
 // A site-wide canonical would point every page at the home page, so drop it here.
 const defaults = buildMetadata({ title: site.name, description: site.tagline, path: "/" });
 delete defaults.alternates;
+// Likewise og:url: pages without their own buildMetadata must not claim the home URL.
+if (defaults.openGraph) delete defaults.openGraph.url;
 
 export const metadata: Metadata = {
   ...defaults,
@@ -47,7 +49,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <Footer />
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-        <Analytics />
+        {/* The analytics script is served by Vercel; elsewhere (local, CI) it would only 404. */}
+        {process.env.VERCEL === "1" && <Analytics />}
       </body>
     </html>
   );

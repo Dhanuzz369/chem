@@ -22,6 +22,8 @@ export interface Product {
   cas: string[];
   synonyms: string[];
   summary: string;
+  /** A short clause for search-result snippets: "<Name> (HSN <code>) — <metaSummary>. SDS available on request." */
+  metaSummary: string;
   applications: string[];
   industries: string[];
   form: string;
@@ -46,6 +48,7 @@ export const products: Product[] = [
     synonyms: ["Ethyl ethanoate", "Acetic acid ethyl ester", "EtOAc", "EA"],
     summary:
       "Ethyl acetate is a fast-evaporating ester solvent with a mild, fruity odour. It dissolves nitrocellulose, many resins and printing-ink binders, which makes it a staple in flexible packaging inks, adhesives, coatings and pharmaceutical extraction.",
+    metaSummary: "a fast-evaporating ester solvent for packaging inks, adhesives, coatings and extraction",
     applications: [
       "Solvent for flexographic and gravure printing inks",
       "Adhesives and laminating adhesives for flexible packaging",
@@ -100,6 +103,7 @@ export const products: Product[] = [
     synonyms: ["Methyl alcohol", "Wood alcohol", "Carbinol", "MeOH"],
     summary:
       "Methanol is the simplest alcohol and one of the most traded basic chemicals. It is a feedstock for formaldehyde, acetic acid and MTBE, a fuel and biodiesel ingredient, and a polar solvent. It is toxic as well as flammable, so handling discipline matters.",
+    metaSummary: "the simplest alcohol, a feedstock for formaldehyde and acetic acid, a fuel and a solvent",
     applications: [
       "Feedstock for formaldehyde, acetic acid, MTBE and methylamines",
       "Transesterification reagent in biodiesel production",
@@ -154,6 +158,7 @@ export const products: Product[] = [
     synonyms: ["Isopropanol", "2-Propanol", "Propan-2-ol", "IPA", "Rubbing alcohol", "Dimethyl carbinol"],
     summary:
       "Isopropyl alcohol (IPA) is a water-miscible solvent that evaporates cleanly without residue. It is widely used for disinfectants and hand sanitisers, electronics cleaning, pharmaceutical processing, and as a solvent for inks, coatings and cosmetics.",
+    metaSummary: "a water-miscible solvent for disinfectants, electronics cleaning, inks and coatings",
     applications: [
       "Disinfectants, surface sanitisers and hand-rub formulations",
       "Precision cleaning of electronics, PCBs and optics",
@@ -208,6 +213,7 @@ export const products: Product[] = [
     synonyms: ["Dichloromethane", "Methylene chloride", "Methylene dichloride", "DCM", "R-30"],
     summary:
       "Dichloromethane (DCM, methylene chloride) is a dense, very volatile chlorinated solvent that is not flammable under normal conditions. It is used for pharmaceutical extraction, polycarbonate production, adhesives and metal cleaning, and needs strong vapour control.",
+    metaSummary: "a dense, volatile chlorinated solvent for pharma extraction, adhesives and cleaning",
     applications: [
       "Extraction and reaction solvent in pharmaceutical and fine-chemical synthesis",
       "Process solvent in polycarbonate and cellulose triacetate film production",
@@ -266,6 +272,7 @@ export const products: Product[] = [
     synonyms: ["Methylbenzene", "Toluol", "Phenylmethane", "Methylbenzol"],
     summary:
       "Toluene is an aromatic hydrocarbon solvent with strong solvency for resins, rubber and paints. It is used in coatings, thinners, adhesives and inks, and as a feedstock for benzene, xylenes and toluene diisocyanate (TDI).",
+    metaSummary: "an aromatic solvent for coatings, thinners, adhesives and inks, and a feedstock",
     applications: [
       "Solvent and thinner for paints, lacquers and coatings",
       "Rubber cements, contact adhesives and sealants",
@@ -321,6 +328,7 @@ export const products: Product[] = [
     synonyms: ["n-Heptane", "Heptane", "n-Hexane", "Hexane", "Normal heptane", "Normal hexane"],
     summary:
       "n-Heptane and n-hexane are light, non-polar alkane solvents. Hexane is the classic solvent for oilseed extraction and fast-drying adhesives; heptane is a less toxic alternative and the zero reference fuel for octane rating. Both are highly flammable.",
+    metaSummary: "light alkane solvents for oilseed extraction, adhesives and laboratories",
     applications: [
       "Hexane: extraction of vegetable oils from soybean, rapeseed and other oilseeds",
       "Rubber cements, contact adhesives and tyre-repair solutions",
@@ -378,6 +386,7 @@ export const products: Product[] = [
     synonyms: ["DIPA", "N-Isopropylpropan-2-amine", "N,N-Diisopropylamine", "Di-isopropylamine"],
     summary:
       "Diisopropylamine (DIPA) is a sterically hindered secondary amine. It is the precursor to lithium diisopropylamide (LDA) and Hünig's base, and an intermediate for thiocarbamate herbicides, rubber chemicals and pharmaceuticals. It is flammable and corrosive.",
+    metaSummary: "a hindered secondary amine and intermediate for LDA, herbicides and rubber chemicals",
     applications: [
       "Precursor to lithium diisopropylamide (LDA), a strong non-nucleophilic base in organic synthesis",
       "Intermediate for N,N-diisopropylethylamine (Hünig's base, DIPEA)",
@@ -438,6 +447,7 @@ export const products: Product[] = [
     synonyms: ["TiO₂", "Titania", "Titanium(IV) oxide", "Rutile titanium dioxide", "Anatase titanium dioxide", "CI Pigment White 6", "CI 77891"],
     summary:
       "Titanium dioxide (TiO₂) is the most widely used white pigment, prized for high refractive index, opacity and brightness. Rutile grades dominate paints and plastics for their durability; anatase grades suit paper, fibres and some indoor uses.",
+    metaSummary: "the most widely used white pigment, in rutile and anatase grades",
     applications: [
       "White pigment and opacifier in architectural and industrial paints and coatings",
       "Masterbatches, PVC profiles and other plastics",
@@ -491,6 +501,7 @@ export const products: Product[] = [
     synonyms: ["Sodium hydroxide", "NaOH", "Caustic soda flakes", "Caustic soda pearls", "Lye"],
     summary:
       "Solid caustic soda (sodium hydroxide) is a strong alkali sold as flakes or pearls. It is used for soap making, pH adjustment, alumina and pulp processing, textile mercerising and cleaning. It is highly corrosive and gives off heat when dissolved.",
+    metaSummary: "solid sodium hydroxide flakes or pearls for soap, alumina, pulp and textiles",
     applications: [
       "Saponification in soap and detergent manufacture",
       "pH control and neutralisation in water and effluent treatment",
@@ -545,6 +556,7 @@ export const products: Product[] = [
     synonyms: ["Sodium hydroxide solution", "Caustic soda lye", "Caustic liquor", "Aqueous NaOH", "Soda lye"],
     summary:
       "Liquid caustic soda is sodium hydroxide dissolved in water, commonly traded near 48–50% or about 32% strength. It is easy to pump and meter, so it suits continuous dosing in water treatment, chemical processing, soap making and pulp bleaching.",
+    metaSummary: "sodium hydroxide solution for dosing in water treatment, soap and pulp",
     applications: [
       "Neutralising acids from LABSA to make detergent active (sodium LAS)",
       "pH correction in water and effluent treatment",
@@ -599,6 +611,7 @@ export const products: Product[] = [
     synonyms: ["Copper(II) sulphate", "Copper sulfate", "Cupric sulphate", "Blue vitriol", "Bluestone", "Copper sulphate pentahydrate"],
     summary:
       "Copper sulphate is a blue crystalline copper salt, usually traded as the pentahydrate. It is used as a fungicide (Bordeaux mixture), algaecide, animal-feed trace mineral, electroplating electrolyte and flotation agent in mining.",
+    metaSummary: "a blue copper salt used as a fungicide, feed mineral and plating electrolyte",
     applications: [
       "Fungicide and Bordeaux mixture in agriculture",
       "Algae and snail control in ponds and irrigation water",
@@ -662,6 +675,7 @@ export const products: Product[] = [
     ],
     summary:
       "LABSA (linear alkylbenzene sulphonic acid) is the acid precursor of LAS, the most widely used anionic detergent active. Neutralised with caustic soda or soda ash, it gives the cleaning and foaming base of washing powders, dishwash liquids and cleaners.",
+    metaSummary: "the acid precursor of LAS, the base of washing powders and dishwash liquids",
     applications: [
       "Detergent active in laundry powders and cakes after neutralisation",
       "Dishwashing liquids and hand-wash detergents",
@@ -722,6 +736,7 @@ export const products: Product[] = [
     ],
     summary:
       "SLES 70% is a concentrated paste of sodium lauryl ether sulphate, the main foaming surfactant in shampoos, body washes and dishwash liquids. Its high active content keeps freight low, but it must be diluted with care to avoid a stiff gel phase.",
+    metaSummary: "a concentrated anionic surfactant paste for shampoos, body washes and dishwash",
     applications: [
       "Primary surfactant in shampoos, body washes and liquid hand soaps",
       "Dishwashing liquids and liquid laundry detergents",
@@ -781,6 +796,7 @@ export const products: Product[] = [
     ],
     summary:
       "SLES 28% is a ready-to-use liquid solution of sodium lauryl ether sulphate. It pumps and blends directly into shampoos, hand washes and detergents with no dilution step, which suits smaller plants without high-shear mixing.",
+    metaSummary: "a ready-to-use anionic surfactant solution for shampoos and hand washes",
     applications: [
       "Direct blending into shampoos, body washes and hand soaps",
       "Dishwash and liquid detergent formulations",
@@ -841,6 +857,7 @@ export const products: Product[] = [
     ],
     summary:
       "Sodium lauryl sulphate (SLS) is a strong anionic surfactant with dense, quick foam. Sold as needles, powder or liquid, it is used in toothpaste, shampoo bars, powdered detergents, emulsion polymerisation and as SDS in laboratory protein work.",
+    metaSummary: "a dense-foaming anionic surfactant for toothpaste and detergents",
     applications: [
       "Foaming agent in toothpaste and oral-care products",
       "Shampoos, shampoo bars and bath products",
@@ -902,6 +919,7 @@ export const products: Product[] = [
     ],
     summary:
       "Alpha olefin sulphonate (AOS) is an anionic surfactant made from C14–16 alpha olefins. It foams well in hard water, stays stable across a wide pH range and biodegrades readily, making it a common sulphate-free alternative to SLES and SLS.",
+    metaSummary: "a sulphate-free anionic surfactant that foams well in hard water",
     applications: [
       "Sulphate-free shampoos, body washes and hand soaps",
       "Liquid and powder laundry detergents and dishwash liquids",
@@ -960,6 +978,7 @@ export const products: Product[] = [
     ],
     summary:
       "Sodium lauryl sulphoacetate (SLSA) is a mild anionic surfactant, usually a white powder or needles, with rich, creamy lather. It is a favourite for bath bombs, bubble bars, solid shampoo bars and syndet bars where a sulphate-free solid foamer is needed.",
+    metaSummary: "a mild solid foamer for bath bombs and shampoo bars",
     applications: [
       "Bath bombs, bubble bars and bath melts",
       "Solid shampoo bars and syndet cleansing bars",
@@ -1020,6 +1039,7 @@ export const products: Product[] = [
     ],
     summary:
       "Alcohol ethoxylates are non-ionic surfactants made by reacting fatty alcohols with ethylene oxide. The number of EO units sets the balance between oil and water solubility, so one family covers detergents, textile wetting, emulsifiers and degreasers.",
+    metaSummary: "non-ionic surfactants for detergents, degreasers, textiles and emulsifiers",
     applications: [
       "Detergency boosters in laundry liquids, powders and dishwash products",
       "Hard-surface, metal and industrial degreasing cleaners",
@@ -1080,6 +1100,7 @@ export const products: Product[] = [
     ],
     summary:
       "Nonylphenol ethoxylates (NPE) are non-ionic surfactants made from nonylphenol and ethylene oxide. They are effective, low-cost wetting agents, emulsifiers and detergents in industrial cleaning, textiles, paints and agrochemicals.",
+    metaSummary: "non-ionic wetting agents and emulsifiers for industrial uses",
     applications: [
       "Industrial and institutional cleaners and degreasers",
       "Wetting, scouring and dyeing aids in textile and leather processing",

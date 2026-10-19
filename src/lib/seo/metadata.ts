@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { absoluteUrl, isIndexingAllowed, site } from "@/config/site";
+import type { Product } from "@/content/products";
 
 export const DEFAULT_OG_IMAGE = "/og-default.png";
 
@@ -38,4 +39,9 @@ export function buildMetadata({
     },
     twitter: { card: "summary_large_image", title, description, images: [imageUrl] },
   };
+}
+
+/** HSN first and under 160 characters, so search snippets show the code buyers search for. */
+export function productMetaDescription(p: Pick<Product, "name" | "hsn" | "metaSummary">): string {
+  return `${p.name} (HSN ${p.hsn}) — ${p.metaSummary}. SDS available on request.`;
 }

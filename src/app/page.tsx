@@ -14,7 +14,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: `${site.name}: solvents, amines, inorganics and surfactants`,
-  description: `${site.tagline} ${products.length} products in four groups, each listed with its HSN and CAS numbers. Request a quote; SDS available on request.`,
+  description: `${site.tagline} ${products.length} chemicals listed by HSN and CAS number. Request a quote; SDS available on request.`,
   path: "/",
 });
 

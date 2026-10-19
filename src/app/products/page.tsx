@@ -11,7 +11,7 @@ import { ProductFinderFromQuery } from "./ProductFinderFromQuery";
 
 export const metadata = buildMetadata({
   title: "Products: solvents, amines, inorganics and surfactants",
-  description: `Goodbiz Chem supplies ${products.length} industrial chemicals in four groups: ${productGroups.join(", ").toLowerCase()}. Search by name, HSN code or CAS number and request a quote.`,
+  description: `${products.length} industrial chemicals in four groups: ${productGroups.join(", ").toLowerCase()}. Search by name, HSN or CAS number and request a quote.`,
   path: "/products",
 });
 
