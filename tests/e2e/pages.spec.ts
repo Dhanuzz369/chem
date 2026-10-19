@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { site } from "../../src/config/site";
 import { bannedPageClaims as banned } from "../helpers/claims";
 
 test("about renders without claims", async ({ page }) => {
@@ -10,11 +11,16 @@ test("about renders without claims", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("link", { name: "Request a quote" }).first()).toHaveAttribute("href", "/quote");
 });
 
-test("contact shows quote form and hides empty contact fields", async ({ page }) => {
+test("contact shows quote form and only the contact fields that are set", async ({ page }) => {
   await page.goto("/contact");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByRole("button", { name: /send/i })).toBeVisible();
-  await expect(page.locator('a[href^="mailto:"], a[href^="tel:"], a[href*="wa.me"]')).toHaveCount(0);
+  const main = page.getByRole("main");
+  const { email, phone, whatsapp } = site.contact;
+  // Empty fields render nothing; once the owner fills one in, its link appears.
+  await expect(main.locator('a[href^="mailto:"]')).toHaveCount(email ? 1 : 0);
+  await expect(main.locator('a[href^="tel:"]')).toHaveCount(phone ? 1 : 0);
+  await expect(main.locator('a[href*="wa.me"]')).toHaveCount(whatsapp ? 1 : 0);
 });
 
 test("404 page offers products and quote links", async ({ page }) => {

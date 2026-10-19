@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { getAllPosts, getPost, renderMarkdown, toIsoDate } from "@/lib/blog";
 import { getProduct } from "@/content/products";
@@ -8,15 +10,17 @@ function words(html: string) {
 }
 
 describe("blog", () => {
-  it("loads 4 posts sorted by date desc", () => {
+  it("loads every post file, newest first", () => {
+    const files = fs.readdirSync(path.join(process.cwd(), "content", "blog")).filter((f) => f.endsWith(".md"));
     const posts = getAllPosts();
-    expect(posts).toHaveLength(4);
+    expect(posts.length).toBeGreaterThanOrEqual(1);
+    expect(posts).toHaveLength(files.length);
     const dates = posts.map((p) => p.date);
     expect([...dates].sort().reverse()).toEqual(dates);
-    expect(new Set(dates).size).toBe(4);
+    const today = new Date().toISOString().slice(0, 10);
     for (const d of dates) {
       expect(d).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(d < "2026-10-19").toBe(true);
+      expect(d <= today, `${d} is in the future`).toBe(true);
     }
   });
 

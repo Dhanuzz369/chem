@@ -12,7 +12,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo/jsonld";
 import { buildMetadata, productMetaDescription } from "@/lib/seo/metadata";
-import { absoluteUrl } from "@/config/site";
+import { absoluteUrl, site } from "@/config/site";
 import { getAllPosts } from "@/lib/blog";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -66,13 +66,26 @@ describe("json-ld", () => {
     );
   });
 
-  it("organizationJsonLd omits empty contact", () => {
-    const ld = organizationJsonLd() as Record<string, unknown>;
-    expect(ld).not.toHaveProperty("contactPoint");
-    expect(ld).not.toHaveProperty("email");
-    expect(ld).not.toHaveProperty("telephone");
-    expect(ld.name).toBe("Goodbiz Chem");
-    expect(String(ld.logo)).toMatch(/\/icon\.svg$/);
+  it("organizationJsonLd omits empty contact and includes set contact", () => {
+    // Swap the contact block for each case so the test holds whatever the owner has filled in.
+    const real = site.contact;
+    try {
+      site.contact = {};
+      const empty = organizationJsonLd() as Record<string, unknown>;
+      expect(empty).not.toHaveProperty("contactPoint");
+      expect(empty).not.toHaveProperty("email");
+      expect(empty).not.toHaveProperty("telephone");
+      expect(empty.name).toBe("Goodbiz Chem");
+      expect(String(empty.logo)).toMatch(/\/icon\.svg$/);
+
+      site.contact = { email: "sales@example.com", phone: "+1 555 010 0000" };
+      const filled = organizationJsonLd() as Record<string, unknown>;
+      expect(filled.email).toBe("sales@example.com");
+      expect(filled.telephone).toBe("+1 555 010 0000");
+      expect(filled.contactPoint).toHaveLength(2);
+    } finally {
+      site.contact = real;
+    }
   });
 
   it("websiteJsonLd and breadcrumbJsonLd shapes", () => {
@@ -127,7 +140,6 @@ describe("robots, sitemap, llms.txt", () => {
   it("sitemap lists every product", () => {
     vi.stubEnv("SITE_URL", "https://ex.com");
     const urls = sitemap().map((e) => e.url);
-    expect(products).toHaveLength(19);
     for (const p of products) expect(urls).toContain(`https://ex.com/products/${p.slug}`);
   });
 

@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
+import { products } from "../../src/content/products";
 
 const cards = (page: Page) => page.getByRole("list", { name: "Products" }).getByRole("listitem");
 
@@ -9,10 +10,10 @@ async function openFinder(page: Page, url = "/products") {
   await expect(page.getByRole("searchbox", { name: "Search products" })).toBeEnabled();
 }
 
-test("index lists 19 products", async ({ page }) => {
+test("index lists every product", async ({ page }) => {
   await openFinder(page);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(cards(page)).toHaveCount(19);
+  await expect(cards(page)).toHaveCount(products.length);
 });
 
 test("filter and search", async ({ page }) => {

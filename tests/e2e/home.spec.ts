@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { products } from "../../src/content/products";
+import { getAllPosts } from "../../src/lib/blog";
 
 const fallback = 'img[src*="hero-fallback"]';
 
@@ -35,7 +37,7 @@ test("home sections present", async ({ page }) => {
 
   const range = main.getByRole("region", { name: "Product range" });
   await expect(range).toBeVisible();
-  await expect(range.getByRole("list", { name: "Products" }).getByRole("listitem")).toHaveCount(19);
+  await expect(range.getByRole("list", { name: "Products" }).getByRole("listitem")).toHaveCount(products.length);
 
   const ordering = main.getByRole("region", { name: "How ordering and export work" });
   await expect(ordering).toBeVisible();
@@ -47,7 +49,8 @@ test("home sections present", async ({ page }) => {
   const latest = main.getByRole("region", { name: "Latest from the blog" });
   await expect(latest).toBeVisible();
   const postLinks = latest.getByRole("list", { name: "Latest posts" }).getByRole("listitem").getByRole("link");
-  await expect(postLinks).toHaveCount(3);
+  // The home page shows the newest three posts, or all of them if there are fewer.
+  await expect(postLinks).toHaveCount(Math.min(3, getAllPosts().length));
   for (const link of await postLinks.all()) await expect(link).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+$/);
   await expect(latest.getByRole("link", { name: "All posts" })).toHaveAttribute("href", "/blog");
 

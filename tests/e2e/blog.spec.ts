@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { getAllPosts } from "../../src/lib/blog";
 
 const post = "/blog/sles-70-vs-sles-28";
 
@@ -7,7 +8,7 @@ test("index lists posts", async ({ page }) => {
   await page.goto("/blog");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const items = page.getByRole("list", { name: "Posts" }).getByRole("listitem");
-  await expect(items).toHaveCount(4);
+  await expect(items).toHaveCount(getAllPosts().length);
   await expect(items.first().getByRole("link")).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+$/);
 });
 

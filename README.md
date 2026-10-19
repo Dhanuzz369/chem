@@ -35,7 +35,7 @@ Other commands you may hear about:
 | Command | What it does |
 | --- | --- |
 | `npm test` | Runs the quick checks on the product data, blog posts and SEO. |
-| `npm run e2e` | Opens the site in a test browser (phone and desktop sizes) and checks every page. |
+| `npm run e2e` | Opens the site in a test browser (phone and desktop sizes) and checks every page. Before the first run, install the test browser once with `npx playwright install chromium`. |
 | `npm run build` | Builds the finished site, exactly as it will run when live. |
 | `npm run lint` | Checks the code for common mistakes. |
 
@@ -47,7 +47,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 
 | Setting | What to put in it | Example |
 | --- | --- | --- |
-| `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. | `https://www.goodbizchem.com` |
+| `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. | `https://www.example.com` |
 | `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | The email address of the Google service account that writes quote requests to your sheet. | `quotes@goodbiz-site.iam.gserviceaccount.com` |
 | `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value), in double quotes. Keep the `\n` sequences as they are. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
@@ -116,7 +116,7 @@ Open `src/config/site.ts` and fill in the `contact` block:
 
 ```ts
 contact: {
-  email: "sales@yourdomain.com",
+  email: "sales@example.com",
   phone: "+91 98765 43210",
   whatsapp: "+91 98765 43210",
   address: "Unit 4, Example Industrial Estate, City, State, PIN, India",
@@ -154,7 +154,7 @@ Posts are plain text files in `content/blog/`. Each file becomes a page at `/blo
 
 ## 7. Vercel Web Analytics
 
-The site includes Vercel Web Analytics, which counts visits and page views without cookies or cookie banners. It only runs on Vercel; on your computer it is switched off. After the site is live, open the project in the Vercel dashboard, go to the **Analytics** tab and click **Enable**. Numbers start appearing after the next deployment.
+The site includes Vercel Web Analytics, which counts visits and page views without cookies or cookie banners. It only runs on Vercel; on your computer it is switched off. It relies on Vercel's default **Automatically expose System Environment Variables** setting (under **Settings** > **Environment Variables**), so leave that switched on. After the site is live, open the project in the Vercel dashboard, go to the **Analytics** tab and click **Enable**. Numbers start appearing after the next deployment.
 
 ---
 
@@ -163,7 +163,7 @@ The site includes Vercel Web Analytics, which counts visits and page views witho
 Search Console shows how the site appears in Google and lets you ask Google to read it.
 
 1. When the site is live on its real domain and `ALLOW_INDEXING=true` is deployed, go to [Google Search Console](https://search.google.com/search-console) and click **Add property**.
-2. Choose **Domain**, type your domain (for example `goodbizchem.com`) and follow the instructions to add a TXT record at your domain registrar. This proves you own the domain and needs no change to the website.
+2. Choose **Domain**, type your domain (for example `example.com`) and follow the instructions to add a TXT record at your domain registrar. This proves you own the domain and needs no change to the website.
 3. Once verified, open **Sitemaps**, enter `sitemap.xml` and click **Submit**. The sitemap lists every product page, blog post and main page.
 4. Use **URL inspection** on the home page and a product page and click **Request indexing** to speed things up.
 

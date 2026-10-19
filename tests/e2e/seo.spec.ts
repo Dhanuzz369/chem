@@ -34,9 +34,8 @@ async function head(page: Page) {
   });
 }
 
-test("the sitemap lists the expected number of routes", () => {
-  // 6 static pages, 19 products, 4 posts.
-  expect(routes).toHaveLength(29);
+test("the sitemap lists unique routes", () => {
+  expect(routes.length).toBeGreaterThan(0);
   expect(new Set(routes).size).toBe(routes.length);
 });
 

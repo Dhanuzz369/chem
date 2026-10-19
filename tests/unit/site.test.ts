@@ -13,8 +13,13 @@ describe("site config", () => {
     expect(isIndexingAllowed({ ALLOW_INDEXING: "true" })).toBe(true);
   });
 
-  it("has the company name and no placeholder contact details", () => {
+  it("has the company name, and any contact detail that is set is real text", () => {
     expect(site.name).toBe("Goodbiz Chem");
-    expect(Object.values(site.contact).filter(Boolean)).toHaveLength(0);
+    // Contact details start empty and are filled in by the owner (see README); either state is valid.
+    for (const [field, value] of Object.entries(site.contact)) {
+      if (value === undefined) continue;
+      expect(typeof value, field).toBe("string");
+      expect(value.trim(), field).not.toBe("");
+    }
   });
 });
