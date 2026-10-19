@@ -1,0 +1,101 @@
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { Button } from "@/components/Button";
+import { Container } from "@/components/Container";
+import { JsonLd } from "@/components/JsonLd";
+import { productGroups, products } from "@/content/products";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { buildMetadata } from "@/lib/seo/metadata";
+
+export const metadata = buildMetadata({
+  title: "About Goodbiz Chem",
+  description: `What Goodbiz Chem supplies (${products.length} industrial chemicals in four groups) and how we work with buyers from enquiry to dispatch.`,
+  path: "/about",
+});
+
+const crumbs = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about" },
+];
+
+const groupSwatch: Record<string, string> = {
+  Solvents: "bg-accent-sky",
+  Amines: "bg-accent-lilac",
+  Inorganics: "bg-accent-butter",
+  Surfactants: "bg-accent-mint",
+};
+
+const steps = [
+  { title: "Enquiry", text: "You tell us the product, quantity, packaging and destination through the quote form." },
+  { title: "Quote", text: "We reply with pricing and availability for that request." },
+  { title: "Documents", text: "We prepare the shipping documents the order needs, and you can ask for the SDS or COA." },
+  { title: "Dispatch", text: "Once the order is confirmed, we arrange dispatch to the destination you named." },
+];
+
+export default function AboutPage() {
+  return (
+    <Container className="py-10 md:py-16">
+      <Breadcrumbs items={crumbs} />
+      <div className="mt-6 max-w-[44rem]">
+        <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">About Goodbiz Chem</h1>
+        <p className="mt-4 max-w-[58ch] text-lg text-ink-muted">
+          Goodbiz Chem supplies industrial and specialty chemicals to manufacturers. This site lists the range by name and
+          HSN code so a buyer can confirm a product quickly and ask for a quote.
+        </p>
+      </div>
+
+      <section aria-labelledby="supply" className="mt-14 md:mt-20">
+        <h2 id="supply" className="font-display text-2xl font-semibold text-ink">
+          What we supply
+        </h2>
+        <p className="mt-3 max-w-[58ch] text-ink-muted">
+          {products.length} chemicals in four groups. Each product page gives its HSN code, general applications and handling
+          notes.
+        </p>
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {productGroups.map((group) => {
+            const count = products.filter((p) => p.group === group).length;
+            return (
+              <li key={group} className={`rounded-lg p-5 ${groupSwatch[group]}`}>
+                <h3 className="font-display text-lg font-semibold text-ink">{group}</h3>
+                <p className="mt-1 font-mono text-sm text-ink-muted">{count} {count === 1 ? "product" : "products"}</p>
+              </li>
+            );
+          })}
+        </ul>
+        <Button href="/products" variant="secondary" className="mt-6">
+          Browse the catalogue
+        </Button>
+      </section>
+
+      <section aria-labelledby="how" className="mt-14 md:mt-20">
+        <h2 id="how" className="font-display text-2xl font-semibold text-ink">
+          How we work with buyers
+        </h2>
+        <ol className="mt-6 grid gap-px overflow-hidden rounded-lg border border-line bg-line md:grid-cols-4">
+          {steps.map((step, i) => (
+            <li key={step.title} className="bg-bg p-5">
+              <span className="font-mono text-sm text-ink-muted">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="mt-2 font-display text-lg font-semibold text-ink">{step.title}</h3>
+              <p className="mt-2 text-[0.9375rem] text-ink-muted">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-labelledby="documents" className="mt-14 rounded-lg bg-surface p-6 md:mt-20 md:p-8">
+        <h2 id="documents" className="font-display text-2xl font-semibold text-ink">
+          What you can ask for
+        </h2>
+        <p className="mt-3 max-w-[58ch] text-ink-muted">
+          Ask for a Safety Data Sheet (SDS) or a Certificate of Analysis (COA) when you request a quote. SDS available on
+          request.
+        </p>
+        <Button href="/quote" className="mt-6">
+          Request a quote
+        </Button>
+      </section>
+
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
+    </Container>
+  );
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/config/site";
 import { Button } from "./Button";
+import { ContactDetails } from "./ContactDetails";
 import { Container } from "./Container";
 import { Logo } from "./Logo";
 
@@ -21,36 +22,6 @@ const quickLinks = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
-function ContactDetails() {
-  const { email, phone, whatsapp, address } = site.contact;
-  const rows = [
-    email && { label: "Email", value: email, href: `mailto:${email}` },
-    phone && { label: "Phone", value: phone, href: `tel:${phone.replace(/[^+\d]/g, "")}` },
-    whatsapp && { label: "WhatsApp", value: whatsapp, href: `https://wa.me/${whatsapp.replace(/\D/g, "")}` },
-    address && { label: "Address", value: address },
-  ].filter((row): row is { label: string; value: string; href?: string } => Boolean(row));
-
-  if (rows.length === 0) return null;
-  return (
-    <dl className="grid gap-1 text-sm">
-      {rows.map((row) => (
-        <div key={row.label} className="flex gap-2">
-          <dt className="text-ink-muted">{row.label}</dt>
-          <dd>
-            {row.href ? (
-              <a href={row.href} className="text-brand-700 underline-offset-4 hover:underline">
-                {row.value}
-              </a>
-            ) : (
-              row.value
-            )}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-line bg-surface">
@@ -66,7 +37,7 @@ export function Footer() {
             </svg>
             SDS available on request
           </p>
-          <ContactDetails />
+          <ContactDetails contact={site.contact} />
           <Button href="/quote" variant="secondary" className="mt-1">
             Request a quote
           </Button>
