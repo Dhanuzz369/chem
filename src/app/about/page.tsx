@@ -2,13 +2,13 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
-import { productGroups, products } from "@/content/products";
+import { productGroups } from "@/content/products";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: "About",
-  description: `What Goodbiz Chem supplies (${products.length} industrial chemicals in ${productGroups.length} groups) and how we work with buyers from enquiry to dispatch.`,
+  description: "What Goodbiz Chem supplies (solvents, amines, inorganics and surfactants) and how we work with buyers from enquiry to dispatch.",
   path: "/about",
 });
 
@@ -48,19 +48,15 @@ export default function AboutPage() {
           What we supply
         </h2>
         <p className="mt-3 max-w-[58ch] text-ink-muted">
-          {products.length} chemicals in {productGroups.length} groups. Each product page gives its HSN code, general applications and handling
-          notes.
+          Industrial chemicals in four groups: solvents, amines, inorganics and surfactants. Each product page gives its
+          HSN code, general applications and handling notes.
         </p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {productGroups.map((group) => {
-            const count = products.filter((p) => p.group === group).length;
-            return (
-              <li key={group} className={`rounded-lg p-5 ${groupSwatch[group]}`}>
-                <h3 className="font-display text-lg font-semibold text-ink">{group}</h3>
-                <p className="mt-1 font-mono text-sm text-ink-muted">{count} {count === 1 ? "product" : "products"}</p>
-              </li>
-            );
-          })}
+          {productGroups.map((group) => (
+            <li key={group} className={`rounded-lg p-5 ${groupSwatch[group]}`}>
+              <h3 className="font-display text-lg font-semibold text-ink">{group}</h3>
+            </li>
+          ))}
         </ul>
         <Button href="/products" variant="secondary" className="mt-6">
           Browse the catalogue

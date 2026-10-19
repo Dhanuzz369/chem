@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
-import { productGroups, products } from "@/content/products";
+import { productGroups } from "@/content/products";
 import { site } from "@/config/site";
 
 // Explicit openGraph replaces (not merges with) the home defaults, so no home og:url leaks onto a 404.
@@ -38,20 +38,17 @@ export default function NotFound() {
           Or start from a product group
         </h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {productGroups.map((group) => {
-            const count = products.filter((p) => p.group === group).length;
-            return (
-              <li key={group}>
-                <Link
-                  href={`/products?group=${group.toLowerCase()}`}
-                  className="flex h-14 items-center justify-between rounded-lg border border-line px-4 font-medium text-ink transition-[background-color] duration-(--duration-press) ease-(--ease-out) [@media(hover:hover)]:hover:bg-surface"
-                >
-                  {group}
-                  <span className="font-mono text-sm text-ink-muted">{count}</span>
-                </Link>
-              </li>
-            );
-          })}
+          {productGroups.map((group) => (
+            <li key={group}>
+              <Link
+                href={`/products?group=${group.toLowerCase()}`}
+                className="flex h-14 items-center justify-between rounded-lg border border-line px-4 font-medium text-ink transition-[background-color] duration-(--duration-press) ease-(--ease-out) [@media(hover:hover)]:hover:bg-surface"
+              >
+                {group}
+                <span aria-hidden="true" className="text-ink-muted">→</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
     </Container>

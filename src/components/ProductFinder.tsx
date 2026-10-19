@@ -14,6 +14,17 @@ export function parseGroup(value: string | null | undefined): ProductGroup | und
 
 const noop = () => () => {};
 
+/** Live-region text. Unfiltered it names no total; once the buyer filters or searches it counts the matches. */
+export function finderStatus(count: number, group: ProductGroup | undefined, query: string): string {
+  const trimmed = query.trim();
+  if (!group && !trimmed) return "Showing all products.";
+  return (
+    `${count} ${count === 1 ? "product" : "products"}` +
+    (group ? ` in ${group}` : "") +
+    (trimmed ? ` matching “${trimmed}”` : "")
+  );
+}
+
 type ProductFinderProps = {
   /** Chip selected on first render, e.g. from `?group=`. Later changes (a footer link) reselect it. */
   initialGroup?: ProductGroup;
@@ -56,10 +67,7 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
     window.history.replaceState(window.history.state, "", url);
   }
 
-  const status =
-    `${results.length} ${results.length === 1 ? "product" : "products"}` +
-    (group ? ` in ${group}` : "") +
-    (trimmed ? ` matching “${trimmed}”` : "");
+  const status = finderStatus(results.length, group, query);
 
   const chips: { label: string; value: ProductGroup | undefined }[] = [
     { label: "All", value: undefined },

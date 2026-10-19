@@ -18,7 +18,7 @@ Made with the three skills the owner asked for: **Hallmark** (structure, anti-sl
 | Genre | modern-minimal | B2B; restrained. White paper is allowed in this genre. |
 | Theme route | custom | The owner named the brand colour (green) and the pastel mood. The catalog themes don't carry that. |
 | Axes | light / geometric-sans / chromatic-green | Recorded for diversification. |
-| Home macrostructure (Task 8) | **11 · Catalogue** | The site's value is the inventory: 19 products, findable by name or HSN code. The home page leads into a uniform, searchable product index (spec-sheet rows with mono HSN codes), not a "hero, 3 features, CTA" rhythm. The Three.js hero sits above it as a calm opener, not the point. |
+| Home macrostructure (Task 8) | **11 · Catalogue** | The site's value is the inventory: every product findable by name or HSN code. The home page leads into a uniform, searchable product index (spec-sheet rows with mono HSN codes), not a "hero, 3 features, CTA" rhythm. The Three.js hero sits above it as a calm opener, not the point. |
 | Nav | **N1b**, 4 links, no dropdowns, always solid | The brief fixes 4 real destinations plus one primary action. Kept honest and quiet: no blur, no frosting, a hairline under the bar, and an active-page underline in brand-500. |
 | Footer | **Ft1 mast-headed + group ledger** | Wordmark, tagline, "SDS available on request" and a quote button on the left. On the right, the four product groups as a ledger: each row has its HSN chapter in a mono tag on that group's pastel. No social row, no "Legal" column, no AI four-column footer. |
 | Enrichment | none for the shell | Task 8 adds the Three.js hero. |
@@ -136,7 +136,7 @@ An SVG lockup in `src/components/Logo.tsx`, with the mark repeated in `src/app/i
 ## Home page and 3D hero (Task 8)
 
 - **Section order (Catalogue):** hero (inventory header) → who we are → product range (`ProductFinder`, the full 19-row index) → how ordering and export work (four ordinal steps) → FAQ → closing quote panel. No feature grid, no stats band, no testimonials. Task 9 adds latest posts before the closing panel.
-- **Hero copy:** the h1 is an inventory header with a real count ("19 industrial chemicals, listed by HSN code"), not a slogan. Under the buttons, a one-line ledger of the four groups with their product counts, computed from the catalogue data.
+- **Hero copy:** the h1 is an inventory header ("Industrial chemicals, listed by HSN code"), not a slogan. Under the buttons, a one-line ledger of the four group names. No product totals or per-group counts anywhere in the copy (owner change request 1, 2026-10-19).
 - **Hero concept:** a single ball-and-stick molecule (a six-membered ring in a chair shape with a branched side chain) that turns slowly, about 70 seconds a turn, with a slight rocking tilt. It sits in a 4:3 `brand-50` panel beside the text on desktop and below it on phones. Atoms are `brand-400`/`brand-500` with one `brand-600` heteroatom; light terminal atoms are `brand-200`/`brand-300`; bonds are `brand-300`. Matte standard material, hemisphere light plus one key light, no shadows, no post-processing, transparent canvas so the panel colour shows through.
 - **Why this:** it reads as "chemistry" at a glance without naming or depicting any specific product, so it claims nothing. It is calm enough to sit beside the h1 without competing with it.
 - **Cost:** two instanced meshes (atoms, bonds), so two draw calls; 18 atoms, 18 bonds. `three` is dynamically imported, so it is not in the initial bundle.

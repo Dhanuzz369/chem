@@ -1,6 +1,6 @@
 # Goodbiz Chem website
 
-The Goodbiz Chem website: a product catalogue of 19 industrial chemicals listed by HSN code, a quote request form that saves every request to a Google Sheet, a blog, and About and Contact pages.
+The Goodbiz Chem website: a product catalogue of industrial chemicals listed by HSN code, a quote request form that saves every request to a Google Sheet, a blog, and About and Contact pages.
 
 This guide is written for the business owner. You do not need to be a developer to follow it, but a few steps use the Terminal app on a Mac.
 

@@ -7,14 +7,14 @@ import { JsonLd } from "@/components/JsonLd";
 import { PostList } from "@/components/PostList";
 import { ProductFinder } from "@/components/ProductFinder";
 import { site } from "@/config/site";
-import { products, type Faq } from "@/content/products";
+import type { Faq } from "@/content/products";
 import { getAllPosts } from "@/lib/blog";
 import { faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: `${site.name}: solvents, amines, inorganics and surfactants`,
-  description: `${site.tagline} ${products.length} chemicals listed by HSN and CAS number. Request a quote; SDS available on request.`,
+  description: `${site.tagline} Solvents, amines, inorganics and surfactants listed by HSN and CAS number. Request a quote; SDS available on request.`,
   path: "/",
 });
 

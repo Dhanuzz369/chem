@@ -1,12 +1,7 @@
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
 import { HeroScene } from "@/components/HeroScene";
-import { productGroups, products } from "@/content/products";
-
-const groupCounts = productGroups.map((group) => ({
-  group,
-  count: products.filter((p) => p.group === group).length,
-}));
+import { productGroups } from "@/content/products";
 
 /** Inventory header: what is listed and how to ask for it. The molecule is a quiet opener beside it. */
 export function Hero() {
@@ -18,7 +13,7 @@ export function Hero() {
             id="hero-title"
             className="max-w-[18ch] text-[clamp(2.5rem,5vw+1rem,4.5rem)] font-semibold text-ink"
           >
-            {products.length} industrial chemicals, listed by HSN code
+            Industrial chemicals, listed by HSN code
           </h1>
           <p className="mt-5 max-w-[52ch] text-lg text-ink-muted">
             Goodbiz Chem supplies solvents, amines, inorganics and surfactants to manufacturers. Find a product by name,
@@ -32,14 +27,16 @@ export function Hero() {
               Browse the catalogue
             </Button>
           </div>
-          <dl className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-[0.9375rem]">
-            {groupCounts.map(({ group, count }) => (
-              <div key={group} className="flex items-baseline gap-2">
-                <dt className="text-ink-muted">{group}</dt>
-                <dd className="font-mono font-medium text-ink tabular-nums">{count}</dd>
-              </div>
+          <ul
+            aria-label="Product groups"
+            className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-[0.9375rem]"
+          >
+            {productGroups.map((group) => (
+              <li key={group} className="text-ink-muted">
+                {group}
+              </li>
             ))}
-          </dl>
+          </ul>
         </div>
         <HeroScene />
       </Container>
