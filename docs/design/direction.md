@@ -46,6 +46,7 @@ Ratios are WCAG 2.1 relative-luminance contrast, computed from the hex values be
 | `--color-bg` | `#FFFFFF` | Page background (owner: "on white") |
 | `--color-surface` | `#F4F9F6` | Pastel green-tinted surface (footer, panels) |
 | `--color-line` | `#D9E6DE` | Hairlines and dividers (decorative, 1.29:1) |
+| `--color-line-strong` | `#7F948A` | Form-field borders (3.23:1, meets the 3:1 rule for UI parts). Added in Task 6 |
 | `--color-ink` | `#0E2A1E` | Primary text: a deep green-black, never `#000` |
 | `--color-ink-muted` | `#4A6156` | Secondary text |
 
@@ -63,6 +64,15 @@ Ratios are WCAG 2.1 relative-luminance contrast, computed from the hex values be
 | `--color-brand-700` | `#176140` | Primary button fill, links, logo tile |
 | `--color-brand-800` | `#134E34` | Primary hover, secondary button text, active nav text |
 | `--color-brand-900` | `#0E3A27` | Deepest green, for text on pastel when it's needed |
+
+### Form error colours (Task 6)
+
+Only for validation and send-failure messages, never decoration.
+
+| Token | Hex | Role |
+|---|---|---|
+| `--color-danger-50` | `#FDF1EF` | Background of the "not sent" alert |
+| `--color-danger-700` | `#B42318` | Error text and invalid-field borders: 6.57:1 on white, 5.95:1 on danger-50 |
 
 ### Pastel accents (backgrounds only, never text)
 

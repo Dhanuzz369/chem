@@ -1,0 +1,53 @@
+import { Suspense } from "react";
+import { Container } from "@/components/Container";
+import { QuoteForm } from "@/components/QuoteForm";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { QuoteFormFromQuery } from "./QuoteFormFromQuery";
+
+export const metadata = buildMetadata({
+  title: "Request a quote",
+  description:
+    "Ask Goodbiz Chem for a quote on solvents, amines, inorganics and surfactants. Tell us the product, quantity, packaging and destination.",
+  path: "/quote",
+});
+
+const checklist = [
+  "The product, and any grade or specification you need",
+  "Quantity and the packaging you prefer",
+  "The destination port or delivery city",
+  "Any documents you need with the shipment",
+];
+
+export default function QuotePage() {
+  return (
+    <Container className="py-12 md:py-20">
+      <div className="max-w-[44rem]">
+        <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">Request a quote</h1>
+        <p className="mt-4 max-w-[58ch] text-lg text-ink-muted">
+          Tell us what you need and where it should go. The Goodbiz Chem team will come back to you with pricing and availability.
+        </p>
+      </div>
+
+      <div className="mt-10 grid gap-12 md:mt-14 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+        <Suspense fallback={<QuoteForm />}>
+          <QuoteFormFromQuery />
+        </Suspense>
+
+        <aside aria-labelledby="quote-checklist" className="self-start rounded-lg bg-surface p-6 lg:sticky lg:top-24">
+          <h2 id="quote-checklist" className="font-display text-lg font-semibold text-ink">
+            What helps us quote
+          </h2>
+          <ul className="mt-4 grid gap-3 text-[0.9375rem] text-ink-muted">
+            {checklist.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span aria-hidden="true" className="mt-2.5 size-1.5 shrink-0 rounded-full bg-brand-600" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 border-t border-line pt-5 text-[0.9375rem] text-ink">SDS available on request.</p>
+        </aside>
+      </div>
+    </Container>
+  );
+}

@@ -11,6 +11,8 @@
   --color-bg: #ffffff;
   --color-surface: #f4f9f6;
   --color-line: #d9e6de;
+  /* Form-field borders: 3.23:1 on white, so inputs meet the 3:1 non-text rule. */
+  --color-line-strong: #7f948a;
   --color-ink: #0e2a1e;
   --color-ink-muted: #4a6156;
 
@@ -31,6 +33,10 @@
   --color-accent-sky: #e4f0f8;
   --color-accent-butter: #f8f2d8;
   --color-accent-lilac: #eeeaf7;
+
+  /* Form errors only. danger-700 is 6.57:1 on white and 5.95:1 on danger-50. */
+  --color-danger-50: #fdf1ef;
+  --color-danger-700: #b42318;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -102,6 +108,32 @@ h4 {
   @starting-style {
     opacity: 0;
     transform: translateY(-6px);
+  }
+}
+
+/* Text inputs, selects and textareas on the quote form. 16px text so iOS never zooms. */
+@layer components {
+  .field-input {
+    @apply block w-full rounded-md border border-line-strong bg-bg px-3.5 text-base text-ink placeholder:text-ink-muted;
+    min-height: 3rem;
+    transition: border-color var(--duration-press) var(--ease-out);
+  }
+  .field-input:focus {
+    border-color: var(--color-brand-600);
+  }
+  .field-input[aria-invalid="true"] {
+    border-color: var(--color-danger-700);
+  }
+}
+
+/* Things that appear in place (a form result, the product list): a short fade and lift. */
+.enter-soft {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(4px);
   }
 }
 
