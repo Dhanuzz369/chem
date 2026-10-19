@@ -47,8 +47,12 @@ export function Button({
 }: ButtonProps) {
   const classes = buttonClasses(variant, size, className);
   if (href !== undefined) {
+    // Pass aria-* and data-* through so link buttons can carry an accessible name.
+    const linkProps = Object.fromEntries(
+      Object.entries(rest).filter(([key]) => key.startsWith("aria-") || key.startsWith("data-")),
+    );
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={classes} {...linkProps}>
         {children}
       </Link>
     );
