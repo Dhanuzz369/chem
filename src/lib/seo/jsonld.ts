@@ -41,12 +41,15 @@ export function websiteJsonLd(): JsonLdObject {
 
 /** No `offers`: the site shows no prices. */
 export function productJsonLd(p: Product): JsonLdObject {
+  const url = absoluteUrl(`/products/${p.slug}`);
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${url}#product`,
     name: p.name,
     description: p.summary,
-    url: absoluteUrl(`/products/${p.slug}`),
+    url,
+    brand: { "@id": absoluteUrl("/#organization") },
     category: p.group,
     ...(p.synonyms.length > 0 && { alternateName: p.synonyms }),
     additionalProperty: [

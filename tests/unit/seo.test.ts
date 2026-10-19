@@ -66,6 +66,14 @@ describe("json-ld", () => {
     );
   });
 
+  it("productJsonLd has its own @id and links the brand to the organization", () => {
+    vi.stubEnv("SITE_URL", "https://ex.com");
+    const ld = productJsonLd(methanol) as Record<string, unknown>;
+    expect(ld["@id"]).toBe("https://ex.com/products/methanol#product");
+    expect(ld.brand).toEqual({ "@id": "https://ex.com/#organization" });
+    expect(ld.url).toBe("https://ex.com/products/methanol");
+  });
+
   it("organizationJsonLd omits empty contact and includes set contact", () => {
     // Swap the contact block for each case so the test holds whatever the owner has filled in.
     const real = site.contact;
@@ -162,6 +170,29 @@ describe("robots, sitemap, llms.txt", () => {
     for (const p of products) {
       expect(text).toContain(p.name);
       expect(text).toContain(p.hsn);
+    }
+  });
+
+  it("llms.txt has no contact section while contact details are empty", async () => {
+    const real = site.contact;
+    try {
+      site.contact = {};
+      const text = await (await GET()).text();
+      expect(text).not.toContain("## Contact");
+    } finally {
+      site.contact = real;
+    }
+  });
+
+  it("llms.txt lists the contact details that are set", async () => {
+    const real = site.contact;
+    try {
+      site.contact = { email: "sales@example.com", address: "Unit 4, Example Estate, India" };
+      const text = await (await GET()).text();
+      expect(text).toContain("## Contact\n\n- Email: sales@example.com\n- Address: Unit 4, Example Estate, India\n");
+      expect(text).not.toContain("Phone:");
+    } finally {
+      site.contact = real;
     }
   });
 });

@@ -1,7 +1,10 @@
+import { contactRows } from "@/components/ContactDetails";
 import { absoluteUrl, site } from "@/config/site";
 import { products } from "@/content/products";
 
 export function GET() {
+  // Only the details the owner has filled in; nothing is listed while they are empty.
+  const contact = contactRows(site.contact);
   const lines = [
     `# ${site.name}`,
     "",
@@ -21,6 +24,7 @@ export function GET() {
     `- [About](${absoluteUrl("/about")}): About ${site.name}`,
     `- [Contact](${absoluteUrl("/contact")}): Get in touch`,
     "",
+    ...(contact.length > 0 ? ["## Contact", "", ...contact.map((row) => `- ${row.label}: ${row.value}`), ""] : []),
   ];
   return new Response(lines.join("\n"), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
