@@ -12,6 +12,17 @@ test("about renders without claims", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("link", { name: "Request a quote" }).first()).toHaveAttribute("href", "/quote");
 });
 
+test("about group tiles link to the filtered catalogue", async ({ page }) => {
+  await page.goto("/about");
+  const supply = page.getByRole("region", { name: "What we supply" });
+  for (const group of ["Solvents", "Amines", "Inorganics", "Surfactants"]) {
+    await expect(supply.getByRole("link", { name: group })).toHaveAttribute("href", `/products?group=${group.toLowerCase()}`);
+  }
+  await supply.getByRole("link", { name: "Amines" }).click();
+  await expect(page).toHaveURL(/\/products\?group=amines$/);
+  await expect(page.getByRole("button", { name: "Amines" })).toHaveAttribute("aria-pressed", "true");
+});
+
 test("contact shows quote form and only the contact fields that are set", async ({ page }) => {
   await page.goto("/contact");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

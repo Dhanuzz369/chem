@@ -326,12 +326,13 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
   const grid = compact ? "grid gap-5" : "grid gap-5 sm:grid-cols-2 sm:gap-x-6";
 
   const text = (field: TextField, label: string, props: Partial<Omit<FieldProps, "id" | "label">> & InputExtras = {}) => {
-    const { type = "text", autoComplete, inputMode, required, hint, className, inputClassName = "" } = props;
+    const { type = "text", autoComplete, inputMode, required, optionalTag, hint, className, inputClassName = "" } = props;
     return (
       <FieldShell
         id={id(field)}
         label={label}
         required={required}
+        optionalTag={optionalTag}
         hint={hint}
         error={errors[field]}
         className={className}
@@ -377,8 +378,8 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
           <FieldShell
             id={id("products")}
             label="Products"
-            required
-            hint="Choose one or more. Search by name, HSN code or CAS number. Not listed? Use the next field."
+            optionalTag={false}
+            hint="Choose a product, or describe one in the next field. Search by name, HSN code or CAS number."
             error={errors.products}
             className={compact ? "" : "sm:col-span-2"}
           >
@@ -397,6 +398,8 @@ export function QuoteForm({ defaultProducts = [], compact = false }: QuoteFormPr
 
           {text("otherProduct", "Chemical not on our list?", {
             hint: "Name, grade, CAS number or specification. We'll source and supply it.",
+            // Either this or a listed product is needed, so neither field is tagged required or optional.
+            optionalTag: false,
             autoComplete: "off",
             className: compact ? "" : "sm:col-span-2",
             // Clear the sticky header and keep the label in view when /quote#other scrolls here.
@@ -541,13 +544,15 @@ type FieldProps = {
   id: string;
   label: string;
   required?: boolean;
+  /** Show "Optional" after the label. Defaults to `!required`; an either-or pair turns it off. */
+  optionalTag?: boolean;
   hint?: string;
   error?: string;
   className?: string;
 };
 
 /** Label above, then the control, then a hint or error. Hands the control its aria-describedby. */
-function FieldShell({ id, label, required, hint, error, className = "", children }: FieldProps & { children: (describedBy?: string) => ReactNode }) {
+function FieldShell({ id, label, required, optionalTag = !required, hint, error, className = "", children }: FieldProps & { children: (describedBy?: string) => ReactNode }) {
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
   const describedBy = [error && errorId, hint && hintId].filter(Boolean).join(" ") || undefined;
@@ -555,7 +560,7 @@ function FieldShell({ id, label, required, hint, error, className = "", children
     <div className={`min-w-0 ${className}`}>
       <label htmlFor={id} className="mb-1.5 flex items-baseline gap-2 text-[0.9375rem] font-medium text-ink">
         {label}
-        {!required && <span className="text-sm font-normal text-ink-muted">Optional</span>}
+        {optionalTag && <span className="text-sm font-normal text-ink-muted">Optional</span>}
       </label>
       {children(describedBy)}
       {error && (

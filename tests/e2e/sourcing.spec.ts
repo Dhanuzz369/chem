@@ -31,8 +31,10 @@ test("/products: the no-match state offers sourcing", async ({ page }) => {
   const search = page.getByRole("searchbox", { name: "Search products" });
   await expect(search).toBeEnabled();
   await search.fill("zzzz");
-  await expect(page.getByText(/we.ll source and supply it/i).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ask us to source it" })).toHaveAttribute("href", "/quote#other");
+  const link = page.getByRole("link", { name: "Ask us to source it" });
+  await expect(link).toHaveAttribute("href", "/quote#other");
+  // The callout below the finder already says it; the empty state does not repeat the sentence.
+  await expect(page.getByText(/we.ll source and supply it/i)).toHaveCount(1);
 });
 
 test("product page: one line offers chemicals not listed", async ({ page }) => {

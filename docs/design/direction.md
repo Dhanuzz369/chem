@@ -135,7 +135,7 @@ An SVG lockup in `src/components/Logo.tsx`, with the mark repeated in `src/app/i
 
 ## Home page and 3D hero (Task 8)
 
-- **Section order (Catalogue):** hero (inventory header) → who we are → product range (`ProductFinder`, the full 19-row index) → how ordering and export work (four ordinal steps) → FAQ → closing quote panel. No feature grid, no stats band, no testimonials. Task 9 adds latest posts before the closing panel.
+- **Section order (Catalogue):** hero (inventory header) → who we are → product range (`ProductFinder`, the full product index) → how ordering and export work (four ordinal steps) → FAQ → closing quote panel. No feature grid, no stats band, no testimonials. Task 9 adds latest posts before the closing panel.
 - **Hero copy:** the h1 is an inventory header ("Industrial chemicals, listed by HSN code"), not a slogan. Under the buttons, a one-line ledger of the four group names. No product totals or per-group counts anywhere in the copy (owner change request 1, 2026-10-19).
 - **Hero concept:** a single ball-and-stick molecule (a six-membered ring in a chair shape with a branched side chain) that turns slowly, about 70 seconds a turn, with a slight rocking tilt. It sits in a 4:3 `brand-50` panel beside the text on desktop and below it on phones. Atoms are `brand-400`/`brand-500` with one `brand-600` heteroatom; light terminal atoms are `brand-200`/`brand-300`; bonds are `brand-300`. Matte standard material, hemisphere light plus one key light, no shadows, no post-processing, transparent canvas so the panel colour shows through.
 - **Why this:** it reads as "chemistry" at a glance without naming or depicting any specific product, so it claims nothing. It is calm enough to sit beside the h1 without competing with it.

@@ -25,7 +25,9 @@ export const quoteSchema = z
     country: z.string().trim().min(2).max(60),
     products: z
       .array(z.string().refine((s) => slugs.has(s), "Unknown product"))
-      .max(products.length),
+      .max(products.length)
+      // A request may name only a chemical that is not listed; the refinement below asks for one or the other.
+      .default([]),
     quantity: z.coerce.number().gt(0).max(10_000_000),
     quantityUnit: z.enum(quantityUnits),
     company: optionalText(150),

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
@@ -54,8 +55,16 @@ export default function AboutPage() {
         </p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {productGroups.map((group) => (
-            <li key={group} className={`rounded-lg p-5 ${groupSwatch[group]}`}>
-              <h3 className="font-display text-lg font-semibold text-ink">{group}</h3>
+            <li key={group}>
+              <Link
+                href={`/products?group=${group.toLowerCase()}`}
+                className={`flex min-h-16 items-center justify-between gap-3 rounded-lg border border-transparent p-5 transition-[transform,border-color] duration-(--duration-press) ease-(--ease-out) active:scale-[0.98] [@media(hover:hover)]:hover:border-brand-300 ${groupSwatch[group]}`}
+              >
+                <h3 className="font-display text-lg font-semibold text-ink">{group}</h3>
+                <span aria-hidden="true" className="text-ink-muted">
+                  →
+                </span>
+              </Link>
             </li>
           ))}
         </ul>

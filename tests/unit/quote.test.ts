@@ -61,6 +61,18 @@ describe("POST /api/quote", () => {
     expect(saved[0].otherProduct).toBe("Glycerine, USP grade");
   });
 
+  it("treats a missing products list as empty", async () => {
+    const { products: _omit, ...body } = valid();
+    void _omit;
+    const ok = await POST(req({ ...body, otherProduct: "Glycerine" }));
+    expect(ok.status).toBe(200);
+    expect(saved[0].products).toEqual([]);
+
+    const res = await POST(req(body));
+    expect(res.status).toBe(400);
+    expect((await res.json()).fields).toEqual({ products: "Choose a product or describe the chemical you need." });
+  });
+
   it("rejects a request with neither a product nor another chemical, on the products field", async () => {
     for (const over of [{ products: [] }, { products: [], otherProduct: "   " }]) {
       const res = await POST(req(valid(over)));

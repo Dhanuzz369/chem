@@ -45,6 +45,29 @@ test("shows inline errors on empty submit", async ({ page }) => {
   await expect(page.getByLabel("Name", { exact: true })).toBeFocused();
 });
 
+test("a completely empty submit flags products with the other required fields", async ({ page }) => {
+  await openQuote(page);
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  for (const label of ["Name", "Email", "Country", "Products", "Quantity"]) {
+    await expect(page.getByLabel(label, { exact: true })).toHaveAttribute("aria-invalid", "true");
+  }
+  await expect(page.getByText("Choose a product or describe the chemical you need.")).toBeVisible();
+  await expect(page.getByLabel("Chemical not on our list?")).not.toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByLabel("Name", { exact: true })).toBeFocused();
+});
+
+test("products and the other chemical are an either-or, so neither is marked required or optional", async ({ page }) => {
+  await openQuote(page);
+  const fieldset = page.getByRole("group", { name: "What you need" });
+  for (const label of ["Products", "Chemical not on our list?"]) {
+    const field = page.getByLabel(label, { exact: true });
+    await expect(field).not.toHaveAttribute("aria-required", "true");
+    await expect(field).not.toHaveAttribute("required", "");
+    await expect(fieldset.locator("label", { hasText: label })).not.toContainText("Optional");
+  }
+  await expect(page.getByText("Choose a product, or describe one in the next field.")).toBeVisible();
+});
+
 test("validates a field on blur and clears the error once fixed", async ({ page }) => {
   await openQuote(page);
   const email = page.getByLabel("Email", { exact: true });
