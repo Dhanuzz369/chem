@@ -36,8 +36,8 @@ export async function POST(request: Request) {
   try {
     await getQuoteStore().save(record);
   } catch (e) {
-    // Log the error kind only; never the submission.
-    console.error("quote save failed:", e instanceof Error ? e.name : "unknown");
+    // Messages hold only env var names and HTTP statuses; never log the submission.
+    console.error("quote save failed:", e instanceof Error ? e.message : "unknown");
     return json({ ok: false, error: "save_failed" }, 500);
   }
   return json({ ok: true });

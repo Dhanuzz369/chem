@@ -70,6 +70,28 @@ describe("POST /api/quote", () => {
     expect(saved).toHaveLength(0);
   });
 
+  it("accepts large and decimal quantities", async () => {
+    expect((await POST(req(valid({ quantity: 500 })))).status).toBe(200);
+    expect((await POST(req(valid({ quantity: 1.5 })))).status).toBe(200);
+    expect(saved.map((r) => r.quantity)).toEqual([500, 1.5]);
+  });
+
+  it("rejects zero and negative quantity", async () => {
+    for (const quantity of [0, -5]) {
+      const res = await POST(req(valid({ quantity })));
+      expect(res.status).toBe(400);
+      expect(Object.keys((await res.json()).fields)).toContain("quantity");
+    }
+  });
+
+  it("drops a request with no startedAt without saving", async () => {
+    const { startedAt: _omit, ...body } = valid();
+    void _omit;
+    const res = await POST(req(body));
+    expect(res.status).toBe(200);
+    expect(saved).toHaveLength(0);
+  });
+
   it("rate limits sixth request from same ip", async () => {
     const ip = "203.0.113.9";
     for (let i = 0; i < 5; i++) expect((await POST(req(valid(), ip))).status).toBe(200);

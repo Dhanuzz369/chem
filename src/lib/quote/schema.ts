@@ -15,7 +15,7 @@ export const quoteSchema = z.object({
     .array(z.string().refine((s) => slugs.has(s), "Unknown product"))
     .min(1)
     .max(19),
-  quantity: z.coerce.number().min(1).max(40),
+  quantity: z.coerce.number().gt(0).max(10_000_000),
   quantityUnit: z.enum(quantityUnits),
   company: optionalText(150),
   phone: optionalText(40),

@@ -7,7 +7,10 @@ const MAX_PER_WINDOW = 5;
 /** True when the honeypot is filled or the form was submitted implausibly fast. */
 export function isSpam(input: Pick<QuoteInput, "website" | "startedAt">, now: number): boolean {
   if (input.website) return true;
-  if (typeof input.startedAt !== "number") return true;
+  if (typeof input.startedAt !== "number") {
+    console.warn("quote dropped: missing startedAt");
+    return true;
+  }
   return now - input.startedAt < MIN_FILL_MS;
 }
 
