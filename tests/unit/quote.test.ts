@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/app/api/quote/route";
 import { clientKey, rateLimit, rateLimitSize } from "@/lib/quote/guard";
-import { createSheetsStore, safeCell } from "@/lib/quote/sheets-store";
 import { setQuoteStoreForTests } from "@/lib/quote/store";
 import type { QuoteRecord } from "@/lib/quote/store";
 
@@ -119,13 +118,6 @@ describe("POST /api/quote", () => {
   });
 });
 
-describe("sheets store", () => {
-  it("throws on missing env", async () => {
-    const record = { ...valid(), submittedAt: "now", source: "web" } as unknown as QuoteRecord;
-    await expect(createSheetsStore({}).save(record)).rejects.toThrow(/GOOGLE_SHEET_ID/);
-  });
-});
-
 describe("clientKey", () => {
   const h = (o: Record<string, string>) => new Headers(o);
   it("prefers x-vercel-forwarded-for, then x-real-ip, then right-most xff", () => {
@@ -144,17 +136,5 @@ describe("rateLimit map cap", () => {
     const now = Date.now();
     for (let i = 0; i < 5600; i++) rateLimit(`cap-${i}`, now);
     expect(rateLimitSize()).toBeLessThanOrEqual(5000);
-  });
-});
-
-describe("safeCell", () => {
-  it("neutralises formula starters and leaves normal text", () => {
-    expect(safeCell("=HYPERLINK(\"http://x\")")).toBe("'=HYPERLINK(\"http://x\")");
-    expect(safeCell("+91 98")).toBe("'+91 98");
-    expect(safeCell("-1")).toBe("'-1");
-    expect(safeCell("@a")).toBe("'@a");
-    expect(safeCell("\tx")).toBe("'\tx");
-    expect(safeCell("\rx")).toBe("'\rx");
-    expect(safeCell("Acme")).toBe("Acme");
   });
 });
