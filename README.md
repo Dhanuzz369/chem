@@ -66,7 +66,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | `GOOGLE_SHEET_ID` | The long ID in your Google Sheet's web address, between `/d/` and `/edit`. | `1AbC...xYz` |
 | `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to M. | `Quotes!A:M` |
 
-If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: ...` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
+If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: invalid_grant`, `Google auth timed out` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
 
 ---
 

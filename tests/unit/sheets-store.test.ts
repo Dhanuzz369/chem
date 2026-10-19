@@ -17,7 +17,7 @@ vi.mock("google-auth-library", () => ({
   },
 }));
 
-const { createSheetsStore, safeCell, SheetsStoreError } = await import("@/lib/quote/sheets-store");
+const { createSheetsStore, phoneCell, safeCell, SheetsStoreError } = await import("@/lib/quote/sheets-store");
 
 const KEY = "-----BEGIN PRIVATE KEY-----\\nABC\\n-----END PRIVATE KEY-----\\n";
 const env = {
@@ -64,6 +64,47 @@ describe("sheets store", () => {
     expect(key.startsWith("-----BEGIN PRIVATE KEY-----\nABC\n")).toBe(true);
     expect(key).not.toMatch(/"|\\n/);
     expect(jwt.getAccessToken).toHaveBeenCalledOnce();
+  });
+
+  it("reports an auth failure by its OAuth code only, never the upstream text", async () => {
+    jwt.getAccessToken.mockRejectedValue(
+      new Error("invalid_grant: Invalid JWT Signature. key=-----BEGIN PRIVATE KEY-----MIIEvQIBADANBg"),
+    );
+    const err = await createSheetsStore(env).save(record).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(SheetsStoreError);
+    expect((err as Error).message).toBe("Google auth failed: invalid_grant");
+  });
+
+  it("reports an auth failure without a known code by its error name", async () => {
+    jwt.getAccessToken.mockRejectedValue(new TypeError("secret detail -----BEGIN PRIVATE KEY-----"));
+    const err = await createSheetsStore(env).save(record).catch((e: unknown) => e);
+    expect((err as Error).message).toBe("Google auth failed: TypeError");
+  });
+
+  it("times out a token request that never settles", async () => {
+    vi.useFakeTimers();
+    try {
+      jwt.getAccessToken.mockReturnValue(new Promise(() => {}));
+      const pending = createSheetsStore(env).save(record).catch((e: unknown) => e);
+      await vi.advanceTimersByTimeAsync(10_000);
+      const err = await pending;
+      expect(err).toBeInstanceOf(SheetsStoreError);
+      expect((err as Error).message).toBe("Google auth timed out");
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("clears the auth timer once a token arrives", async () => {
+    vi.useFakeTimers();
+    try {
+      await createSheetsStore(env).save(record);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("turns an auth failure into a SheetsStoreError", async () => {
@@ -126,9 +167,21 @@ describe("safeCell", () => {
     expect(safeCell("Acme")).toBe("Acme");
   });
 
-  it("leaves plain phone numbers alone", () => {
-    expect(safeCell("+91 98765 43210")).toBe("+91 98765 43210");
-    expect(safeCell("+1 (555) 010-0000")).toBe("+1 (555) 010-0000");
-    expect(safeCell("+44.20.7946.0000")).toBe("+44.20.7946.0000");
+  it("still prefixes a phone-like value, so the exemption lives only in phoneCell", () => {
+    expect(safeCell("+91 98765 43210")).toBe("'+91 98765 43210");
+  });
+});
+
+describe("phoneCell", () => {
+  it("leaves a plain phone number unchanged", () => {
+    expect(phoneCell("+91 98765 43210")).toBe("+91 98765 43210");
+    expect(phoneCell("+1 (555) 010 0000")).toBe("+1 (555) 010 0000");
+  });
+
+  it("falls back to safeCell for anything that could be arithmetic or a formula", () => {
+    expect(phoneCell("+1-1")).toBe("'+1-1");
+    expect(phoneCell("+44.20")).toBe("'+44.20");
+    expect(phoneCell("=1+1")).toBe("'=1+1");
+    expect(phoneCell("98765 43210")).toBe("98765 43210");
   });
 });
