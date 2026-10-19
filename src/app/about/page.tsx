@@ -8,7 +8,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: "About Goodbiz Chem",
-  description: `What Goodbiz Chem supplies (${products.length} industrial chemicals in four groups) and how we work with buyers from enquiry to dispatch.`,
+  description: `What Goodbiz Chem supplies (${products.length} industrial chemicals in ${productGroups.length} groups) and how we work with buyers from enquiry to dispatch.`,
   path: "/about",
 });
 
@@ -26,8 +26,8 @@ const groupSwatch: Record<string, string> = {
 
 const steps = [
   { title: "Enquiry", text: "You tell us the product, quantity, packaging and destination through the quote form." },
-  { title: "Quote", text: "We reply with pricing and availability for that request." },
-  { title: "Documents", text: "We prepare the shipping documents the order needs, and you can ask for the SDS or COA." },
+  { title: "Quote", text: "Your quote confirms price and availability." },
+  { title: "Documents", text: "We prepare the shipping documents the order needs, and you can ask for an SDS or COA." },
   { title: "Dispatch", text: "Once the order is confirmed, we arrange dispatch to the destination you named." },
 ];
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
           What we supply
         </h2>
         <p className="mt-3 max-w-[58ch] text-ink-muted">
-          {products.length} chemicals in four groups. Each product page gives its HSN code, general applications and handling
+          {products.length} chemicals in {productGroups.length} groups. Each product page gives its HSN code, general applications and handling
           notes.
         </p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -87,8 +87,8 @@ export default function AboutPage() {
           What you can ask for
         </h2>
         <p className="mt-3 max-w-[58ch] text-ink-muted">
-          Ask for a Safety Data Sheet (SDS) or a Certificate of Analysis (COA) when you request a quote. SDS available on
-          request.
+          You can ask for a Safety Data Sheet (SDS) or a Certificate of Analysis (COA) with your quote request. SDS
+          available on request.
         </p>
         <Button href="/quote" className="mt-6">
           Request a quote

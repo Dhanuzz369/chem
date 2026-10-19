@@ -32,7 +32,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-12 md:mt-14 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+      <div className={`mt-10 grid gap-12 md:mt-14 lg:gap-16 ${hasDetails ? "lg:grid-cols-[minmax(0,1fr)_18rem]" : ""}`}>
         <QuoteForm />
         {hasDetails && (
           <aside aria-labelledby="contact-details" className="self-start rounded-lg bg-surface p-6 lg:sticky lg:top-24">
