@@ -15,7 +15,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: `${site.name}: solvents, amines, inorganics and surfactants`,
-  description: `${site.tagline} Solvents, amines, inorganics and surfactants listed by HSN and CAS number. Request a quote; SDS available on request.`,
+  description: `${site.tagline} Solvents, amines, inorganics and surfactants by HSN and CAS. Request a quote; SDS available on request.`,
   path: "/",
 });
 

@@ -219,7 +219,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               </Section>
             )}
 
-            <p className="border-t border-line py-6 text-ink-muted">
+            <p className="pb-10 text-ink-muted md:pb-12">
               Looking for something else?{" "}
               <Link href="/quote#other" className="font-medium text-brand-700 underline underline-offset-4">
                 We also source chemicals not listed here
