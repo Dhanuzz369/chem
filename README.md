@@ -160,7 +160,7 @@ All products live in one file, `src/content/products.ts`. Each product is one bl
    | `metaSummary` | A short phrase for Google's search snippet (see below). |
    | `applications` | At least 3 uses. |
    | `industries` | The industries that buy it. |
-   | `form` | What it looks like and how it behaves, in a sentence or two. |
+   | `form` | Internal note, not shown on the site: what it looks like and how it behaves, in a sentence or two. Still required in the file (leave a short sentence), and still checked for banned claims. |
    | `packaging` | Common pack types, for example drums or IBCs. |
    | `handling` | At least 2 storage and handling points. |
    | `hazards` | At least 1 general hazard fact about the chemical. |

@@ -90,7 +90,6 @@ function KeyFacts({ product }: { product: Product }) {
       ),
     },
     { label: "Group", value: product.group },
-    { label: "Form", value: product.form },
   ];
   return (
     <section aria-labelledby="key-facts" className="rounded-lg border border-line bg-surface p-5 md:p-6">

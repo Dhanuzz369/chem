@@ -67,6 +67,9 @@ test("product page has answer-first summary, HSN, SDS note, FAQ, related links a
   await expect(facts.getByText("29051100")).toBeVisible();
   await expect(facts.getByText("67-56-1")).toBeVisible();
   await expect(facts.getByText("Solvents")).toBeVisible();
+  // The owner asked for no "Form" row; the field stays in the data but is never shown.
+  await expect(facts.getByText("Form", { exact: true })).toHaveCount(0);
+  await expect(facts.locator("dt")).toHaveText(["HSN code", "CAS number", "Group"]);
 
   const safety = page.getByRole("region", { name: "Handling, storage and hazards" });
   await expect(safety.getByText("SDS available on request")).toBeVisible();
@@ -81,6 +84,13 @@ test("product page has answer-first summary, HSN, SDS note, FAQ, related links a
   await expect(related.getByRole("link", { name: /Ethyl Acetate/ })).toHaveAttribute("href", "/products/ethyl-acetate");
 
   await expect(page.getByRole("button", { name: "Remove Methanol" })).toBeVisible();
+});
+
+test("no product page shows its form description", async ({ page }) => {
+  for (const p of products) {
+    await page.goto(`/products/${p.slug}`);
+    expect(await page.getByRole("main").innerText(), p.slug).not.toContain(p.form);
+  }
 });
 
 test("mobile shows a sticky quote bar", async ({ page }, testInfo) => {
