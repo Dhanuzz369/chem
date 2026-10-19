@@ -72,3 +72,14 @@ test("no axe violations on shell", async ({ page }, testInfo) => {
     expect(open.violations).toEqual([]);
   }
 });
+
+test("responses carry security headers and no X-Powered-By", async ({ request }) => {
+  for (const path of ["/", "/llms.txt"]) {
+    const headers = (await request.get(path)).headers();
+    expect(headers["x-content-type-options"], path).toBe("nosniff");
+    expect(headers["referrer-policy"], path).toBe("strict-origin-when-cross-origin");
+    expect(headers["x-frame-options"], path).toBe("DENY");
+    expect(headers["permissions-policy"], path).toBe("camera=(), microphone=(), geolocation=()");
+    expect(headers["x-powered-by"], path).toBeUndefined();
+  }
+});
