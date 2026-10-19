@@ -44,6 +44,13 @@ test("home sections present", async ({ page }) => {
   const faq = main.getByRole("region", { name: "Frequently asked questions" });
   await expect(faq).toBeVisible();
 
+  const latest = main.getByRole("region", { name: "Latest from the blog" });
+  await expect(latest).toBeVisible();
+  const postLinks = latest.getByRole("list", { name: "Latest posts" }).getByRole("listitem").getByRole("link");
+  await expect(postLinks).toHaveCount(3);
+  for (const link of await postLinks.all()) await expect(link).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+$/);
+  await expect(latest.getByRole("link", { name: "All posts" })).toHaveAttribute("href", "/blog");
+
   const closing = main.getByRole("region", { name: "Ask for a quote" });
   await expect(closing).toBeVisible();
   await expect(closing.getByRole("link", { name: "Request a quote" })).toHaveAttribute("href", "/quote");

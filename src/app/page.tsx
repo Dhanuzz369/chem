@@ -4,9 +4,11 @@ import { Container } from "@/components/Container";
 import { FaqList } from "@/components/FaqList";
 import { Hero } from "@/components/Hero";
 import { JsonLd } from "@/components/JsonLd";
+import { PostList } from "@/components/PostList";
 import { ProductFinder } from "@/components/ProductFinder";
 import { site } from "@/config/site";
 import { products, type Faq } from "@/content/products";
+import { getAllPosts } from "@/lib/blog";
 import { faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
@@ -142,6 +144,21 @@ export default function Home() {
       <Section id="faq" title="Frequently asked questions">
         <div className="max-w-[52rem]">
           <FaqList faqs={faqs} />
+        </div>
+      </Section>
+
+      <Section
+        id="latest-posts"
+        title="Latest from the blog"
+        className="border-t border-line"
+        intro={<p>Plain answers on trade codes, grades and choosing materials.</p>}
+      >
+        <PostList posts={getAllPosts().slice(0, 3)} label="Latest posts" headingLevel={3} />
+        <div className="mt-8">
+          <Button href="/blog" variant="ghost" className="-ml-4">
+            All posts
+            <span aria-hidden="true">→</span>
+          </Button>
         </div>
       </Section>
 

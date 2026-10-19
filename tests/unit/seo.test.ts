@@ -4,6 +4,7 @@ import { GET } from "@/app/llms.txt/route";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import {
+  blogPostingJsonLd,
   breadcrumbJsonLd,
   faqJsonLd,
   organizationJsonLd,
@@ -11,6 +12,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { getAllPosts } from "@/lib/blog";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -62,6 +64,24 @@ describe("json-ld", () => {
     expect(b.itemListElement.map((i) => i.position)).toEqual([1, 2]);
   });
 
+  it("blogPostingJsonLd shape", () => {
+    vi.stubEnv("SITE_URL", "https://ex.com");
+    const post = { slug: "a-post", title: "A post?", description: "D", date: "2026-10-05", products: ["methanol"] };
+    const ld = blogPostingJsonLd(post) as Record<string, unknown>;
+    expect(ld).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: "A post?",
+      description: "D",
+      datePublished: "2026-10-05",
+      url: "https://ex.com/blog/a-post",
+      mainEntityOfPage: { "@type": "WebPage", "@id": "https://ex.com/blog/a-post" },
+      author: { "@id": "https://ex.com/#organization" },
+      publisher: { "@id": "https://ex.com/#organization" },
+      inLanguage: "en",
+    });
+  });
+
   it("faqJsonLd shape", () => {
     const ld = faqJsonLd(methanol.faqs) as { "@type": string; mainEntity: unknown[] };
     expect(ld["@type"]).toBe("FAQPage");
@@ -89,6 +109,18 @@ describe("robots, sitemap, llms.txt", () => {
     const urls = sitemap().map((e) => e.url);
     expect(products).toHaveLength(19);
     for (const p of products) expect(urls).toContain(`https://ex.com/products/${p.slug}`);
+  });
+
+  it("sitemap lists every post with its date", () => {
+    vi.stubEnv("SITE_URL", "https://ex.com");
+    const entries = sitemap();
+    const posts = getAllPosts();
+    expect(posts.length).toBeGreaterThan(0);
+    for (const p of posts) {
+      const entry = entries.find((e) => e.url === `https://ex.com/blog/${p.slug}`);
+      expect(entry, p.slug).toBeDefined();
+      expect(entry!.lastModified).toBe(p.date);
+    }
   });
 
   it("llms.txt lists products with HSN", async () => {

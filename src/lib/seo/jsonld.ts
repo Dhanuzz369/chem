@@ -1,5 +1,6 @@
 import { absoluteUrl, site } from "@/config/site";
 import type { Faq, Product } from "@/content/products";
+import type { PostMeta } from "@/lib/blog";
 
 type JsonLdObject = Record<string, unknown>;
 
@@ -77,5 +78,22 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): JsonL
       name: item.name,
       item: absoluteUrl(item.path),
     })),
+  };
+}
+
+export function blogPostingJsonLd(post: PostMeta): JsonLdObject {
+  const url = absoluteUrl(`/blog/${post.slug}`);
+  const organization = { "@id": absoluteUrl("/#organization") };
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    author: organization,
+    publisher: organization,
+    inLanguage: "en",
   };
 }
