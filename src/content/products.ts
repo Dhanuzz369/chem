@@ -318,7 +318,7 @@ export const products: Product[] = [
     hsn: "29011000",
     group: "Solvents",
     cas: ["142-82-5", "110-54-3"],
-    synonyms: ["n-Heptane", "Heptane", "n-Hexane", "Hexane", "Normal heptane", "Normal hexane", "Saturated acyclic hydrocarbons"],
+    synonyms: ["n-Heptane", "Heptane", "n-Hexane", "Hexane", "Normal heptane", "Normal hexane"],
     summary:
       "n-Heptane and n-hexane are light, non-polar alkane solvents. Hexane is the classic solvent for oilseed extraction and fast-drying adhesives; heptane is a less toxic alternative and the zero reference fuel for octane rating. Both are highly flammable.",
     applications: [
@@ -914,7 +914,7 @@ export const products: Product[] = [
       "Wear eye protection and gloves during handling.",
     ],
     hazards: [
-      "Causes serious eye damage at high concentration and serious eye irritation in solution.",
+      "Causes serious eye damage, both as powder and in typical 35–40% solutions.",
       "Causes skin irritation.",
       "Harmful to aquatic life before dilution.",
     ],
