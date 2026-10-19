@@ -47,12 +47,18 @@ test("home sections present", async ({ page }) => {
   await expect(faq).toBeVisible();
 
   const latest = main.getByRole("region", { name: "Latest from the blog" });
-  await expect(latest).toBeVisible();
-  const postLinks = latest.getByRole("list", { name: "Latest posts" }).getByRole("listitem").getByRole("link");
-  // The home page shows the newest three posts, or all of them if there are fewer.
-  await expect(postLinks).toHaveCount(Math.min(3, getAllPosts().length));
-  for (const link of await postLinks.all()) await expect(link).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+$/);
-  await expect(latest.getByRole("link", { name: "All posts" })).toHaveAttribute("href", "/blog");
+  const postCount = getAllPosts().length;
+  if (postCount === 0) {
+    // With no posts the section is left out rather than shown empty.
+    await expect(latest).toHaveCount(0);
+  } else {
+    await expect(latest).toBeVisible();
+    const postLinks = latest.getByRole("list", { name: "Latest posts" }).getByRole("listitem").getByRole("link");
+    // The home page shows the newest three posts, or all of them if there are fewer.
+    await expect(postLinks).toHaveCount(Math.min(3, postCount));
+    for (const link of await postLinks.all()) await expect(link).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+$/);
+    await expect(latest.getByRole("link", { name: "All posts" })).toHaveAttribute("href", "/blog");
+  }
 
   const closing = main.getByRole("region", { name: "Ask for a quote" });
   await expect(closing).toBeVisible();

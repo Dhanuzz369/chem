@@ -52,7 +52,7 @@ const emptyValues: Values = {
 /** Plain-language errors. The schema decides validity; these words explain it. */
 export function errorMessage(field: Field, values: Values): string {
   const max = field === "products" || field === "quantityUnit" ? undefined : maxLengths[field];
-  if (max !== undefined && values[field as TextField].trim().length > max) return `Keep this under ${max} characters.`;
+  if (max !== undefined && values[field as TextField].trim().length > max) return `Use ${max} characters or fewer.`;
   switch (field) {
     case "name":
       return values.name.trim() === "" ? "Enter your name." : "Enter your full name, at least 2 characters.";
@@ -70,7 +70,7 @@ export function errorMessage(field: Field, values: Values): string {
     case "quantityUnit":
       return "Choose a unit.";
     default:
-      return `Keep this under ${maxLengths[field] ?? 200} characters.`;
+      return `Use ${maxLengths[field] ?? 200} characters or fewer.`;
   }
 }
 

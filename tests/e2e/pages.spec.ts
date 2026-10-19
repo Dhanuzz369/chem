@@ -5,6 +5,7 @@ import { bannedPageClaims as banned } from "../helpers/claims";
 
 test("about renders without claims", async ({ page }) => {
   await page.goto("/about");
+  await expect(page).toHaveTitle("About | Goodbiz Chem");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.getByRole("main").innerText()).not.toMatch(banned);
   await expect(page.getByRole("main").getByText("SDS available on request")).toBeVisible();

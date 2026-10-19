@@ -85,6 +85,7 @@ function Section({ id, title, intro, children, className = "" }: {
 }
 
 export default function Home() {
+  const latestPosts = getAllPosts().slice(0, 3);
   return (
     <>
       <Hero />
@@ -147,20 +148,22 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section
-        id="latest-posts"
-        title="Latest from the blog"
-        className="border-t border-line"
-        intro={<p>Plain answers on trade codes, grades and choosing materials.</p>}
-      >
-        <PostList posts={getAllPosts().slice(0, 3)} label="Latest posts" headingLevel={3} />
-        <div className="mt-8">
-          <Button href="/blog" variant="ghost" className="-ml-4">
-            All posts
-            <span aria-hidden="true">→</span>
-          </Button>
-        </div>
-      </Section>
+      {latestPosts.length > 0 && (
+        <Section
+          id="latest-posts"
+          title="Latest from the blog"
+          className="border-t border-line"
+          intro={<p>Plain answers on trade codes, grades and choosing materials.</p>}
+        >
+          <PostList posts={latestPosts} label="Latest posts" headingLevel={3} />
+          <div className="mt-8">
+            <Button href="/blog" variant="ghost" className="-ml-4">
+              All posts
+              <span aria-hidden="true">→</span>
+            </Button>
+          </div>
+        </Section>
+      )}
 
       <section aria-labelledby="closing-title" className="pb-16 md:pb-24">
         <Container>

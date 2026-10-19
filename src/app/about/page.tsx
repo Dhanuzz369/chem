@@ -7,7 +7,7 @@ import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: "About Goodbiz Chem",
+  title: "About",
   description: `What Goodbiz Chem supplies (${products.length} industrial chemicals in ${productGroups.length} groups) and how we work with buyers from enquiry to dispatch.`,
   path: "/about",
 });
