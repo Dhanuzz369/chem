@@ -12,6 +12,13 @@ export function parseGroup(value: string | null | undefined): ProductGroup | und
   return productGroups.find((g) => g.toLowerCase() === wanted);
 }
 
+const MAX_QUERY = 100;
+
+/** Reads `?q=` (the WebSite SearchAction target) as the initial search text. */
+export function parseQuery(value: string | null | undefined): string {
+  return (value ?? "").trim().slice(0, MAX_QUERY);
+}
+
 const noop = () => () => {};
 
 /** Live-region text. Unfiltered it names no total; once the buyer filters or searches it counts the matches. */
@@ -28,6 +35,8 @@ export function finderStatus(count: number, group: ProductGroup | undefined, que
 type ProductFinderProps = {
   /** Chip selected on first render, e.g. from `?group=`. Later changes (a footer link) reselect it. */
   initialGroup?: ProductGroup;
+  /** Search text on first render, e.g. from `?q=`. Later changes refill the box. */
+  initialQuery?: string;
   /** Heading level of each product name. h2 on /products, h3 inside a home section. */
   headingLevel?: 2 | 3;
   /** Keep `?group=` in the address bar in step with the chips, so filtered views can be shared. */
@@ -40,9 +49,9 @@ const chipBase =
   "disabled:pointer-events-none";
 
 /** Group chips and a search box over the catalogue. Results update as you type. */
-export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false }: ProductFinderProps) {
+export function ProductFinder({ initialGroup, initialQuery = "", headingLevel = 2, syncUrl = false }: ProductFinderProps) {
   const [group, setGroup] = useState<ProductGroup | undefined>(initialGroup);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const searchId = useId();
   const hintId = useId();
   // Controls stay disabled until hydrated so nothing typed early is lost; the full list is in the HTML regardless.
@@ -54,17 +63,34 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
     setLastInitial(initialGroup);
     setGroup(initialGroup);
   }
+  // A new non-empty `?q=` (arriving from elsewhere) refills the box. An empty one is ignored: that is the
+  // finder itself dropping the stale `q` once the buyer edits, and must not wipe what they are typing.
+  const [lastInitialQuery, setLastInitialQuery] = useState(initialQuery);
+  if (lastInitialQuery !== initialQuery) {
+    setLastInitialQuery(initialQuery);
+    if (initialQuery) setQuery(initialQuery);
+  }
 
   const results = searchProducts(query, group);
   const trimmed = query.trim();
 
-  function choose(next: ProductGroup | undefined) {
-    setGroup(next);
+  function syncParam(name: "group" | "q", value: string | undefined) {
     if (!syncUrl) return;
     const url = new URL(window.location.href);
-    if (next) url.searchParams.set("group", next.toLowerCase());
-    else url.searchParams.delete("group");
+    if (value) url.searchParams.set(name, value);
+    else url.searchParams.delete(name);
     window.history.replaceState(window.history.state, "", url);
+  }
+
+  function choose(next: ProductGroup | undefined) {
+    setGroup(next);
+    syncParam("group", next?.toLowerCase());
+  }
+
+  // `?q=` only seeds the box. Once the buyer edits it, drop the stale `q` from the address bar.
+  function search(next: string) {
+    setQuery(next);
+    if (syncUrl && new URL(window.location.href).searchParams.has("q")) syncParam("q", undefined);
   }
 
   const status = finderStatus(results.length, group, query);
@@ -123,7 +149,7 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
               type="search"
               value={query}
               disabled={!hydrated}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => search(e.target.value)}
               aria-describedby={hintId}
               placeholder="Name, synonym, HSN or CAS"
               autoComplete="off"
@@ -170,7 +196,7 @@ export function ProductFinder({ initialGroup, headingLevel = 2, syncUrl = false 
             <button
               type="button"
               onClick={() => {
-                setQuery("");
+                search("");
                 choose(undefined);
               }}
               className="inline-flex h-11 items-center font-medium text-brand-700 underline-offset-4 [@media(hover:hover)]:hover:underline"

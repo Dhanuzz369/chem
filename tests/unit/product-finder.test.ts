@@ -13,3 +13,12 @@ describe("finderStatus", () => {
     expect(finderStatus(0, "Amines", " zz ")).toBe("0 products in Amines matching “zz”");
   });
 });
+
+describe("parseQuery", () => {
+  it("reads ?q= as the initial search, trimmed and length-limited", async () => {
+    const { parseQuery } = await import("@/components/ProductFinder");
+    expect(parseQuery(null)).toBe("");
+    expect(parseQuery("  sles ")).toBe("sles");
+    expect(parseQuery("x".repeat(200))).toHaveLength(100);
+  });
+});

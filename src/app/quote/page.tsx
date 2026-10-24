@@ -1,15 +1,25 @@
 import { Suspense } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Container } from "@/components/Container";
+import { JsonLd } from "@/components/JsonLd";
 import { QuoteForm } from "@/components/QuoteForm";
+import { site } from "@/config/site";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { QuoteFormFromQuery } from "./QuoteFormFromQuery";
 
 export const metadata = buildMetadata({
-  title: "Request a quote",
+  title: "Request a Quote for Industrial Chemicals",
   description:
     "Ask Goodbiz Chem for a quote on solvents, amines, inorganics and surfactants. Tell us the product, quantity, packaging and destination.",
   path: "/quote",
+  keywords: ["chemical quote", "bulk chemical price enquiry", "industrial chemicals supplier", `chemical exporter ${site.origin.country}`],
 });
+
+const crumbs = [
+  { name: "Home", path: "/" },
+  { name: "Request a quote", path: "/quote" },
+];
 
 const checklist = [
   "The product, and any grade or specification you need",
@@ -20,8 +30,9 @@ const checklist = [
 
 export default function QuotePage() {
   return (
-    <Container className="py-12 md:py-20">
-      <div className="max-w-[44rem]">
+    <Container className="py-10 md:py-16">
+      <Breadcrumbs items={crumbs} />
+      <div className="mt-6 max-w-[44rem]">
         <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">Request a quote</h1>
         <p className="mt-4 max-w-[58ch] text-lg text-ink-muted">
           Tell us what you need and where it should go. The Goodbiz Chem team will come back to you with pricing and availability.
@@ -48,6 +59,8 @@ export default function QuotePage() {
           <p className="mt-6 border-t border-line pt-5 text-[0.9375rem] text-ink">SDS available on request.</p>
         </aside>
       </div>
+
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
     </Container>
   );
 }

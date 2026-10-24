@@ -47,9 +47,26 @@ for (const route of routes) {
     await page.waitForLoadState("networkidle");
 
     await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    // Headings start at h1 and never skip a level going down (h2 → h4 would be a skip).
+    const levels = await page.locator("h1, h2, h3, h4, h5, h6").evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
+    expect(levels[0]).toBe(1);
+    for (let i = 1; i < levels.length; i++) expect(levels[i], `heading ${i} of ${route}`).toBeLessThanOrEqual(levels[i - 1] + 1);
+
+    // Every JSON-LD block parses and is typed; deep pages carry a breadcrumb trail.
+    const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).flatMap((text) => {
+      const parsed = JSON.parse(text) as Record<string, unknown> | Record<string, unknown>[];
+      return Array.isArray(parsed) ? parsed : [parsed];
+    });
+    for (const block of blocks) {
+      expect(block["@context"]).toBe("https://schema.org");
+      expect(typeof block["@type"]).toBe("string");
+    }
+    if (route !== "/") expect(blocks.map((b) => b["@type"])).toContain("BreadcrumbList");
 
     const meta = await head(page);
     expect(meta.title.length).toBeGreaterThan(0);
+    expect(meta.title.length, meta.title).toBeLessThanOrEqual(60);
     expect(meta.description?.length ?? 0).toBeGreaterThan(50);
     expect(meta.description!.length).toBeLessThanOrEqual(160);
     // Next.js writes the home canonical without its trailing slash.
@@ -63,6 +80,21 @@ for (const route of routes) {
     expect(errors).toEqual([]);
   });
 }
+
+test("filtered and searched catalogue views canonicalise to /products", async ({ page }) => {
+  for (const url of ["/products?q=sles", "/products?group=solvents"]) {
+    await page.goto(url);
+    expect((await head(page)).canonical, url).toBe(`${SITE_URL}/products`);
+  }
+});
+
+test("llms.txt and llms-full.txt are served as text", async ({ request }) => {
+  for (const path of ["/llms.txt", "/llms-full.txt"]) {
+    const res = await request.get(path);
+    expect(res.status(), path).toBe(200);
+    expect(res.headers()["content-type"], path).toContain("text/plain");
+  }
+});
 
 test("titles and meta descriptions are unique across indexable pages", async ({ page }) => {
   const seen = { title: new Map<string, string>(), description: new Map<string, string>() };

@@ -8,35 +8,19 @@ import { PostList } from "@/components/PostList";
 import { ProductFinder } from "@/components/ProductFinder";
 import { SourcingCallout, sourcingLine } from "@/components/SourcingCallout";
 import { site } from "@/config/site";
-import type { Faq } from "@/content/products";
+import { orderingSteps } from "@/content/ordering";
+import { productGroups, products, type Faq } from "@/content/products";
 import { getAllPosts } from "@/lib/blog";
 import { faqJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, catalogueKeywords } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: `${site.name}: solvents, amines, inorganics and surfactants`,
-  description: `${site.tagline} Solvents, amines, inorganics and surfactants by HSN and CAS. Request a quote; SDS available on request.`,
+  title: `Industrial Chemicals Exporter from ${site.origin.country} | ${site.name}`,
+  absoluteTitle: true,
+  description: `${site.name}, an industrial chemicals exporter and supplier from ${site.origin.country}: solvents, amines, inorganics and surfactants by HSN and CAS. SDS on request.`,
   path: "/",
+  keywords: catalogueKeywords(productGroups, products),
 });
-
-const steps: { title: string; body: string }[] = [
-  {
-    title: "Enquiry",
-    body: "Send the quote form with the products, quantity, packaging and destination. Grade or specification details help.",
-  },
-  {
-    title: "Quote",
-    body: "We reply with a quote for your order. Price, packaging, terms and timing are set out there and depend on the order.",
-  },
-  {
-    title: "Documentation",
-    body: "An SDS is available on request for every product. Other documents you need, such as a COA, are agreed in the quote.",
-  },
-  {
-    title: "Dispatch",
-    body: "Once the order is confirmed, the goods are packed as agreed and shipped with the documents for your destination.",
-  },
-];
 
 const faqs: Faq[] = [
   {
@@ -134,7 +118,7 @@ export default function Home() {
         intro={<p>Every order follows the same four steps. Anything specific to your order is set out in the quote.</p>}
       >
         <ol className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((step, i) => (
+          {orderingSteps.map((step, i) => (
             <li key={step.title} className="border-t-2 border-brand-600 pt-4">
               <p aria-hidden="true" className="font-mono text-sm text-brand-700 tabular-nums">
                 {String(i + 1).padStart(2, "0")}

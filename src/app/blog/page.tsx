@@ -7,10 +7,11 @@ import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: "Blog: notes on chemicals, grades and trade codes",
+  title: "Blog: chemical grades, HSN codes and uses",
   description:
     "Plain answers for buyers of industrial chemicals: HSN codes, surfactant grades, solvent selection and how raw materials are used.",
   path: "/blog",
+  keywords: ["chemical buyer guide", "HSN codes for chemicals", "SLES grades", "LABSA uses", "industrial solvent selection"],
 });
 
 const crumbs = [

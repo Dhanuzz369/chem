@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { getSiteUrl, site } from "@/config/site";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, verificationMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -37,6 +37,14 @@ export const metadata: Metadata = {
   ...defaults,
   metadataBase: new URL(getSiteUrl()),
   title: { default: site.name, template: `%s | ${site.name}` },
+  applicationName: site.name,
+  category: "Chemicals",
+  creator: site.name,
+  publisher: site.name,
+  // Stops iOS turning HSN and CAS numbers into phone links.
+  formatDetection: { telephone: false },
+  // Search Console and Bing Webmaster ownership tags, read at build time; nothing renders while unset.
+  verification: verificationMetadata(),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

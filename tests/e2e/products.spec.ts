@@ -38,6 +38,26 @@ test("group query param preselects the chip", async ({ page }) => {
   await expect(cards(page)).toHaveCount(inGroup("Solvents"));
 });
 
+test("?q= prefills the search (the WebSite SearchAction target)", async ({ page }) => {
+  await openFinder(page, "/products?q=sles");
+  await expect(page.getByRole("searchbox", { name: "Search products" })).toHaveValue("sles");
+  await expect(cards(page)).toHaveCount(matches("sles"));
+  await expect(cards(page).filter({ hasText: "SLES 70%" })).toHaveCount(1);
+  await expect(cards(page).filter({ hasText: "SLES 28%" })).toHaveCount(1);
+  await expect(cards(page).filter({ hasText: "Methanol" })).toHaveCount(0);
+
+  // Editing the box keeps what the buyer types and drops the stale ?q= from the address bar.
+  const box = page.getByRole("searchbox", { name: "Search products" });
+  await box.fill("sles 2");
+  await expect(box).toHaveValue("sles 2");
+  await expect(page).not.toHaveURL(/[?&]q=/);
+});
+
+test("product pages without a post have no Further reading section", async ({ page }) => {
+  await page.goto("/products/diisopropylamine");
+  await expect(page.getByRole("region", { name: "Further reading" })).toHaveCount(0);
+});
+
 test("search with no match offers a way out", async ({ page }) => {
   await openFinder(page);
   await page.getByRole("searchbox", { name: "Search products" }).fill("zzzz");
@@ -57,10 +77,12 @@ test("both SLES pages render", async ({ page }) => {
 
 test("product page has answer-first summary, HSN, SDS note, FAQ, related links and prefilled form", async ({ page }) => {
   await page.goto("/products/methanol");
-  await expect(page).toHaveTitle("Methanol (HSN 29051100) Exporter | Goodbiz Chem");
+  await expect(page).toHaveTitle("Methanol Exporter & Supplier, HSN 29051100 | Goodbiz Chem");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Methanol");
 
-  const summary = page.locator("h1 + p");
+  // The subtitle sits with the h1 in an hgroup; the answer-first summary is the first paragraph after it.
+  await expect(page.locator("hgroup > h1 + p")).toHaveText("Exporter & supplier·, HSN 29051100·, Solvents");
+  const summary = page.locator("hgroup + p");
   await expect(summary).toContainText("Methanol is the simplest alcohol");
 
   const facts = page.getByRole("region", { name: "Key facts" });
@@ -79,6 +101,16 @@ test("product page has answer-first summary, HSN, SDS note, FAQ, related links a
   await expect(faq).toBeVisible();
   await faq.click();
   await expect(page.getByText("Methanol (methyl alcohol) is classified under HSN 29051100.")).toBeVisible();
+
+  const exportQuestion = page.getByRole("heading", { name: "Do you export Methanol?" });
+  await exportQuestion.click();
+  await expect(page.getByText("Yes. Goodbiz Chem exports and supplies Methanol (HSN 29051100).", { exact: false })).toBeVisible();
+
+  const reading = page.getByRole("region", { name: "Further reading" });
+  await expect(reading.getByRole("link", { name: "How do you choose an industrial solvent?" })).toHaveAttribute(
+    "href",
+    "/blog/choosing-an-industrial-solvent",
+  );
 
   const related = page.getByRole("region", { name: "Related products" });
   await expect(related.getByRole("link", { name: /Ethyl Acetate/ })).toHaveAttribute("href", "/products/ethyl-acetate");
@@ -115,6 +147,21 @@ test("product JSON-LD present", async ({ page }) => {
   expect(blocks).toContain('"@type":"Product"');
   expect(blocks).toContain('"FAQPage"');
   expect(blocks).toContain('"BreadcrumbList"');
+  expect(blocks).toContain('"Do you export Methanol?"');
+  expect(blocks).toContain('"subjectOf"');
+});
+
+test("product OG image is a 1200x630 PNG with a product-specific alt", async ({ page, request }) => {
+  await page.goto("/products/methanol");
+  const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(new URL(og!).pathname).toBe("/products/methanol/opengraph-image/card");
+  await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", "Methanol (HSN 29051100) | Goodbiz Chem");
+  const res = await request.get("/products/methanol/opengraph-image/card");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toBe("image/png");
+  const png = await res.body();
+  expect(png.readUInt32BE(16)).toBe(1200);
+  expect(png.readUInt32BE(20)).toBe(630);
 });
 
 test("unknown slug 404s", async ({ page }) => {

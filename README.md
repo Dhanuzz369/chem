@@ -65,6 +65,8 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value). Keep the `\n` sequences as they are. In `.env.local`, put it in double quotes. In the Vercel dashboard, paste it **without** the surrounding quotes. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
 | `GOOGLE_SHEET_ID` | The long ID in your Google Sheet's web address, between `/d/` and `/edit`. | `1AbC...xYz` |
 | `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to N. | `Quotes!A:N` |
+| `GOOGLE_SITE_VERIFICATION` | Optional. The code Google Search Console gives you if you choose the **HTML tag** way of proving you own the site (only the `content="…"` value). Leave empty if you verify with a DNS record instead. Redeploy after setting it. | `abc123XYZ` |
+| `BING_SITE_VERIFICATION` | Optional. The code Bing Webmaster Tools gives you for its **meta tag** check (the `content="…"` value of `msvalidate.01`). Redeploy after setting it. | `0123456789ABCDEF` |
 
 If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: invalid_grant`, `Google auth timed out` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
 
@@ -165,10 +167,11 @@ All products live in one file, `src/content/products.ts`. Each product is one bl
    | `handling` | At least 2 storage and handling points. |
    | `hazards` | At least 1 general hazard fact about the chemical. |
    | `faqs` | At least 4 questions and answers (`q` and `a`). |
-   | `related` | At least 1 other product's `slug`, for the "Related products" links. Each must match an existing slug exactly, and not the product's own. |
+   | `related` | At least 2 other products' `slug`s, for the "Related products" links. Each must match an existing slug exactly, and not the product's own. |
    | `notes` | Optional. Extra points such as market restrictions. |
+   | `seoTitle` | Optional. Only for long names: the page title shown in Google, at most 45 characters, with the name, the word "Exporter" and the HSN code. Without it the title is made for you (see below). |
 
-3. **`metaSummary` and the 160-character rule.** Google's snippet is built as `<name> (HSN <hsn>) — <metaSummary>. SDS available on request.` The whole line must be 160 characters or fewer, so keep `metaSummary` to a short lowercase phrase with no full stop, for example `a water-miscible solvent for disinfectants, electronics cleaning, inks and coatings`.
+3. **`metaSummary` and the 160-character rule.** Google's snippet is built as `<name> (HSN <hsn>) — <metaSummary>. Exporter from India. SDS available on request.` The whole line must be 160 characters or fewer, so keep `metaSummary` to a short lowercase phrase with no full stop, for example `a water-miscible solvent for disinfectants, cleaning, inks and coatings`. The page title is made the same way: `<name> Exporter & Supplier, HSN <hsn>`, or `<name> Exporter, HSN <hsn>` when the long one does not fit in 60 characters. If even the short one is too long, `npm test` says so; add a `seoTitle`.
 4. **No claims.** Write only general facts about the chemical. Do not mention certifications, years in business, volumes, countries served, purity guarantees or regulatory compliance. The checks reject the most common ones.
 5. **"SDS available on request"** is added to every product page and snippet automatically.
 6. **Run the checks**: `npm test` (and `npm run e2e` if you can). They confirm every field is filled in, slugs are unique, `related` slugs exist, snippets fit in 160 characters and no banned claims slipped in. Then look at the page at `http://localhost:3000/products/<slug>`.
@@ -194,7 +197,8 @@ Posts are plain text files in `content/blog/`. Each file becomes a page at `/blo
    ---
    ```
    - `date` is year-month-day and must be a real date.
-   - `products` lists product page names exactly as they appear in the address, for example `methanol` for `/products/methanol`.
+   - `products` lists product page names exactly as they appear in the address, for example `methanol` for `/products/methanol`. Each of those product pages links back to the post under "Further reading".
+   - Optional: `seoTitle: "..."`, a shorter title for Google when `title` is longer than 45 characters. `npm test` tells you when one is needed.
 3. Below the second `---`, write the post in [Markdown](https://www.markdownguide.org/basic-syntax/): `## ` starts a section heading, `- ` starts a bullet, `[text](/products/toluene)` makes a link.
 4. Start with a short paragraph that answers the title's question, and phrase section headings as questions. The checks (`npm test`) expect 700 to 1,200 words.
 5. Do not claim certifications, years in business, volumes, purity guarantees or regulatory compliance unless they are true and you can prove them. The checks reject the most common ones.
@@ -216,6 +220,41 @@ Search Console shows how the site appears in Google and lets you ask Google to r
 2. Choose **Domain**, type your domain (for example `example.com`) and follow the instructions to add a TXT record at your domain registrar. This proves you own the domain and needs no change to the website.
 3. Once verified, open **Sitemaps**, enter `sitemap.xml` and click **Submit**. The sitemap lists every product page, blog post and main page.
 4. Use **URL inspection** on the home page and a product page and click **Request indexing** to speed things up.
+
+---
+
+## 10. SEO & AI search
+
+### What the site already does
+
+- **Titles that match buyer searches.** Every product page title reads like "Methanol Exporter & Supplier, HSN 29051100 | Goodbiz Chem", within the 60 characters Google shows. Descriptions start with the name and HSN code and say "Exporter from India".
+- **A visible line under each product name**: "Exporter & supplier · HSN code · group", plus a generated question on every product page: "Do you export …?", answered from your own description (you export and supply it; send a quote request).
+- **Keywords** for each product, built from its own name, synonyms, HSN code and CAS numbers.
+- **Share images.** Every product and blog post has its own preview card (name, HSN code, group) for WhatsApp, LinkedIn, X and search results.
+- **Structured data** that Google and AI assistants read: the company (with country India), every product with its HSN and CAS numbers, related products and the articles that mention it, the product list, FAQs, breadcrumbs, articles and a site search box. No prices or ratings are claimed.
+- **For AI assistants** (ChatGPT, Perplexity, Gemini, Claude): `/llms.txt` is a short guide to the site and `/llms-full.txt` is the whole catalogue in one plain-text file. Once indexing is on, `robots.txt` names the main AI crawlers and lets them in.
+- **Sitemap** with every page, the product share images and the home page image, plus a web app manifest and the usual technical tags.
+
+None of this guarantees a ranking. Search engines also weigh things outside the website, listed next.
+
+### What only you can do (this matters more than the code)
+
+1. **Turn indexing on** with real contact details filled in ([section 4](#4-the-allow_indexing-switch) and [section 5](#5-contact-details)). Until then Google is told not to list the site.
+2. **Verify the site** in [Google Search Console](#9-google-search-console) and in [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT search and Copilot), and **submit `sitemap.xml`** in both. If you use the meta-tag method, put the codes in `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` ([section 2](#2-settings-environment-variables)).
+3. **Create a Google Business Profile** for the company, with the same name, website and contact details as the site.
+4. **Get listed on B2B directories** such as IndiaMART, TradeIndia, Alibaba and ExportersIndia, each linking back to the site. Use the same product names and HSN codes as the site.
+5. **Write more blog posts** that answer real buyer questions ("What is the HSN code for …?", "SLES or SLS for shampoo?"). Each post should list the products it covers ([section 7](#7-adding-a-blog-post)).
+6. **Keep the product data accurate.** When you change products, also change `SITE_UPDATED` in `src/config/site.ts` to the date, so search engines know to look again.
+
+### Changing the country
+
+The export country is written in one place: `site.origin` in `src/config/site.ts`:
+
+```ts
+origin: { country: "India", countryCode: "IN" },
+```
+
+Change both values (the code is the two-letter country code), run `npm test`, and every title, description, keyword list, `llms-full.txt` and the structured data follow. `npm test` warns you if a longer country name pushes a description past 160 characters.
 
 ---
 

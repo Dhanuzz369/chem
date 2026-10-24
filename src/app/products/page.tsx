@@ -5,15 +5,17 @@ import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductFinder } from "@/components/ProductFinder";
 import { SourcingCallout } from "@/components/SourcingCallout";
-import { productGroups } from "@/content/products";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { site } from "@/config/site";
+import { productGroups, products } from "@/content/products";
+import { breadcrumbJsonLd, productListJsonLd } from "@/lib/seo/jsonld";
+import { buildMetadata, catalogueKeywords } from "@/lib/seo/metadata";
 import { ProductFinderFromQuery } from "./ProductFinderFromQuery";
 
 export const metadata = buildMetadata({
-  title: "Products: solvents, amines, inorganics and surfactants",
-  description: `Industrial chemicals in four groups: ${productGroups.join(", ").toLowerCase()}. Search by name, HSN or CAS number and request a quote.`,
+  title: "Industrial Chemicals Catalogue with HSN Codes",
+  description: `Industrial chemicals from an exporter in ${site.origin.country}: ${productGroups.join(", ").toLowerCase()}. Search by name, HSN or CAS number and request a quote.`,
   path: "/products",
+  keywords: catalogueKeywords(productGroups, products),
 });
 
 const crumbs = [
@@ -48,7 +50,7 @@ export default function ProductsPage() {
         <SourcingCallout />
       </div>
 
-      <JsonLd data={breadcrumbJsonLd(crumbs)} />
+      <JsonLd data={[breadcrumbJsonLd(crumbs), productListJsonLd(products)]} />
     </Container>
   );
 }

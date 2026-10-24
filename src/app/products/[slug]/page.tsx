@@ -6,11 +6,20 @@ import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
 import { FaqList } from "@/components/FaqList";
 import { JsonLd } from "@/components/JsonLd";
+import { PostList } from "@/components/PostList";
 import { ProductCard, groupSwatch } from "@/components/ProductCard";
 import { QuoteForm } from "@/components/QuoteForm";
-import { getProduct, products, type Product } from "@/content/products";
+import { getProduct, productFaqs, products, type Product } from "@/content/products";
+import { getPostsForProduct } from "@/lib/blog";
 import { breadcrumbJsonLd, faqJsonLd, productJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata, productMetaDescription } from "@/lib/seo/metadata";
+import {
+  buildMetadata,
+  productKeywords,
+  productMetaDescription,
+  productOgImageAlt,
+  productOgImagePath,
+  productTitle,
+} from "@/lib/seo/metadata";
 import { StickyQuoteBar } from "./StickyQuoteBar";
 
 // `dynamicParams = false` is not allowed with cacheComponents; unknown slugs call notFound() instead.
@@ -26,9 +35,12 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   const product = getProduct((await params).slug);
   if (!product) return {};
   return buildMetadata({
-    title: `${product.name} (HSN ${product.hsn}) Exporter`,
+    title: productTitle(product),
     description: productMetaDescription(product),
     path: `/products/${product.slug}`,
+    image: productOgImagePath(product.slug),
+    imageAlt: productOgImageAlt(product),
+    keywords: productKeywords(product),
   });
 }
 
@@ -119,6 +131,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   if (!product) notFound();
 
   const related = product.related.map(getProduct).filter((p): p is Product => Boolean(p));
+  const posts = getPostsForProduct(product.slug);
+  const faqs = productFaqs(product);
   const crumbs = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
@@ -132,8 +146,23 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
 
         <div className="mt-6 grid gap-x-16 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <header className="pb-8 lg:col-start-1 lg:pb-10">
-            <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">{product.name}</h1>
-            <p className="mt-4 max-w-[62ch] text-lg text-ink">{product.summary}</p>
+            {/* hgroup keeps the subtitle with the h1, so the summary stays the first paragraph after the heading. */}
+            <hgroup>
+              <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">{product.name}</h1>
+              <p className="mt-3 text-[0.9375rem] font-medium text-ink-muted">
+                {/* Each item stays on one line; a narrow screen wraps only at the separators. */}
+                <span className="whitespace-nowrap">Exporter &amp; supplier</span>
+                <span aria-hidden="true" className="px-2 text-line-strong">·</span>
+                <span className="sr-only">, </span>
+                <span className="whitespace-nowrap">
+                  HSN <span className="font-mono tabular-nums text-ink">{product.hsn}</span>
+                </span>
+                <span aria-hidden="true" className="px-2 text-line-strong">·</span>
+                <span className="sr-only">, </span>
+                <span className="whitespace-nowrap">{product.group}</span>
+              </p>
+            </hgroup>
+            <p className="mt-5 max-w-[62ch] text-lg text-ink">{product.summary}</p>
             {product.synonyms.length > 0 && (
               <p className="mt-4 max-w-[62ch] text-[0.9375rem] text-ink-muted">
                 <span className="font-medium text-ink">Also known as:</span> {product.synonyms.join(", ")}
@@ -204,7 +233,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             )}
 
             <Section id="faq" title={`Questions about ${product.name}`}>
-              <FaqList faqs={product.faqs} />
+              <FaqList faqs={faqs} />
             </Section>
 
             {related.length > 0 && (
@@ -216,6 +245,12 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                     </li>
                   ))}
                 </ul>
+              </Section>
+            )}
+
+            {posts.length > 0 && (
+              <Section id="further-reading" title="Further reading">
+                <PostList posts={posts} label={`Articles about ${product.name}`} headingLevel={3} />
               </Section>
             )}
 
@@ -244,7 +279,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
       </Container>
 
       <StickyQuoteBar name={product.name} hsn={product.hsn} targetId={QUOTE_ID} />
-      <JsonLd data={[productJsonLd(product), faqJsonLd(product.faqs), breadcrumbJsonLd(crumbs)]} />
+      <JsonLd data={[productJsonLd(product, posts), faqJsonLd(faqs), breadcrumbJsonLd(crumbs)]} />
     </>
   );
 }

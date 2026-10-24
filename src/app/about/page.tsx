@@ -5,11 +5,12 @@ import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
 import { productGroups } from "@/content/products";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { site } from "@/config/site";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: "About",
-  description: "What Goodbiz Chem supplies (solvents, amines, inorganics and surfactants) and how we work with buyers from enquiry to dispatch.",
+  title: `About Us: Chemical Exporter from ${site.origin.country}`,
+  description: `What Goodbiz Chem, a chemical exporter and supplier from ${site.origin.country}, supplies and how we work with buyers from enquiry to dispatch.`,
   path: "/about",
 });
 

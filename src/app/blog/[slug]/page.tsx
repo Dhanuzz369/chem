@@ -6,10 +6,10 @@ import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
 import { groupSwatch } from "@/components/ProductCard";
 import { formatPostDate } from "@/components/PostList";
-import { getProduct, type Product } from "@/content/products";
+import { getProduct, products as allProducts, type Product } from "@/content/products";
 import { getAllPosts, getPost } from "@/lib/blog";
 import { blogPostingJsonLd, breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, postKeywords, postOgImagePath, postTitle } from "@/lib/seo/metadata";
 
 // Same as the product pages: unknown slugs get a real 404 status on first request.
 export const ensureStatic = "navigation";
@@ -22,9 +22,12 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">) {
   const post = getPost((await params).slug);
   if (!post) return {};
   return buildMetadata({
-    title: post.title,
+    title: postTitle(post),
     description: post.description,
     path: `/blog/${post.slug}`,
+    image: postOgImagePath(post.slug),
+    imageAlt: post.title,
+    keywords: postKeywords(post, allProducts),
     type: "article",
   });
 }
