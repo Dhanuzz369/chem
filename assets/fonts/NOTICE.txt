@@ -1,0 +1,11 @@
+Fonts used only to draw the Open Graph share cards (src/lib/seo/og-card.tsx).
+
+They are static Latin-subset instances of the same Google Fonts the site already
+self-hosts through next/font: Bricolage Grotesque (weights 500, 600, 700),
+IBM Plex Sans (500) and IBM Plex Mono (500). next/og cannot read WOFF2 or
+variable fonts, so these were converted to TTF with fontTools.
+
+Bricolage Grotesque: Copyright 2022 The Bricolage Grotesque Project Authors.
+IBM Plex: Copyright IBM Corp.
+Both are licensed under the SIL Open Font License, Version 1.1:
+https://openfontlicense.org
