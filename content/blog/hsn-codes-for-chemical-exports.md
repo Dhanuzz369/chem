@@ -1,5 +1,6 @@
 ---
 title: "HSN codes for chemical exports: what do the digits mean?"
+seoTitle: "HSN codes for chemical exports explained"
 description: "How HS and HSN codes are built, why India uses 8 digits where the world uses 6, and how to read the codes on a chemical product listing."
 date: "2026-10-02"
 products:

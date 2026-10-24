@@ -6,6 +6,8 @@ import { Marked, Renderer, type Tokens } from "marked";
 export interface PostMeta {
   slug: string;
   title: string;
+  /** Optional shorter page title when `title` plus " | Goodbiz Chem" would pass 60 characters. */
+  seoTitle?: string;
   description: string;
   /** ISO date, YYYY-MM-DD. */
   date: string;
@@ -63,9 +65,12 @@ function readPost(slug: string): Post | null {
   if (!fs.existsSync(file)) return null;
 
   const { data, content } = matter(fs.readFileSync(file, "utf8"));
-  const { title, description, products } = data as Record<string, unknown>;
+  const { title, seoTitle, description, products } = data as Record<string, unknown>;
   if (typeof title !== "string" || typeof description !== "string") {
     throw new Error(`Post ${slug} needs a title and a description`);
+  }
+  if (seoTitle !== undefined && typeof seoTitle !== "string") {
+    throw new Error(`Post ${slug} has a seoTitle that is not text`);
   }
   if (!Array.isArray(products) || !products.every((p) => typeof p === "string")) {
     throw new Error(`Post ${slug} needs a products list`);
@@ -76,6 +81,7 @@ function readPost(slug: string): Post | null {
   return {
     slug,
     title,
+    ...(seoTitle && { seoTitle }),
     description,
     date: toIsoDate(data.date),
     products,
@@ -91,10 +97,22 @@ export function getAllPosts(): PostMeta[] {
     .filter((f) => f.endsWith(".md"))
     .map((f) => readPost(f.slice(0, -3)))
     .filter((p): p is Post => p !== null)
-    .map(({ slug, title, description, date, products }) => ({ slug, title, description, date, products }))
+    .map(({ slug, title, seoTitle, description, date, products }) => ({
+      slug,
+      title,
+      ...(seoTitle && { seoTitle }),
+      description,
+      date,
+      products,
+    }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export function getPost(slug: string): Post | null {
   return readPost(slug);
+}
+
+/** Posts that list the product in their frontmatter, newest first. */
+export function getPostsForProduct(productSlug: string): PostMeta[] {
+  return getAllPosts().filter((post) => post.products.includes(productSlug));
 }

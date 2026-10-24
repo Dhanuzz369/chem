@@ -6,6 +6,8 @@
  * Goodbiz Chem's own grades, purity, volumes or regulatory status.
  */
 
+import { site } from "@/config/site";
+
 export type ProductGroup = "Solvents" | "Amines" | "Inorganics" | "Surfactants";
 
 export interface Faq {
@@ -16,13 +18,18 @@ export interface Faq {
 export interface Product {
   slug: string;
   name: string;
+  /**
+   * Page title (before " | Goodbiz Chem") for names too long for the generated
+   * "<Name> Exporter & Supplier, HSN <code>" pattern. Keep it at most 45 characters.
+   */
+  seoTitle?: string;
   /** Shown exactly as given by the owner; some codes are 6 digits, some 8. */
   hsn: string;
   group: ProductGroup;
   cas: string[];
   synonyms: string[];
   summary: string;
-  /** A short clause for search-result snippets: "<Name> (HSN <code>) — <metaSummary>. SDS available on request." */
+  /** A short clause for search-result snippets: "<Name> (HSN <code>) — <metaSummary>. Exporter from <country>. SDS available on request." */
   metaSummary: string;
   applications: string[];
   industries: string[];
@@ -48,7 +55,7 @@ export const products: Product[] = [
     synonyms: ["Ethyl ethanoate", "Acetic acid ethyl ester", "EtOAc", "EA"],
     summary:
       "Ethyl acetate is a fast-evaporating ester solvent with a mild, fruity odour. It dissolves nitrocellulose, many resins and printing-ink binders, which makes it a staple in flexible packaging inks, adhesives, coatings and pharmaceutical extraction.",
-    metaSummary: "a fast-evaporating ester solvent for packaging inks, adhesives, coatings and extraction",
+    metaSummary: "a fast-evaporating ester solvent for inks, adhesives, coatings and extraction",
     applications: [
       "Solvent for flexographic and gravure printing inks",
       "Adhesives and laminating adhesives for flexible packaging",
@@ -103,7 +110,7 @@ export const products: Product[] = [
     synonyms: ["Methyl alcohol", "Wood alcohol", "Carbinol", "MeOH"],
     summary:
       "Methanol is the simplest alcohol and one of the most traded basic chemicals. It is a feedstock for formaldehyde, acetic acid and MTBE, a fuel and biodiesel ingredient, and a polar solvent. It is toxic as well as flammable, so handling discipline matters.",
-    metaSummary: "the simplest alcohol, a feedstock for formaldehyde and acetic acid, a fuel and a solvent",
+    metaSummary: "the simplest alcohol: a feedstock for formaldehyde and acetic acid, a fuel and solvent",
     applications: [
       "Feedstock for formaldehyde, acetic acid, MTBE and methylamines",
       "Transesterification reagent in biodiesel production",
@@ -152,13 +159,14 @@ export const products: Product[] = [
   {
     slug: "isopropyl-alcohol",
     name: "IPA (Isopropyl Alcohol)",
+    seoTitle: "Isopropyl Alcohol IPA Exporter, HSN 29051220",
     hsn: "29051220",
     group: "Solvents",
     cas: ["67-63-0"],
     synonyms: ["Isopropanol", "2-Propanol", "Propan-2-ol", "IPA", "Rubbing alcohol", "Dimethyl carbinol"],
     summary:
       "Isopropyl alcohol (IPA) is a water-miscible solvent that evaporates cleanly without residue. It is widely used for disinfectants and hand sanitisers, electronics cleaning, pharmaceutical processing, and as a solvent for inks, coatings and cosmetics.",
-    metaSummary: "a water-miscible solvent for disinfectants, electronics cleaning, inks and coatings",
+    metaSummary: "a water-miscible solvent for disinfectants, cleaning, inks and coatings",
     applications: [
       "Disinfectants, surface sanitisers and hand-rub formulations",
       "Precision cleaning of electronics, PCBs and optics",
@@ -207,13 +215,14 @@ export const products: Product[] = [
   {
     slug: "methylene-chloride",
     name: "DCM / Methylene Chloride",
+    seoTitle: "Methylene Chloride DCM Exporter, HSN 29031200",
     hsn: "29031200",
     group: "Solvents",
     cas: ["75-09-2"],
     synonyms: ["Dichloromethane", "Methylene chloride", "Methylene dichloride", "DCM", "R-30"],
     summary:
       "Dichloromethane (DCM, methylene chloride) is a dense, very volatile chlorinated solvent that is not flammable under normal conditions. It is used for pharmaceutical extraction, polycarbonate production, adhesives and metal cleaning, and needs strong vapour control.",
-    metaSummary: "a dense, volatile chlorinated solvent for pharma extraction, adhesives and cleaning",
+    metaSummary: "a chlorinated solvent for pharma extraction, adhesives and cleaning",
     applications: [
       "Extraction and reaction solvent in pharmaceutical and fine-chemical synthesis",
       "Process solvent in polycarbonate and cellulose triacetate film production",
@@ -386,7 +395,7 @@ export const products: Product[] = [
     synonyms: ["DIPA", "N-Isopropylpropan-2-amine", "N,N-Diisopropylamine", "Di-isopropylamine"],
     summary:
       "Diisopropylamine (DIPA) is a sterically hindered secondary amine. It is the precursor to lithium diisopropylamide (LDA) and Hünig's base, and an intermediate for thiocarbamate herbicides, rubber chemicals and pharmaceuticals. It is flammable and corrosive.",
-    metaSummary: "a hindered secondary amine and intermediate for LDA, herbicides and rubber chemicals",
+    metaSummary: "a hindered amine and intermediate for LDA, herbicides and rubber chemicals",
     applications: [
       "Precursor to lithium diisopropylamide (LDA), a strong non-nucleophilic base in organic synthesis",
       "Intermediate for N,N-diisopropylethylamine (Hünig's base, DIPEA)",
@@ -844,6 +853,7 @@ export const products: Product[] = [
   {
     slug: "sodium-lauryl-sulphate",
     name: "SLS / Sodium Lauryl Sulphate",
+    seoTitle: "Sodium Lauryl Sulphate Exporter, HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["151-21-3", "68585-47-7"],
@@ -907,6 +917,7 @@ export const products: Product[] = [
   {
     slug: "alpha-olefin-sulphonate",
     name: "Alpha Olefin Sulphonate (AOS)",
+    seoTitle: "Alpha Olefin Sulphonate Exporter, HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["68439-57-6"],
@@ -967,6 +978,7 @@ export const products: Product[] = [
   {
     slug: "sodium-lauryl-sulphoacetate",
     name: "Sodium Lauryl Sulphoacetate",
+    seoTitle: "SLSA Exporter & Supplier, HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["1847-58-1"],
@@ -1087,6 +1099,7 @@ export const products: Product[] = [
   {
     slug: "nonylphenol-ethoxylates",
     name: "Nonylphenol Ethoxylates (NPE)",
+    seoTitle: "Nonylphenol Ethoxylates Exporter, HSN 340242",
     hsn: "340242",
     group: "Surfactants",
     cas: ["9016-45-9", "127087-87-0", "26027-38-3"],
@@ -1150,6 +1163,19 @@ export const products: Product[] = [
     related: ["alcohol-ethoxylates", "labsa", "sles-70"],
   },
 ];
+
+/** The generated "Do you export …?" question, phrased only from what the owner states: they export and supply it. */
+export function exportFaq(p: Pick<Product, "name" | "hsn">): Faq {
+  return {
+    q: `Do you export ${p.name}?`,
+    a: `Yes. ${site.name} exports and supplies ${p.name} (HSN ${p.hsn}). Send a quote request with quantity, packaging and destination port; SDS available on request.`,
+  };
+}
+
+/** The product's own FAQs plus the export question, for the visible FAQ and the FAQPage JSON-LD alike. */
+export function productFaqs(p: Product): Faq[] {
+  return [...p.faqs, exportFaq(p)];
+}
 
 const bySlug = new Map(products.map((p) => [p.slug, p]));
 

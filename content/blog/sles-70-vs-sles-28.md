@@ -1,5 +1,6 @@
 ---
 title: "SLES 70% vs SLES 28%: which grade should you buy?"
+seoTitle: "SLES 70% vs SLES 28%: which grade to buy?"
 description: "Why SLES is sold at 70% and 28% active, how the two grades differ in handling and freight, and how to choose between them for your plant."
 date: "2026-10-07"
 products:
