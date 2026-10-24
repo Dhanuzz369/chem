@@ -1,6 +1,7 @@
 import { contactRows } from "@/components/ContactDetails";
 import { absoluteUrl, site } from "@/config/site";
 import { products } from "@/content/products";
+import { companySummary } from "@/lib/seo/llms";
 
 export function GET() {
   // Only the details the owner has filled in; nothing is listed while they are empty.
@@ -8,7 +9,7 @@ export function GET() {
   const lines = [
     `# ${site.name}`,
     "",
-    `> ${site.tagline} Product information, HSN codes and quote requests for industrial and specialty chemicals.`,
+    `> ${companySummary()} ${site.tagline} Product information, HSN codes and quote requests for industrial and specialty chemicals.`,
     "",
     `${site.name} can also source and supply chemicals that are not listed. Describe what you need on the quote form: ${absoluteUrl("/quote#other")}`,
     "",
@@ -27,6 +28,10 @@ export function GET() {
     `- [Contact](${absoluteUrl("/contact")}): Get in touch`,
     "",
     ...(contact.length > 0 ? ["## Contact", "", ...contact.map((row) => `- ${row.label}: ${row.value}`), ""] : []),
+    "## Optional",
+    "",
+    `- [Full product reference](${absoluteUrl("/llms-full.txt")}): Every product with HSN and CAS numbers, uses, packaging, hazards and FAQs, in one file`,
+    "",
   ];
   return new Response(lines.join("\n"), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
