@@ -6,6 +6,11 @@ import { DEFAULT_OG_IMAGE, postOgImagePath, productOgImagePath } from "@/lib/seo
 type JsonLdObject = Record<string, unknown>;
 
 const productId = (slug: string) => `${absoluteUrl(`/products/${slug}`)}#product`;
+/** A named reference to a product node, so a reader that does not merge @ids still sees what it is. */
+function productRef(p: Pick<Product, "slug" | "name">): JsonLdObject {
+  return { "@type": "Product", "@id": productId(p.slug), name: p.name, url: absoluteUrl(`/products/${p.slug}`) };
+}
+
 const postId = (slug: string) => `${absoluteUrl(`/blog/${slug}`)}#article`;
 
 export function organizationJsonLd(): JsonLdObject {
@@ -39,7 +44,7 @@ export function organizationJsonLd(): JsonLdObject {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Industrial and specialty chemicals",
-      itemListElement: products.map((p) => ({ "@type": "Offer", itemOffered: { "@id": productId(p.slug) } })),
+      itemListElement: products.map((p) => ({ "@type": "Offer", itemOffered: productRef(p) })),
     },
   };
 }
@@ -62,7 +67,11 @@ export function websiteJsonLd(): JsonLdObject {
   };
 }
 
-/** No `offers`, price or rating: the site shows no prices. `posts` are the blog posts that mention it. */
+/**
+ * No `offers`, price or rating: the site shows no prices. No `brand` either: these are sourced commodity
+ * chemicals, and naming Goodbiz Chem as the brand would imply it makes them. The organization links to
+ * its products through `hasOfferCatalog`. `posts` are the blog posts that mention the product.
+ */
 export function productJsonLd(p: Product, posts: PostMeta[] = []): JsonLdObject {
   const url = absoluteUrl(`/products/${p.slug}`);
   return {
@@ -74,14 +83,18 @@ export function productJsonLd(p: Product, posts: PostMeta[] = []): JsonLdObject 
     url,
     image: absoluteUrl(productOgImagePath(p.slug)),
     sku: p.slug,
-    brand: { "@id": absoluteUrl("/#organization") },
     category: p.group,
     ...(p.synonyms.length > 0 && { alternateName: p.synonyms }),
     additionalProperty: [
       { "@type": "PropertyValue", name: "HSN code", value: p.hsn },
       ...p.cas.map((cas) => ({ "@type": "PropertyValue", name: "CAS number", value: cas })),
     ],
-    ...(p.related.length > 0 && { isRelatedTo: p.related.map((slug) => ({ "@id": productId(slug) })) }),
+    ...(p.related.length > 0 && {
+      isRelatedTo: p.related
+        .map((slug) => products.find((r) => r.slug === slug))
+        .filter((r): r is Product => Boolean(r))
+        .map(productRef),
+    }),
     ...(posts.length > 0 && {
       subjectOf: posts.map((post) => ({
         "@type": "BlogPosting",

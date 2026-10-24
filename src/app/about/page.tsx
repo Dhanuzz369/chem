@@ -10,7 +10,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
   title: `About Us: Chemical Exporter from ${site.origin.country}`,
-  description: `What Goodbiz Chem, a chemical exporter and supplier from ${site.origin.country}, supplies and how we work with buyers from enquiry to dispatch.`,
+  description: `${site.name} is a chemical exporter and supplier from ${site.origin.country}. See what we supply and how we work with buyers from enquiry to dispatch.`,
   path: "/about",
 });
 

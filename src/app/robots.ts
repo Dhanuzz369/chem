@@ -19,6 +19,8 @@ export const AI_CRAWLERS = [
   "Bingbot",
 ];
 
+// A crawler that matches a named group obeys only that group and ignores the "*" rules. Any future
+// disallow (e.g. a private path) must be added to both groups below, or the named crawlers will skip it.
 export default function robots(): MetadataRoute.Robots {
   if (!isIndexingAllowed()) {
     return { rules: { userAgent: "*", disallow: "/" } };

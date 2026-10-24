@@ -1,11 +1,16 @@
 Fonts used only to draw the Open Graph share cards (src/lib/seo/og-card.tsx).
+next/og cannot read WOFF2 or variable fonts, so these are static, Latin-subset
+TTF instances made with fontTools from the WOFF2 files next/font self-hosts.
 
-They are static Latin-subset instances of the same Google Fonts the site already
-self-hosts through next/font: Bricolage Grotesque (weights 500, 600, 700),
-IBM Plex Sans (500) and IBM Plex Mono (500). next/og cannot read WOFF2 or
-variable fonts, so these were converted to TTF with fontTools.
+BricolageGrotesque-Medium.ttf    Bricolage Grotesque, wght 500, opsz 36 (wordmark)
+BricolageGrotesque-Bold.ttf      Bricolage Grotesque, wght 700, opsz 36 (wordmark)
+BricolageGrotesque-SemiBold.ttf  Bricolage Grotesque, wght 600, opsz 72 (headline)
+  Licence: OFL-BricolageGrotesque.txt (SIL Open Font License 1.1).
+  Internal names state the instance, e.g. "Bricolage Grotesque 72pt SemiBold".
 
-Bricolage Grotesque: Copyright 2022 The Bricolage Grotesque Project Authors.
-IBM Plex: Copyright IBM Corp.
-Both are licensed under the SIL Open Font License, Version 1.1:
-https://openfontlicense.org
+GBCCardSans-Medium.ttf           Modified from IBM Plex Sans (wght 500)
+GBCCardMono-Medium.ttf           Modified from IBM Plex Mono Medium
+  Licence: OFL-IBMPlex.txt (SIL Open Font License 1.1). IBM Plex declares the
+  Reserved Font Name "Plex", so these modified (subset/instanced) versions are
+  renamed "GBC Card Sans" and "GBC Card Mono" in their name tables. The original
+  copyright notices are kept.

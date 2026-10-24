@@ -230,7 +230,14 @@ describe("json-ld", () => {
     expect(ld.image).toBe("https://ex.com/products/methanol/opengraph-image/card");
     expect(ld.category).toBe("Solvents");
     expect(ld.sku).toBe("methanol");
-    expect(ld.isRelatedTo).toEqual(methanol.related.map((s) => ({ "@id": `https://ex.com/products/${s}#product` })));
+    expect(ld.isRelatedTo).toEqual(
+      methanol.related.map((s) => ({
+        "@type": "Product",
+        "@id": `https://ex.com/products/${s}#product`,
+        name: products.find((p) => p.slug === s)!.name,
+        url: `https://ex.com/products/${s}`,
+      })),
+    );
     expect(ld.subjectOf).toEqual(
       posts.map((post) => ({
         "@type": "BlogPosting",
@@ -268,7 +275,12 @@ describe("json-ld", () => {
     expect(catalog.itemListElement).toHaveLength(products.length);
     expect(catalog.itemListElement[0]).toEqual({
       "@type": "Offer",
-      itemOffered: { "@id": `https://ex.com/products/${products[0].slug}#product` },
+      itemOffered: {
+        "@type": "Product",
+        "@id": `https://ex.com/products/${products[0].slug}#product`,
+        name: products[0].name,
+        url: `https://ex.com/products/${products[0].slug}`,
+      },
     });
     expect(ld).not.toHaveProperty("makesOffer");
   });

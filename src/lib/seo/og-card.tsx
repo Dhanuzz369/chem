@@ -40,8 +40,8 @@ const [display500, display600, display700, sans500, mono500] = await Promise.all
     "BricolageGrotesque-Medium.ttf",
     "BricolageGrotesque-SemiBold.ttf",
     "BricolageGrotesque-Bold.ttf",
-    "IBMPlexSans-Medium.ttf",
-    "IBMPlexMono-Medium.ttf",
+    "GBCCardSans-Medium.ttf",
+    "GBCCardMono-Medium.ttf",
   ].map((file) => readFile(join(fontDir, file))),
 );
 
@@ -49,8 +49,8 @@ const fonts = [
   { name: "Bricolage", data: display500, weight: 500 as const, style: "normal" as const },
   { name: "Bricolage", data: display600, weight: 600 as const, style: "normal" as const },
   { name: "Bricolage", data: display700, weight: 700 as const, style: "normal" as const },
-  { name: "Plex Sans", data: sans500, weight: 500 as const, style: "normal" as const },
-  { name: "Plex Mono", data: mono500, weight: 500 as const, style: "normal" as const },
+  { name: "GBC Card Sans", data: sans500, weight: 500 as const, style: "normal" as const },
+  { name: "GBC Card Mono", data: mono500, weight: 500 as const, style: "normal" as const },
 ];
 
 /** The logo mark from src/app/icon.svg, drawn as JSX so it needs no file read. */
@@ -102,7 +102,7 @@ function Frame({ children, footer }: { children: React.ReactNode; footer: React.
         justifyContent: "space-between",
         background: token.surface,
         padding: "64px 72px",
-        fontFamily: "Plex Sans",
+        fontFamily: "GBC Card Sans",
         color: token.ink,
       }}
     >
@@ -151,7 +151,7 @@ export async function productCard(p: { name: string; hsn: string; group: Product
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 36, fontSize: 30 }}>
           <span
             style={{
-              fontFamily: "Plex Mono",
+              fontFamily: "GBC Card Mono",
               background: groupPastel[p.group],
               border: `2px solid ${token.line}`,
               borderRadius: 10,

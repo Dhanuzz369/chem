@@ -13,7 +13,7 @@ export const metadata = buildMetadata({
   description:
     "Ask Goodbiz Chem for a quote on solvents, amines, inorganics and surfactants. Tell us the product, quantity, packaging and destination.",
   path: "/quote",
-  keywords: ["chemical quote", "bulk chemical price enquiry", "industrial chemicals supplier", `chemical exporter ${site.origin.country}`],
+  keywords: ["chemical quote", "bulk chemical enquiry", "industrial chemicals supplier", `chemical exporter ${site.origin.country}`],
 });
 
 const crumbs = [

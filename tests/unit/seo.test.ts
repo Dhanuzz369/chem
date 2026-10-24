@@ -66,11 +66,12 @@ describe("json-ld", () => {
     );
   });
 
-  it("productJsonLd has its own @id and links the brand to the organization", () => {
+  it("productJsonLd has its own @id and no brand (sourced chemicals are not Goodbiz Chem's own brand)", () => {
     vi.stubEnv("SITE_URL", "https://ex.com");
     const ld = productJsonLd(methanol) as Record<string, unknown>;
     expect(ld["@id"]).toBe("https://ex.com/products/methanol#product");
-    expect(ld.brand).toEqual({ "@id": "https://ex.com/#organization" });
+    expect(ld).not.toHaveProperty("brand");
+    expect(ld).not.toHaveProperty("manufacturer");
     expect(ld.url).toBe("https://ex.com/products/methanol");
   });
 
