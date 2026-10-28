@@ -1,7 +1,7 @@
 # Step-by-step quote form, Apps Script lead capture and domain move: design
 
 Date: 2026-10-28
-Status: awaiting owner approval
+Status: approved by owner 2026-10-28 ("build the step by step form")
 Builds on: `docs/superpowers/specs/2026-10-19-goodbiz-chem-website-design.md` (that spec still applies wherever this one doesn't override it)
 
 ## Intent
