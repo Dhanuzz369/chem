@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { site } from "@/config/site";
 import { countryNames } from "@/lib/leads/countries";
-import { fallbackLinks, requestSummary } from "@/lib/leads/fallback";
+import { fallbackLinks, LEADS_EMAIL, LEADS_WHATSAPP, requestSummary } from "@/lib/leads/fallback";
 import { emptyAnswers } from "@/lib/leads/steps";
 import type { Answers } from "@/lib/leads/steps";
 
@@ -12,6 +13,12 @@ const full: Answers = {
 };
 
 describe("fallback", () => {
+  it("fallback contact details come from site.contact", () => {
+    expect(LEADS_EMAIL).toBe(site.contact.email);
+    expect(LEADS_WHATSAPP).toBe(site.contact.whatsapp!.replace(/\D/g, ""));
+    expect(LEADS_WHATSAPP).toBe("918884799369");
+  });
+
   it("requestSummary writes the request out", () => {
     const text = requestSummary(full);
     for (const part of ["Asha Rao", "Rao Paints", "asha@example.com", "+91 98765 43210", "Methanol",

@@ -40,7 +40,7 @@ function nameForms(p: (typeof products)[number]) {
 
 describe("site.origin", () => {
   it("is one config value for the export country", () => {
-    expect(site.origin).toEqual({ country: "India", countryCode: "IN" });
+    expect(site.origin).toEqual({ country: "India", countryCode: "IN", locality: "Bengaluru", region: "Karnataka" });
     expect(SITE_UPDATED).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
@@ -268,7 +268,12 @@ describe("json-ld", () => {
     expect(ld["@id"]).toBe("https://ex.com/#organization");
     expect(ld.logo).toBe("https://ex.com/icon.svg");
     expect(ld.image).toBe("https://ex.com/og-default.png");
-    expect(ld.address).toEqual({ "@type": "PostalAddress", addressCountry: "IN" });
+    expect(ld.address).toEqual({
+      "@type": "PostalAddress",
+      addressLocality: "Bengaluru",
+      addressRegion: "Karnataka",
+      addressCountry: "IN",
+    });
     expect(ld.knowsAbout).toEqual(expect.arrayContaining(["Solvents", "Surfactants", "Methanol", "LABSA"]));
     const catalog = ld.hasOfferCatalog as { "@type": string; itemListElement: Record<string, unknown>[] };
     expect(catalog["@type"]).toBe("OfferCatalog");
@@ -285,13 +290,14 @@ describe("json-ld", () => {
     expect(ld).not.toHaveProperty("makesOffer");
   });
 
-  it("organization keeps a street address alongside the country when one is set", () => {
+  it("organization address is Bengaluru, Karnataka, India, with no street", () => {
     const real = site.contact;
     try {
       site.contact = { address: "Unit 4, Example Estate" };
       expect((organizationJsonLd() as Record<string, unknown>).address).toEqual({
         "@type": "PostalAddress",
-        streetAddress: "Unit 4, Example Estate",
+        addressLocality: "Bengaluru",
+        addressRegion: "Karnataka",
         addressCountry: "IN",
       });
     } finally {

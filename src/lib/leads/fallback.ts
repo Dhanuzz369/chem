@@ -1,10 +1,11 @@
+import { site } from "@/config/site";
 import { packagingLabels, productLabel, quantityLabel, termsLabel } from "./options";
 import type { Answers } from "./steps";
 import { strings } from "./strings";
 
-/** wa.me form of +91 8884799369. */
-export const LEADS_WHATSAPP = "918884799369";
-export const LEADS_EMAIL = "chemicals@goodbizglobal.com";
+/** Where the fallback links go: the WhatsApp number (wa.me digits) and email in site.contact. */
+export const LEADS_WHATSAPP = (site.contact.whatsapp ?? site.contact.phone ?? "").replace(/\D/g, "");
+export const LEADS_EMAIL = site.contact.email ?? "";
 
 const NOTES_MAX = 1000;
 

@@ -14,12 +14,13 @@ function productRef(p: Pick<Product, "slug" | "name">): JsonLdObject {
 const postId = (slug: string) => `${absoluteUrl(`/blog/${slug}`)}#article`;
 
 export function organizationJsonLd(): JsonLdObject {
-  const { email, phone, whatsapp, address } = site.contact;
+  const { email, phone, whatsapp } = site.contact;
+  // The same number as phone and WhatsApp is one contact point.
+  const telephones = [...new Set([phone, whatsapp].filter((t): t is string => Boolean(t)))];
   const contactPoint = [
-    email && { "@type": "ContactPoint", contactType: "sales", email },
-    phone && { "@type": "ContactPoint", contactType: "sales", telephone: phone },
-    whatsapp && { "@type": "ContactPoint", contactType: "sales", telephone: whatsapp },
-  ].filter(Boolean);
+    ...(email ? [{ "@type": "ContactPoint", contactType: "sales", email }] : []),
+    ...telephones.map((telephone) => ({ "@type": "ContactPoint", contactType: "sales", telephone })),
+  ];
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -29,10 +30,11 @@ export function organizationJsonLd(): JsonLdObject {
     logo: absoluteUrl("/icon.svg"),
     image: absoluteUrl(DEFAULT_OG_IMAGE),
     description: site.tagline,
-    // Country only: no street or city is invented. A street address is added once the owner sets one.
+    // City, state and country as the owner gave them; no street address is published.
     address: {
       "@type": "PostalAddress",
-      ...(address && { streetAddress: address }),
+      addressLocality: site.origin.locality,
+      addressRegion: site.origin.region,
       addressCountry: site.origin.countryCode,
     },
     ...(email && { email }),

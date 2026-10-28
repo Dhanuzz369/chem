@@ -92,6 +92,14 @@ describe("json-ld", () => {
       expect(filled.email).toBe("sales@example.com");
       expect(filled.telephone).toBe("+1 555 010 0000");
       expect(filled.contactPoint).toHaveLength(2);
+
+      // The same number as phone and WhatsApp is one contact point, not two.
+      site.contact = { email: "sales@example.com", phone: "+91 8884799369", whatsapp: "+91 8884799369" };
+      const same = organizationJsonLd() as { contactPoint: Record<string, string>[] };
+      expect(same.contactPoint).toEqual([
+        { "@type": "ContactPoint", contactType: "sales", email: "sales@example.com" },
+        { "@type": "ContactPoint", contactType: "sales", telephone: "+91 8884799369" },
+      ]);
     } finally {
       site.contact = real;
     }

@@ -10,15 +10,23 @@ export type Origin = {
   country: string;
   /** ISO 3166-1 alpha-2 code, used for the Organization address in structured data. */
   countryCode: string;
+  /** City and state for the Organization address in structured data. No street address is published. */
+  locality: string;
+  region: string;
 };
 
 export const site: { name: "Goodbiz Chem"; tagline: string; contact: Contact; origin: Origin } = {
   name: "Goodbiz Chem",
   tagline: "Industrial and specialty chemicals, exported worldwide.",
-  // Real contact details are supplied by the client; none are invented here.
-  contact: {},
-  // The country the business exports from. This is the only place it is written; change it here.
-  origin: { country: "India", countryCode: "IN" },
+  // Supplied by the owner on 2026-10-28. The footer, Contact page, quote-form fallback, JSON-LD and llms.txt read these.
+  contact: {
+    email: "chemicals@goodbizglobal.com",
+    phone: "+91 8884799369",
+    whatsapp: "+91 8884799369",
+    address: "Bengaluru, Karnataka, India",
+  },
+  // Where the business exports from. This is the only place it is written; change it here.
+  origin: { country: "India", countryCode: "IN", locality: "Bengaluru", region: "Karnataka" },
 };
 
 /** When the product data was last reviewed. Used as the sitemap's lastModified; bump it when products change. */

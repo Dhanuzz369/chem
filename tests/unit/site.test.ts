@@ -13,13 +13,13 @@ describe("site config", () => {
     expect(isIndexingAllowed({ ALLOW_INDEXING: "true" })).toBe(true);
   });
 
-  it("has the company name, and any contact detail that is set is real text", () => {
+  it("has the company name and the owner's contact details (supplied 2026-10-28)", () => {
     expect(site.name).toBe("Goodbiz Chem");
-    // Contact details start empty and are filled in by the owner (see README); either state is valid.
-    for (const [field, value] of Object.entries(site.contact)) {
-      if (value === undefined) continue;
-      expect(typeof value, field).toBe("string");
-      expect(value.trim(), field).not.toBe("");
-    }
+    expect(site.contact).toEqual({
+      email: "chemicals@goodbizglobal.com",
+      phone: "+91 8884799369",
+      whatsapp: "+91 8884799369",
+      address: "Bengaluru, Karnataka, India",
+    });
   });
 });
