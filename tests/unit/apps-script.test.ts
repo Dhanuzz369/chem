@@ -20,6 +20,8 @@ type Script = {
   overLimit(count: number, max: number): boolean;
   rateKeys(bucket: string, leadId: string): { newLead: string; update: string; alert: string };
   bodyTooLarge(contents: string, maxBytes: number): boolean;
+  validLeadId(id: string): boolean;
+  alertSubject(kind: string, row: Row): string;
 };
 
 function loadScript(): Script {
@@ -127,6 +129,32 @@ describe("Apps Script helpers", () => {
     expect(long.notes.length).toBe(2000);
   });
 
+  it("mergeRow re-escapes formula text read back from the sheet", () => {
+    // Sheets returns "'=IMPORTXML(1)" as "=IMPORTXML(1)"; writing it back raw would make it a formula.
+    const existing = { ...blank(), leadId: "lead-1234", stage: "contact", name: "=IMPORTXML(1)", phone: "+91 98765" };
+    const merged = gs.mergeRow(existing, { stage: "product", group: "Solvents" }, "2026-10-28T10:05:00.000Z", "lead-1234");
+    expect(merged.name).toBe("'=IMPORTXML(1)");
+    expect(merged.phone).toBe("'+91 98765");
+    // Idempotent: an already-escaped value is not escaped twice.
+    expect(gs.mergeRow(merged, { stage: "quantity" }, "2026-10-28T10:06:00.000Z", "lead-1234").name).toBe("'=IMPORTXML(1)");
+    // System fields are left as they are.
+    expect(merged.updated).toBe("2026-10-28T10:05:00.000Z");
+  });
+
+  it("validLeadId accepts only the UUID shape", () => {
+    expect(gs.validLeadId("3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b")).toBe(true);
+    expect(gs.validLeadId("3F2B8C1E-9A4D-4E6F-8B7A-1C2D3E4F5A6B")).toBe(true);
+    for (const bad of ["lead-1234", "", "3f2b8c1e9a4d4e6f8b7a1c2d3e4f5a6b", "3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b-x", "=A1"]) {
+      expect(gs.validLeadId(bad), bad).toBe(false);
+    }
+  });
+
+  it("alertSubject strips line breaks a buyer typed", () => {
+    const subject = gs.alertSubject("contact", { ...blank(), name: "Asha\r\nBcc: x@evil.test", company: "Rao\nPaints" });
+    expect(subject).not.toMatch(/[\r\n]/);
+    expect(subject).toBe("New lead: Asha Bcc: x@evil.test (Rao Paints)");
+  });
+
   it("furthestStage never moves backwards", () => {
     expect(gs.furthestStage("contact", "product")).toBe("product");
     expect(gs.furthestStage("terms", "product")).toBe("terms");
@@ -154,6 +182,7 @@ function loadWithFakes() {
   const cache = new Map<string, string>();
   const mails: string[] = [];
   const warn = vi.fn();
+  const matchCase: boolean[] = [];
   const range = (row: number) => ({
     getValues: () => [rows[row - 2] ?? []],
     setNumberFormat() {
@@ -169,12 +198,17 @@ function loadWithFakes() {
       a === "A:A"
         ? {
             createTextFinder: (id: string) => ({
+              matchCase: (on: boolean) => {
+                matchCase.push(on);
+                return {
               matchEntireCell: () => ({
                 findNext: () => {
                   const i = rows.findIndex((r) => r[0] === id);
                   return i === -1 ? null : { getRow: () => i + 2 };
                 },
               }),
+                };
+              },
             }),
           }
         : range(a as number),
@@ -199,11 +233,12 @@ function loadWithFakes() {
         postData: { type: "text/plain", contents: typeof body === "string" ? body : JSON.stringify(body) },
       }).text,
     ) as { ok: boolean; error?: string };
-  return { post, rows, mails, warn };
+  return { post, rows, mails, warn, matchCase };
 }
 
 describe("Apps Script doPost caps", () => {
-  const lead = (i: number, stage = "contact") => ({ leadId: `lead-${String(i).padStart(4, "0")}`, stage, name: `Buyer ${i}` });
+  const id = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`;
+  const lead = (i: number, stage = "contact") => ({ leadId: id(i), stage, name: `Buyer ${i}` });
 
   it("refuses new leads over MAX_NEW_LEADS_PER_HOUR with rate_limited and appends nothing", () => {
     const { post, rows } = loadWithFakes();
@@ -228,6 +263,27 @@ describe("Apps Script doPost caps", () => {
     expect(rows).toHaveLength(31);
     expect(mails).toHaveLength(30);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("Alert email skipped"));
+  });
+
+  it("completed-request alerts are not held back by the hourly alert cap", () => {
+    const { post, mails, matchCase } = loadWithFakes();
+    for (let i = 0; i < 30; i++) expect(post(lead(i))).toEqual({ ok: true });
+    expect(mails).toHaveLength(30);
+    // The cap is spent on "New lead" alerts; a completed request still emails.
+    expect(post(lead(1, "submitted"))).toEqual({ ok: true });
+    expect(mails).toHaveLength(31);
+    expect(mails.at(-1)).toMatch(/^Quote request completed/);
+    // And completed alerts do not use up the cap for new leads.
+    expect(post(lead(30))).toEqual({ ok: true });
+    expect(mails).toHaveLength(31);
+    // The row lookup is case-sensitive.
+    expect(matchCase.every(Boolean) && matchCase.length > 0).toBe(true);
+  });
+
+  it("refuses a leadId that is not a UUID", () => {
+    const { post, rows } = loadWithFakes();
+    expect(post({ leadId: "lead-0001", stage: "contact", name: "Asha" })).toEqual({ ok: false, error: "bad_lead_id" });
+    expect(rows).toHaveLength(0);
   });
 
   it("refuses bodies over 20 KB with bad_request", () => {

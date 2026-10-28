@@ -89,7 +89,7 @@ function doPost(e) {
   if (isTruthy_(data.website) || isTruthy_(data.honeypot)) return reply_(isForm, true);
 
   var leadId = String(data.leadId || '').trim();
-  if (!/^[A-Za-z0-9-]{8,64}$/.test(leadId)) {
+  if (!validLeadId(leadId)) {
     if (!isForm) return reply_(isForm, false, 'bad_lead_id');
     leadId = Utilities.getUuid(); // no-JavaScript form: one post, one row
   }
@@ -119,7 +119,8 @@ function doPost(e) {
       cache.put(capKey, String(count + 1), CACHE_SECONDS);
       result = upsert_(sheet, leadId, data, new Date().toISOString(), rowIndex);
       alert = alertKind(result.previousStage, result.row.stage, result.isNew);
-      if (alert) {
+      // Only "New lead" alerts count toward the cap: a completed request always emails.
+      if (alert === 'contact') {
         var sent = Number(cache.get(keys.alert)) || 0;
         if (overLimit(sent, MAX_ALERT_EMAILS_PER_HOUR)) {
           console.warn('Alert email skipped: ' + MAX_ALERT_EMAILS_PER_HOUR + ' alerts already sent this hour. Lead ' +
@@ -163,7 +164,7 @@ function formFields(parameters) {
 
 /** The sheet row holding this lead, or 0 when it is new. */
 function findRow_(sheet, leadId) {
-  var found = sheet.getRange('A:A').createTextFinder(leadId).matchEntireCell(true).findNext();
+  var found = sheet.getRange('A:A').createTextFinder(leadId).matchCase(true).matchEntireCell(true).findNext();
   return found ? found.getRow() : 0;
 }
 
@@ -224,6 +225,11 @@ function mergeRow(existing, data, nowIso, leadId) {
     if (v === '') return;
     out[h] = safeCell(v.slice(0, MAX_LEN));
   });
+  // Sheets hands back "'=X" as "=X", so values kept from the existing row are escaped again
+  // before they are written back. safeCell leaves an already-escaped value alone.
+  HEADERS.forEach(function (h) {
+    if (SYSTEM_FIELDS.indexOf(h) === -1) out[h] = safeCell(out[h]);
+  });
   out.leadId = leadId;
   out.firstSeen = out.firstSeen || nowIso;
   out.updated = nowIso;
@@ -236,6 +242,11 @@ function alertKind(previousStage, newStage, isNew) {
   if (newStage === 'submitted' && previousStage !== 'submitted') return 'submitted';
   if (isNew) return 'contact';
   return null;
+}
+
+/** A lead ID is the UUID the website makes (or Utilities.getUuid() for the no-JavaScript form). */
+function validLeadId(id) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
 }
 
 /** The UTC clock hour as yyyyMMddHH: the bucket every hourly count lives in. */
@@ -278,7 +289,9 @@ function alertSubject(kind, row) {
   var company = stripLeadingQuote_(row.company);
   var what = stripLeadingQuote_(row.product || row.otherProduct || row.group);
   var head = kind === 'submitted' ? 'Quote request completed' : 'New lead';
-  return head + ': ' + who + (company ? ' (' + company + ')' : '') + (what ? ' — ' + what : '');
+  var subject = head + ': ' + who + (company ? ' (' + company + ')' : '') + (what ? ' — ' + what : '');
+  // A line break typed by a buyer must never reach the mail header.
+  return subject.replace(/[\r\n]+/g, ' ');
 }
 
 function alertBody(kind, row, sheetUrl) {
@@ -335,6 +348,6 @@ if (typeof module !== 'undefined') {
     safeCell: safeCell, mergeRow: mergeRow, furthestStage: furthestStage,
     alertKind: alertKind, alertSubject: alertSubject, alertBody: alertBody, toObject: toObject,
     formFields: formFields, LIMITS: LIMITS, hourBucket: hourBucket, overLimit: overLimit,
-    rateKeys: rateKeys, bodyTooLarge: bodyTooLarge, doPost: doPost
+    rateKeys: rateKeys, bodyTooLarge: bodyTooLarge, doPost: doPost, validLeadId: validLeadId
   };
 }
