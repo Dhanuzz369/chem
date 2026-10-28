@@ -14,6 +14,9 @@ describe("validateStep", () => {
     expect(short).toHaveProperty("email");
     expect(Object.keys(validateStep("contact", a({ name: "Asha", phone: "abcdefg" }))).length).toBeGreaterThan(0);
     expect(validateStep("contact", a({ name: "   ", email: "a@b.co" }))).toHaveProperty("name");
+    expect(validateStep("contact", a({ name: "Asha", phone: "(022) 2345.6789" }))).toEqual({});
+    expect(validateStep("contact", a({ name: "Asha", phone: "98765+43210" }))).toHaveProperty("email");
+    expect(validateStep("contact", a({ name: "Asha", phone: "++919876543210" }))).toHaveProperty("email");
     expect(validateStep("contact", a({ name: "Asha", email: "not-an-email" }))).toHaveProperty("email");
   });
 

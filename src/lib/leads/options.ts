@@ -26,10 +26,15 @@ export const quantityOptions: Option<QuantityId>[] = quantityIds.map((id) => ({ 
 export const packagingOptions: Option<PackagingId>[] = packagingIds.map((id) => ({ id, label: strings.packaging[id] }));
 export const termsOptions: Option<TermsId>[] = termsIds.map((id) => ({ id, ...strings.terms[id] }));
 
-/** Human label for a product slug ("any" → "Any / not sure"); "" for unknown. */
-export function productLabel(slug: string): string {
+/**
+ * Human label for the chosen product, only when it still applies: "any" or a slug in the
+ * chosen listed group. Anything else (no group, "Something else", a slug from another
+ * group, an unknown slug) is "".
+ */
+export function productLabel(group: string, slug: string): string {
+  if (group === "" || group === "other") return "";
   if (slug === "any") return strings.productAny;
-  return products.find((p) => p.slug === slug)?.name ?? "";
+  return productOptions(group as ProductGroup).find((o) => o.id === slug && o.id !== "any")?.label ?? "";
 }
 
 export function quantityLabel(id: QuantityId | ""): string {

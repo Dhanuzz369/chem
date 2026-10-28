@@ -1,4 +1,8 @@
 /**
+ * Sheet values (product, quantity, packaging and terms in the lead payload) use these
+ * English labels. Keep them English and stable when the UI is translated later;
+ * add translations alongside rather than changing these.
+ *
  * Every English string the quote form shows or writes. Keep copy here only,
  * so another language can be added later as a content job.
  */

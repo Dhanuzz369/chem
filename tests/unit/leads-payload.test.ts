@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPayload } from "@/lib/leads/payload";
+import { buildPayload, nextEverSent } from "@/lib/leads/payload";
 import { emptyAnswers } from "@/lib/leads/steps";
 import type { Answers } from "@/lib/leads/steps";
 
@@ -66,6 +66,33 @@ describe("buildPayload", () => {
       new Set(["otherProduct"]), meta);
     expect(regroup.otherProduct).toBe("__clear__");
     expect(regroup.group).toBe("Amines");
+  });
+
+  it("a product from another group no longer applies", () => {
+    const fresh = buildPayload("lead-1234", "product", a({ group: "Amines", product: "methanol" }), new Set(), meta);
+    expect(fresh.product).toBe("");
+    const switched = buildPayload("lead-1234", "product", a({ group: "Amines", product: "methanol" }),
+      new Set(["group", "product"]), meta);
+    expect(switched.group).toBe("Amines");
+    expect(switched.product).toBe("__clear__");
+    const unknown = buildPayload("lead-1234", "product", a({ group: "Solvents", product: "nope" }), new Set(), meta);
+    expect(unknown.product).toBe("");
+    const noGroup = buildPayload("lead-1234", "product", a({ product: "any" }), new Set(), meta);
+    expect(noGroup.product).toBe("");
+  });
+
+  it("nextEverSent adds keys sent with a value and keeps earlier ones", () => {
+    const p = buildPayload("lead-1234", "product",
+      a({ name: "Asha", group: "other", otherProduct: "Glycerine" }), new Set(["group", "product"]), meta);
+    const next = nextEverSent(new Set(["group", "product", "email"]), p);
+    expect([...next].sort()).toEqual(
+      ["email", "group", "leadId", "name", "otherProduct", "product", "sourcePage", "stage", "userAgent"].sort(),
+    );
+    const prev = new Set(["name"]);
+    nextEverSent(prev, p);
+    expect([...prev]).toEqual(["name"]);
+    expect(nextEverSent(new Set(), { leadId: "x", stage: "contact", notes: "__clear__", port: "" }).has("notes"))
+      .toBe(false);
   });
 
   it("any product and terms use human labels", () => {

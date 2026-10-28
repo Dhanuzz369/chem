@@ -39,13 +39,13 @@ export function visibleSteps(a: Answers, skip: ReadonlySet<StepId>): StepId[] {
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_CHARS = /^[+\d\s().-]+$/;
+const PHONE_CHARS = /^\+?[\d\s().-]+$/;
 
 export function isValidEmail(v: string): boolean {
   return EMAIL.test(v.trim());
 }
 
-/** Seven or more digits; spaces, dashes, dots, brackets and a leading + are allowed, letters are not. */
+/** Seven or more digits; spaces, dashes, dots and brackets are allowed, + only at the start, letters never. */
 export function isValidPhone(v: string): boolean {
   const s = v.trim();
   return PHONE_CHARS.test(s) && s.replace(/\D/g, "").length >= 7;

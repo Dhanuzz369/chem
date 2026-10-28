@@ -28,6 +28,26 @@ describe("fallback", () => {
     expect(text).not.toContain("Methanol");
   });
 
+  it("requestSummary leaves out a product from another group", () => {
+    const text = requestSummary({ ...full, group: "Amines", product: "methanol" });
+    expect(text).toContain("Amines");
+    expect(text).not.toContain("Methanol");
+  });
+
+  it("requestSummary caps long notes", () => {
+    const text = requestSummary({ ...full, notes: "y".repeat(1500) });
+    expect(text).toContain(`${"y".repeat(1000)}…`);
+    expect(text).not.toContain("y".repeat(1001));
+  });
+
+  it("the email body uses CRLF line breaks", () => {
+    const { email, whatsapp } = fallbackLinks(full);
+    const body = email.slice(email.indexOf("&body=") + 6);
+    expect(body).toContain("%0D%0A");
+    expect(body.replace(/%0D%0A/g, "")).not.toContain("%0A");
+    expect(whatsapp).not.toContain("%0D");
+  });
+
   it("fallbackLinks encode the whole request", () => {
     const { whatsapp, email } = fallbackLinks(full);
     expect(whatsapp.startsWith("https://wa.me/918884799369?text=")).toBe(true);
@@ -55,6 +75,10 @@ describe("countryNames", () => {
     expect(new Set(names).size).toBe(names.length);
     expect(names.length).toBeGreaterThan(200);
     expect(names).not.toContain("Unknown Region");
+    expect(names).toContain("Kosovo");
+    for (const gone of ["Antarctica", "Bouvet Island", "Heard & McDonald Islands", "U.S. Outlying Islands"]) {
+      expect(names).not.toContain(gone);
+    }
     expect([...names].sort((x, y) => x.localeCompare(y, "en"))).toEqual(names);
   });
 });
