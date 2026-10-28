@@ -6,12 +6,15 @@ import { defineConfig } from "@playwright/test";
  * - port 3100: the endpoint points at a stub path on the same server (tests route it with page.route);
  * - port 3101: no endpoint at all (the state before the owner deploys the Apps Script), built into its
  *   own distDir with its own tsconfig (next.config.ts). Only tests tagged @no-endpoint run against it.
+ * As a second guard, every spec takes `test` from tests/e2e/fixtures.ts, whose context aborts any
+ * request to https://script.google.com/** (enforced by tests/unit/e2e-guard.test.ts).
  */
 const PORT = 3100;
 const NO_ENDPOINT_PORT = 3101;
 const LEADS_STUB = `http://localhost:${PORT}/__leads`;
 
-const reuseExistingServer = !process.env.CI;
+// Always build and serve fresh: a stale server on 3100/3101 could carry another endpoint.
+const reuseExistingServer = false;
 const timeout = 300_000;
 const mobile = { viewport: { width: 375, height: 812 } };
 const desktop = { viewport: { width: 1440, height: 900 } };

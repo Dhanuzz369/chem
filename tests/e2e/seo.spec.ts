@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import sitemap from "../../src/app/sitemap";
 import { getSiteUrl } from "../../src/config/site";
 

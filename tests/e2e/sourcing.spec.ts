@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // Owner change request 1: Goodbiz Chem also sources chemicals that are not listed.
 const message = /source and supply/i;

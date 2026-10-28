@@ -1,4 +1,4 @@
-import { expect, type Locator, test } from "@playwright/test";
+import { expect, type Locator, test } from "./fixtures";
 import { productGroups, products } from "../../src/content/products";
 
 // The owner asked for no product totals or per-group counts in the copy.

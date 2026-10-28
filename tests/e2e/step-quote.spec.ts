@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "./fixtures";
 
 /** NEXT_PUBLIC_LEADS_ENDPOINT in the main e2e build (playwright.config.ts). */
 const LEADS_STUB = "http://localhost:3100/__leads";
@@ -355,58 +355,64 @@ test("honeypot shows success and sends nothing", async ({ page }) => {
   expect(bodies.filter((b) => b.stage === "submitted")).toHaveLength(0);
 });
 
-test("no-JS shows all steps", async ({ browser }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false });
-  const page = await context.newPage();
-  await page.goto("/quote");
-  const form = page.locator("form[data-lead-form]");
-  await expect(form).toHaveAttribute("action", LEADS_STUB);
-  await expect(form).toHaveAttribute("method", "post");
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
 
-  for (const name of Object.values(headings).slice(0, 7)) await expect(heading(page, name)).toBeVisible();
-  for (const label of ["Your name", "Company", "Email", "WhatsApp or phone", "Which chemical?", "Amount", "Destination country", "Port or city", "Notes"]) {
-    await expect(form.getByLabel(label, { exact: true })).toBeVisible();
-  }
-  for (const name of ["Solvents", "Something else", "Methanol", "Diisopropylamine", "1 container", "Drums", "CIF"]) {
-    await expect(option(form, name).first()).toBeVisible();
-  }
-  await expect(form.getByRole("button", { name: "Send request" })).toBeVisible();
-  await expect(form.getByRole("button", { name: "Next" })).toBeHidden();
-  // The same English labels the JavaScript payload sends, under the same keys.
-  await expect(form.locator('input[name="terms"][value="CIF"]')).toHaveCount(1);
-  await expect(form.locator('input[name="quantity"][value="1 container"]')).toHaveCount(1);
-  await expect(form.locator('input[name="group"][value="Solvents"]')).toHaveCount(1);
-  await expect(form.locator('input[name="leadId"]')).toHaveValue("");
-  await expect(form.locator('input[name="stage"]')).toHaveValue("submitted");
-  await context.close();
+  test("no-JS shows all steps", async ({ page }) => {
+    await page.goto("/quote");
+    const form = page.locator("form[data-lead-form]");
+    await expect(form).toHaveAttribute("action", LEADS_STUB);
+    await expect(form).toHaveAttribute("method", "post");
+
+    for (const name of Object.values(headings).slice(0, 7)) await expect(heading(page, name)).toBeVisible();
+    for (const label of ["Your name", "Company", "Email", "WhatsApp or phone", "Which chemical?", "Amount", "Destination country", "Port or city", "Notes"]) {
+      await expect(form.getByLabel(label, { exact: true })).toBeVisible();
+    }
+    for (const name of ["Solvents", "Something else", "Methanol", "Diisopropylamine", "1 container", "Drums", "CIF"]) {
+      await expect(option(form, name).first()).toBeVisible();
+    }
+    await expect(form.getByRole("button", { name: "Send request" })).toBeVisible();
+    await expect(form.getByRole("button", { name: "Next" })).toBeHidden();
+    // The same English labels the JavaScript payload sends, under the same keys.
+    await expect(form.locator('input[name="terms"][value="CIF"]')).toHaveCount(1);
+    await expect(form.locator('input[name="quantity"][value="1 container"]')).toHaveCount(1);
+    await expect(form.locator('input[name="group"][value="Solvents"]')).toHaveCount(1);
+    await expect(form.locator('input[name="leadId"]')).toHaveValue("");
+    await expect(form.locator('input[name="stage"]')).toHaveValue("submitted");
+  });
+
+  test("no-JS on a product page posts the pre-filled product", async ({ page }) => {
+    await page.goto("/products/methanol");
+    const form = page.locator("form[data-lead-form]");
+    await expect(form).toHaveAttribute("action", LEADS_STUB);
+    await expect(form.locator('input[type="hidden"][name="group"]')).toHaveValue("Solvents");
+    await expect(form.locator('input[type="hidden"][name="product"]')).toHaveValue("Methanol");
+    // The type and product steps are skipped, not shown.
+    await expect(heading(page, headings.group)).toHaveCount(0);
+    await expect(heading(page, headings.product)).toHaveCount(0);
+    await expect(heading(page, headings.quantity)).toBeVisible();
+  });
+
+  test("no-JS without an endpoint offers WhatsApp and email instead of a dead Send @no-endpoint", async ({ page }) => {
+    await page.goto("/quote");
+    const form = page.locator("form[data-lead-form]");
+    await expect(form).not.toHaveAttribute("action", /.*/);
+    await expect(form.getByRole("button", { name: "Send request" })).toHaveCount(0);
+    await expect(form.getByRole("button")).toHaveCount(0);
+    await expect(form.getByRole("link", { name: "Send on WhatsApp" })).toHaveAttribute("href", "https://wa.me/918884799369");
+    await expect(form.getByRole("link", { name: "Send by email" })).toHaveAttribute("href", "mailto:chemicals@goodbizglobal.com");
+  });
 });
 
-test("no-JS on a product page posts the pre-filled product", async ({ browser }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false });
-  const page = await context.newPage();
-  await page.goto("/products/methanol");
-  const form = page.locator("form[data-lead-form]");
-  await expect(form).toHaveAttribute("action", LEADS_STUB);
-  await expect(form.locator('input[type="hidden"][name="group"]')).toHaveValue("Solvents");
-  await expect(form.locator('input[type="hidden"][name="product"]')).toHaveValue("Methanol");
-  // The type and product steps are skipped, not shown.
-  await expect(heading(page, headings.group)).toHaveCount(0);
-  await expect(heading(page, headings.product)).toHaveCount(0);
-  await expect(heading(page, headings.quantity)).toBeVisible();
-  await context.close();
-});
-
-test("no-JS without an endpoint offers WhatsApp and email instead of a dead Send @no-endpoint", async ({ browser, baseURL }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
-  const page = await context.newPage();
+test("requests to the live leads script are blocked in every test", async ({ page }) => {
   await page.goto("/quote");
-  const form = page.locator("form[data-lead-form]");
-  await expect(form).not.toHaveAttribute("action", /.*/);
-  await expect(form.getByRole("button", { name: "Send request" })).toHaveCount(0);
-  await expect(form.getByRole("button")).toHaveCount(0);
-  await expect(form.getByRole("link", { name: "Send on WhatsApp" })).toHaveAttribute("href", "https://wa.me/918884799369");
-  await expect(form.getByRole("link", { name: "Send by email" })).toHaveAttribute("href", "mailto:chemicals@goodbizglobal.com");
-  await context.close();
+  const reached = await page.evaluate(() =>
+    fetch("https://script.google.com/macros/s/guard-check/exec", { method: "POST", mode: "no-cors", body: "{}" }).then(
+      () => true,
+      () => false,
+    ),
+  );
+  expect(reached).toBe(false);
 });
 
 test("axe clean on each step", async ({ page }) => {

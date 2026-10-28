@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "./fixtures";
 import { products, searchProducts } from "../../src/content/products";
 
 const inGroup = (group: string) => products.filter((p) => p.group === group).length;

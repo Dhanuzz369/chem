@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { getAllPosts } from "../../src/lib/blog";
 
 const post = "/blog/sles-70-vs-sles-28";
