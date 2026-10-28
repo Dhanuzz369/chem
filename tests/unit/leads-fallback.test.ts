@@ -47,6 +47,17 @@ describe("fallback", () => {
     expect(text).not.toContain("y".repeat(1001));
   });
 
+  it("long notes are capped at 600 characters in the email and 1000 on WhatsApp", () => {
+    const notes = "n".repeat(1500);
+    const { whatsapp, email } = fallbackLinks({ ...full, notes });
+    const wa = decodeURIComponent(whatsapp.split("?text=")[1]);
+    const body = decodeURIComponent(email.split("&body=")[1]);
+    expect(wa).toContain(`${"n".repeat(1000)}…`);
+    expect(wa).not.toContain("n".repeat(1001));
+    expect(body).toContain(`${"n".repeat(600)}…`);
+    expect(body).not.toContain("n".repeat(601));
+  });
+
   it("the email body uses CRLF line breaks", () => {
     const { email, whatsapp } = fallbackLinks(full);
     const body = email.slice(email.indexOf("&body=") + 6);

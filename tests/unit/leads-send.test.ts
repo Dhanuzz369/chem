@@ -31,6 +31,22 @@ describe("createSender", () => {
     await expect(pending).resolves.toEqual({ ok: false, reason: "timeout" });
   });
 
+  it("the final submitted send waits 30s before timing out; other stages 15s", async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi.fn(() => new Promise<Response>(() => {}));
+    const sender = createSender({ endpoint: "https://script.example/exec", fetchImpl });
+    let contact: unknown, submitted: unknown;
+    void sender.send(payload("contact"), { keepalive: true }).then((r) => (contact = r));
+    void sender.send(payload("submitted"), { keepalive: false }).then((r) => (submitted = r));
+    await vi.advanceTimersByTimeAsync(15_000);
+    expect(contact).toEqual({ ok: false, reason: "timeout" });
+    expect(submitted).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(14_999);
+    expect(submitted).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(submitted).toEqual({ ok: false, reason: "timeout" });
+  });
+
   it("passes keepalive false through and succeeds on {ok:true}", async () => {
     const fetchImpl = vi.fn(async () => okResponse());
     const sender = createSender({ endpoint: "https://script.example/exec", fetchImpl });

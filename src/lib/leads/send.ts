@@ -3,6 +3,8 @@ import type { LeadPayload } from "./payload";
 export type SendResult = { ok: true } | { ok: false; reason: "no-endpoint" | "timeout" | "network" | "bad-response" };
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+/** The final send creates or completes the row and the alert email, so it gets longer. */
+const SUBMIT_TIMEOUT_MS = 30_000;
 
 /**
  * Posts lead payloads to the Apps Script web app. JSON goes as text/plain so the
@@ -10,13 +12,19 @@ const DEFAULT_TIMEOUT_MS = 15_000;
  * single-flight per stage and body: a second, identical send while the first is in flight
  * (a double click) shares its result; a changed payload for the same stage is sent.
  */
-export function createSender(opts: { endpoint: string | undefined; fetchImpl?: typeof fetch; timeoutMs?: number }) {
+export function createSender(opts: {
+  endpoint: string | undefined;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+  submitTimeoutMs?: number;
+}) {
   const endpoint = opts.endpoint?.trim() ?? "";
-  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const inFlight = new Map<string, Promise<SendResult>>();
 
   async function post(payload: LeadPayload, keepalive: boolean): Promise<SendResult> {
     const fetchImpl = opts.fetchImpl ?? fetch;
+    const timeoutMs =
+      payload.stage === "submitted" ? (opts.submitTimeoutMs ?? SUBMIT_TIMEOUT_MS) : (opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<SendResult>((resolve) => {

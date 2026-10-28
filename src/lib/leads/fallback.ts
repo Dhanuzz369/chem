@@ -7,15 +7,16 @@ import { strings } from "./strings";
 export const LEADS_WHATSAPP = (site.contact.whatsapp ?? site.contact.phone ?? "").replace(/\D/g, "");
 export const LEADS_EMAIL = site.contact.email ?? "";
 
+/** Keeps the links short enough to open: WhatsApp takes long text, and mailto: links break sooner. */
 const NOTES_MAX = 1000;
+const EMAIL_NOTES_MAX = 600;
 
-/** Keeps the links short enough for WhatsApp and mail apps. */
-function capNotes(notes: string): string {
-  return notes.length > NOTES_MAX ? `${notes.slice(0, NOTES_MAX)}…` : notes;
+function capNotes(notes: string, max: number): string {
+  return notes.length > max ? `${notes.slice(0, max)}…` : notes;
 }
 
 /** The whole request as plain text, one "Label: value" line per answer given. */
-export function requestSummary(a: Answers): string {
+export function requestSummary(a: Answers, notesMax = NOTES_MAX): string {
   const s = strings.summary;
   const isOther = a.group === "other";
   const listed = a.group !== "" && !isOther;
@@ -34,7 +35,7 @@ export function requestSummary(a: Answers): string {
     [s.country, a.country.trim()],
     [s.port, a.port.trim()],
     [s.terms, termsLabel(a.terms)],
-    [s.notes, capNotes(a.notes.trim())],
+    [s.notes, capNotes(a.notes.trim(), notesMax)],
   ];
   return [s.heading, "", ...rows.filter(([, v]) => v !== "").map(([k, v]) => `${k}: ${v}`)].join("\n");
 }
@@ -49,9 +50,9 @@ function subject(a: Answers): string {
 
 /** Links that hand the whole request to WhatsApp or the buyer's email app when sending fails. */
 export function fallbackLinks(a: Answers): { whatsapp: string; email: string } {
-  const text = requestSummary(a);
+  const body = encodeURIComponent(requestSummary(a, EMAIL_NOTES_MAX)).replace(/%0A/g, "%0D%0A");
   return {
-    whatsapp: `https://wa.me/${LEADS_WHATSAPP}?text=${encodeURIComponent(text)}`,
-    email: `mailto:${LEADS_EMAIL}?subject=${encodeURIComponent(subject(a))}&body=${encodeURIComponent(text).replace(/%0A/g, "%0D%0A")}`,
+    whatsapp: `https://wa.me/${LEADS_WHATSAPP}?text=${encodeURIComponent(requestSummary(a))}`,
+    email: `mailto:${LEADS_EMAIL}?subject=${encodeURIComponent(subject(a))}&body=${body}`,
   };
 }
