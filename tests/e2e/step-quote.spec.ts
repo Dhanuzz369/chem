@@ -92,6 +92,13 @@ test("contact step shows inline errors and focuses the first invalid field", asy
   await expect(name).toHaveAttribute("aria-invalid", "true");
   await expect(form.getByText("Please enter your name.")).toBeVisible();
   await expect(heading(page, headings.contact)).toBeVisible();
+
+  // With a name but no way to reply, the email field asks for one; the hint wording is not reused as the error.
+  await name.fill("Asha Rao");
+  await form.getByRole("button", { name: "Next" }).click();
+  await expect(form.getByLabel("Email", { exact: true })).toBeFocused();
+  await expect(form.getByText("Please add an email or a WhatsApp number.")).toBeVisible();
+  await expect(form.getByText("Email or WhatsApp is enough.")).toBeHidden();
 });
 
 test("auto-advance and back", async ({ page }) => {
@@ -151,6 +158,31 @@ test("/quote#other opens step 2 with something else chosen", async ({ page }) =>
   await fillContact(page, form);
   await expect(form.getByRole("radio", { name: "Something else", exact: true })).toBeChecked();
   await expect(form.getByLabel("Which chemical?")).toBeFocused();
+});
+
+test("a client-side link to /quote#other chooses something else", async ({ page }) => {
+  await stubLeads(page);
+  await openForm(page, "/products/methanol");
+  await page.getByRole("link", { name: "We also source chemicals not listed here" }).click();
+  await expect(page).toHaveURL(/\/quote#other$/);
+  // Next keeps the product page mounted but hidden after a client-side navigation; use the visible form.
+  const form = page.locator("form[data-lead-form][data-hydrated]:visible");
+  await expect(form.getByText("Step 1 of 6")).toBeVisible();
+  await fillContact(page, form);
+  await expect(form.getByRole("radio", { name: "Something else", exact: true })).toBeChecked();
+  await expect(form.getByLabel("Which chemical?")).toBeFocused();
+});
+
+test("changing the hash to #other on /quote chooses something else", async ({ page }) => {
+  await stubLeads(page);
+  const form = await openForm(page);
+  await expect(form.getByText("Step 1 of 7")).toBeVisible();
+  await page.evaluate(() => {
+    window.location.hash = "other";
+  });
+  await expect(form.getByText("Step 1 of 6")).toBeVisible();
+  await fillContact(page, form);
+  await expect(form.getByRole("radio", { name: "Something else", exact: true })).toBeChecked();
 });
 
 test("something else skips step 3", async ({ page }) => {
@@ -251,6 +283,9 @@ test("fast submit is delayed not dropped", async ({ page }) => {
   await expect(heading(page, headings.notes)).toBeVisible();
   const clickedAt = await page.evaluate(() => performance.now());
   await form.getByRole("button", { name: "Send request" }).click();
+  // While the send waits out the 3 s, the buyer cannot step back or edit the notes.
+  await expect(form.getByRole("button", { name: "Back" })).toBeDisabled();
+  await expect(form.getByLabel("Notes")).toBeDisabled();
   await expect(heading(page, headings.success)).toBeVisible({ timeout: 10_000 });
 
   const { mountedAt, submittedAt } = await page.evaluate(() => {
@@ -282,6 +317,10 @@ test("failure shows fallback", async ({ page }) => {
     expect(href).toContain("Methanol");
   }  // The buyer can also retry from the form.
   await expect(form.getByRole("button", { name: "Try again" })).toBeVisible();
+
+  await settled(page);
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations, "fallback panel").toEqual([]);
 });
 
 test("no endpoint shows fallback @no-endpoint", async ({ page }) => {
@@ -339,6 +378,34 @@ test("no-JS shows all steps", async ({ browser }) => {
   await expect(form.locator('input[name="group"][value="Solvents"]')).toHaveCount(1);
   await expect(form.locator('input[name="leadId"]')).toHaveValue("");
   await expect(form.locator('input[name="stage"]')).toHaveValue("submitted");
+  await context.close();
+});
+
+test("no-JS on a product page posts the pre-filled product", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("/products/methanol");
+  const form = page.locator("form[data-lead-form]");
+  await expect(form).toHaveAttribute("action", LEADS_STUB);
+  await expect(form.locator('input[type="hidden"][name="group"]')).toHaveValue("Solvents");
+  await expect(form.locator('input[type="hidden"][name="product"]')).toHaveValue("Methanol");
+  // The type and product steps are skipped, not shown.
+  await expect(heading(page, headings.group)).toHaveCount(0);
+  await expect(heading(page, headings.product)).toHaveCount(0);
+  await expect(heading(page, headings.quantity)).toBeVisible();
+  await context.close();
+});
+
+test("no-JS without an endpoint offers WhatsApp and email instead of a dead Send @no-endpoint", async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  const page = await context.newPage();
+  await page.goto("/quote");
+  const form = page.locator("form[data-lead-form]");
+  await expect(form).not.toHaveAttribute("action", /.*/);
+  await expect(form.getByRole("button", { name: "Send request" })).toHaveCount(0);
+  await expect(form.getByRole("button")).toHaveCount(0);
+  await expect(form.getByRole("link", { name: "Send on WhatsApp" })).toHaveAttribute("href", "https://wa.me/918884799369");
+  await expect(form.getByRole("link", { name: "Send by email" })).toHaveAttribute("href", "mailto:chemicals@goodbizglobal.com");
   await context.close();
 });
 

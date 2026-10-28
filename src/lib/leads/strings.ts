@@ -35,7 +35,7 @@ export const strings = {
 
   errors: {
     name: "Please enter your name.",
-    contactMissing: "Email or WhatsApp is enough.",
+    contactMissing: "Please add an email or a WhatsApp number.",
     emailInvalid: "Please check the email address, or add a WhatsApp number instead.",
     phoneInvalid: "Please check the number (at least 7 digits), or add an email instead.",
     group: "Please choose a product type.",
@@ -105,7 +105,9 @@ export const strings = {
       whatsapp: "Send on WhatsApp",
       email: "Send by email",
     },
-    noScriptContact: "You can also send your request on WhatsApp or by email:",
+    noScriptContact: "To send your request, message us on WhatsApp or email us with the details above.",
+    /** The hidden spam-trap checkbox; only bots see it. */
+    honeypotLabel: "Website",
   },
 
   summary: {

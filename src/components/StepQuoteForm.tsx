@@ -5,6 +5,7 @@ import { fallbackLinks, LEADS_EMAIL, LEADS_WHATSAPP } from "@/lib/leads/fallback
 import { productLabel } from "@/lib/leads/options";
 import { buildPayload, nextEverSent } from "@/lib/leads/payload";
 import { createSender } from "@/lib/leads/send";
+import { newLeadId } from "@/lib/leads/uuid";
 import { emptyAnswers, stageFor, validateStep, visibleSteps, type Answers, type Stage, type StepId } from "@/lib/leads/steps";
 import { strings } from "@/lib/leads/strings";
 import { buttonClasses } from "./Button";
@@ -85,9 +86,15 @@ type StepQuoteFormProps = {
   initial?: { answers: Partial<Answers>; skip: StepId[] };
   /** Narrow spots such as product pages: step headings become h3 under the section's h2. */
   compact?: boolean;
+  /**
+   * The URL hash became #other after the form mounted (a client-side link to /quote#other renders
+   * before the router updates the URL, or the hash was changed by hand). Chooses "Something else"
+   * unless the buyer already picked a product type.
+   */
+  chooseOther?: boolean;
 };
 
-export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) {
+export function StepQuoteForm({ initial, compact = false, chooseOther = false }: StepQuoteFormProps) {
   const uid = useId();
   const hydrated = useHydrated();
   const [skip] = useState(() => new Set(initial?.skip ?? []));
@@ -97,7 +104,7 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
   const [errors, setErrors] = useState<Errors>({});
   const [phase, setPhase] = useState<Phase>("editing");
   // Client-only: the server never needs it, and the no-JavaScript form posts an empty leadId.
-  const [leadId] = useState(() => (typeof window === "undefined" ? "" : crypto.randomUUID()));
+  const [leadId] = useState(() => (typeof window === "undefined" ? "" : newLeadId()));
   const [sender] = useState(() => createSender({ endpoint: ENDPOINT }));
   const everSent = useRef<ReadonlySet<string>>(new Set());
   const mountedAt = useRef(0);
@@ -107,7 +114,15 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
   const formRef = useRef<HTMLFormElement>(null);
   const honeypot = useRef<HTMLInputElement>(null);
 
-  const fieldId = (field: FieldKey) => (field === "otherProduct" ? "other" : `${uid}-${field}`);
+  // Adjusting state while rendering (not in an effect), so the change shows in the same paint.
+  const [otherSeen, setOtherSeen] = useState(chooseOther);
+  if (chooseOther && !otherSeen) {
+    setOtherSeen(true);
+    if (!skip.has("group") && answers.group === "") setAnswers((a) => ({ ...a, group: "other", product: "" }));
+  }
+
+  // useId-based, so a previous page Next keeps mounted (hidden) after a client-side navigation never shares an id.
+  const fieldId = (field: FieldKey) => `${uid}-${field}`;
   const headingId = (step: StepId | "success" | "failed") => `${uid}-heading-${step}`;
   const steps = visibleSteps(answers, skip);
   const index = Math.max(0, steps.indexOf(current));
@@ -242,6 +257,7 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
   };
 
   const done = phase === "success";
+  const busy = phase === "sending";
   const replyTo = answers.email.trim() || answers.phone.trim();
   const links = phase === "failed" ? fallbackLinks(answers) : null;
   const prefilledGroup = skip.has("group") && answers.group !== "other" ? answers.group : "";
@@ -251,7 +267,8 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
       ref={formRef}
       data-lead-form=""
       data-hydrated={hydrated ? "" : undefined}
-      method="post"
+      // Without an endpoint there is nothing to post to: the no-JavaScript view offers WhatsApp and email instead.
+      method={ENDPOINT ? "post" : undefined}
       action={ENDPOINT || undefined}
       noValidate={hydrated}
       onSubmit={onSubmit}
@@ -292,6 +309,7 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
                 fieldId={fieldId}
                 headingId={headingId(step)}
                 hydrated={hydrated}
+                busy={busy}
                 update={update}
                 choose={choose}
                 hold={() => clearTimeout(advanceTimer.current)}
@@ -311,7 +329,7 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
       <div aria-hidden="true" className="absolute -start-[10000px] top-0 size-px overflow-hidden">
         <label>
           <input ref={honeypot} type="checkbox" name="website" value="1" tabIndex={-1} autoComplete="off" />
-          Website
+          {strings.ui.honeypotLabel}
         </label>
       </div>
 
@@ -343,7 +361,7 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
       ) : (
         <div className="lead-js mt-8 flex items-center justify-between gap-3 border-t border-line pt-5">
           {index > 0 ? (
-            <button type="button" onClick={back} className={buttonClasses("ghost", "md", "-ms-2 ps-2 pe-3")}>
+            <button type="button" onClick={back} disabled={busy} className={buttonClasses("ghost", "md", "-ms-2 ps-2 pe-3")}>
               <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" className="rtl:-scale-x-100">
                 <path d="M10 3.5 5.5 8l4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -353,19 +371,20 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
             <span />
           )}
           <button
-            type="submit"
+            // A plain button until React runs: before hydration (or without JavaScript) it must not post the form.
+            type={hydrated ? "submit" : "button"}
             onClick={ignoreRepeat}
-            aria-disabled={phase === "sending" || undefined}
+            aria-disabled={busy || undefined}
             className={buttonClasses("primary", "lg", "min-w-32 flex-1 sm:flex-none")}
           >
-            {phase === "sending"
+            {busy
               ? strings.ui.sending
               : phase === "failed"
                 ? strings.ui.retry
                 : current === "notes"
                   ? strings.ui.send
                   : strings.ui.next}
-            {phase !== "sending" && current !== "notes" && (
+            {!busy && current !== "notes" && (
               <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" className="rtl:-scale-x-100">
                 <path d="M6 3.5 10.5 8 6 12.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -374,22 +393,24 @@ export function StepQuoteForm({ initial, compact = false }: StepQuoteFormProps) 
         </div>
       )}
 
-      {/* Without JavaScript: one Send for the whole form. */}
+      {/* Without JavaScript: one Send for the whole form, or, with no endpoint to post to, WhatsApp and email. */}
       <div className="lead-nojs mt-10 hidden border-t border-line pt-6">
-        <button type="submit" className={buttonClasses("primary", "lg")}>
-          {strings.ui.send}
-        </button>
-        {!ENDPOINT && LEADS_WHATSAPP && LEADS_EMAIL && (
-          <p className="mt-4 text-ink-muted">
-            {strings.ui.noScriptContact}{" "}
-            <a href={`https://wa.me/${LEADS_WHATSAPP}`} className="font-medium text-brand-700 underline underline-offset-4">
-              WhatsApp
-            </a>
-            {" · "}
-            <a href={`mailto:${LEADS_EMAIL}`} className="font-medium text-brand-700 underline underline-offset-4">
-              {LEADS_EMAIL}
-            </a>
-          </p>
+        {ENDPOINT ? (
+          <button type="submit" className={buttonClasses("primary", "lg")}>
+            {strings.ui.send}
+          </button>
+        ) : (
+          <>
+            <p className="text-ink">{strings.ui.noScriptContact}</p>
+            <div className="mt-4 grid gap-3 sm:flex sm:flex-wrap">
+              <a href={`https://wa.me/${LEADS_WHATSAPP}`} className={buttonClasses("primary", "lg")}>
+                {strings.ui.failed.whatsapp}
+              </a>
+              <a href={`mailto:${LEADS_EMAIL}`} className={buttonClasses("secondary", "lg")}>
+                {strings.ui.failed.email}
+              </a>
+            </div>
+          </>
         )}
       </div>
     </form>

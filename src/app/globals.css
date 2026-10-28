@@ -146,6 +146,11 @@ h4 {
   .field-input:focus {
     border-color: var(--color-brand-600);
   }
+  .field-input:disabled {
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    cursor: not-allowed;
+  }
   .field-input[aria-invalid="true"] {
     border-color: var(--color-danger-700);
   }

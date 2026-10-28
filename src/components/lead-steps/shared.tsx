@@ -14,6 +14,8 @@ export type StepProps = {
   /** The heading that names this step; radio groups are labelled by it. */
   headingId: string;
   hydrated: boolean;
+  /** The final send is under way: fields that could still change the request are disabled. */
+  busy: boolean;
   /** Typing, or a choice made with the keyboard: update and stay. */
   update: (patch: Partial<Answers>) => void;
   /** A card or pill was tapped: update, then move on after a beat, or focus a field that opened. */
@@ -64,6 +66,7 @@ type TextFieldProps = {
   optional?: boolean;
   required?: boolean;
   multiline?: boolean;
+  disabled?: boolean;
   className?: string;
 } & Pick<HTMLAttributes<HTMLInputElement>, "inputMode"> & {
     type?: "text" | "email" | "tel";
@@ -85,6 +88,7 @@ export function TextField({
   optional,
   required,
   multiline,
+  disabled,
   className = "",
   type = "text",
   ...rest
@@ -96,6 +100,7 @@ export function TextField({
     name,
     value,
     required,
+    disabled,
     "aria-invalid": error ? true : undefined,
     "aria-describedby": note ? noteId : undefined,
     maxLength: rest.maxLength,
