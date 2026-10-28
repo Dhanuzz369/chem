@@ -10,7 +10,12 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+// The e2e suite builds a second copy without NEXT_PUBLIC_LEADS_ENDPOINT (playwright.config.ts). It gets its own
+// folder and its own tsconfig, so neither build type-checks the other's generated route types.
+const e2eNoEndpoint = process.env.E2E_NO_ENDPOINT_BUILD === "1";
+
 const nextConfig: NextConfig = {
+  ...(e2eNoEndpoint && { distDir: ".next-e2e-no-endpoint", typescript: { tsconfigPath: "tsconfig.e2e.json" } }),
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

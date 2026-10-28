@@ -48,3 +48,6 @@ next-env.d.ts
 
 # playwright-cli session files
 /.playwright-cli/
+
+# second e2e build without the leads endpoint (playwright.config.ts)
+/.next-e2e-no-endpoint/
