@@ -1,7 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
 /**
- * Two production builds, because NEXT_PUBLIC_LEADS_ENDPOINT is inlined at build time:
+ * Two production builds, because NEXT_PUBLIC_LEADS_ENDPOINT is inlined at build time. Both set it explicitly
+ * in the process env, which wins over the committed .env.production, so no test ever posts to the live script:
  * - port 3100: the endpoint points at a stub path on the same server (tests route it with page.route);
  * - port 3101: no endpoint at all (the state before the owner deploys the Apps Script), built into its
  *   own distDir with its own tsconfig (next.config.ts). Only tests tagged @no-endpoint run against it.

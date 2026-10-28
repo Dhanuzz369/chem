@@ -11,7 +11,7 @@ This guide is written for the business owner. You do not need to be a developer 
 Do these in order. Each step links to the section that explains it.
 
 1. [x] **Contact details** are filled in `src/config/site.ts` (chemicals@goodbizglobal.com, +91 8884799369, Bengaluru). See [section 5](#5-contact-details).
-2. [ ] **Set up the leads Sheet** and put its web-app address in `NEXT_PUBLIC_LEADS_ENDPOINT`. See [section 3](#3-quote-requests-the-leads-sheet).
+2. [x] **The leads Sheet is set up**, and its web-app address is in `.env.production`. See [section 3](#3-quote-requests-the-leads-sheet).
 3. [ ] **Move to www.goodbizchemicals.com** and set `SITE_URL=https://www.goodbizchemicals.com`. See [Going live](#going-live-waits-for-your-go-ahead), step 3.
 4. [ ] **Deploy**, only once you have given the go-ahead. See [Going live](#going-live-waits-for-your-go-ahead).
 5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet.
@@ -61,7 +61,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | --- | --- | --- |
 | `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. After setting or changing it on Vercel, **redeploy** (it is read when the site is built). If `ALLOW_INDEXING` is `true` and `SITE_URL` is empty, the build stops with a message saying so. | `https://www.example.com` |
 | `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
-| `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret: the browser sends quote requests straight to it. It is read when the site is built, so **redeploy** after setting or changing it. While it is empty, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
+| `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret (the browser sends quote requests straight to it), so the live address is kept in the project file **`.env.production`**, and every production build uses it. A Vercel environment variable with the same name overrides that file. It is read when the site is built, so **redeploy** after changing it. If it is empty, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
 | `GOOGLE_SITE_VERIFICATION` | Optional. The code Google Search Console gives you if you choose the **HTML tag** way of proving you own the site (only the `content="…"` value). Leave empty if you verify with a DNS record instead. Redeploy after setting it. | `abc123XYZ` |
 | `BING_SITE_VERIFICATION` | Optional. The code Bing Webmaster Tools gives you for its **meta tag** check (the `content="…"` value of `msvalidate.01`). Redeploy after setting it. | `0123456789ABCDEF` |
 
@@ -72,7 +72,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 
 The quote form asks one small thing per screen. Each buyer becomes **one row** in a Google Sheet in your goodbizglobal.com Workspace: the row is created as soon as they enter their contact details on the first screen, and it is updated as they go. The `stage` column shows how far they got. An alert email goes to chemicals@goodbizglobal.com when a new lead arrives and when a request is completed.
 
-The Sheet is written by a small Google Apps Script web app that you own. Follow **[docs/leads-apps-script.md](docs/leads-apps-script.md)** to set it up (about ten minutes, one time), then put its `/exec` address in `NEXT_PUBLIC_LEADS_ENDPOINT` ([section 2](#2-settings-environment-variables)) and redeploy.
+The Sheet is written by a small Google Apps Script web app that you own. Follow **[docs/leads-apps-script.md](docs/leads-apps-script.md)** to set it up (about ten minutes, one time), then put its `/exec` address in `NEXT_PUBLIC_LEADS_ENDPOINT` in `.env.production` ([section 2](#2-settings-environment-variables)) and redeploy. The current address is already there. If you deploy the script as a new web app (a new `/exec` address), update that line; a new *version* of the same deployment keeps the address.
 
 If the address is missing, or a request cannot reach the Sheet, the buyer is never stuck: the form shows **Send on WhatsApp** and **Send by email** buttons with the whole request already written in.
 
@@ -228,9 +228,9 @@ Change both values (the code is the two-letter country code), run `npm test`, an
 
 The site has **not** been deployed, and nothing in this project deploys it automatically. When you are ready and have given the go-ahead, going live on [Vercel](https://vercel.com) looks like this:
 
-0. **Set up the leads Sheet first** ([section 3](#3-quote-requests-the-leads-sheet)) so you have the `/exec` address for `NEXT_PUBLIC_LEADS_ENDPOINT`.
+0. **The leads Sheet is set up** ([section 3](#3-quote-requests-the-leads-sheet)); its `/exec` address is in `.env.production`, so there is nothing to add for it in Vercel.
 1. **Connect the code to Vercel.** Sign in to Vercel, choose **Add New** > **Project** and import this project's Git repository. Vercel recognises it as a Next.js site; the default build settings are correct.
-2. **Add the settings.** In the project's **Settings** > **Environment Variables**, add every setting from [section 2](#2-settings-environment-variables) with its real value. Leave `ALLOW_INDEXING` empty for now.
+2. **Add the settings.** In the project's **Settings** > **Environment Variables**, add every setting from [section 2](#2-settings-environment-variables) with its real value, except `NEXT_PUBLIC_LEADS_ENDPOINT`, which comes from `.env.production`. Leave `ALLOW_INDEXING` empty for now.
 3. **Add the domain www.goodbizchemicals.com.**
    1. In **Settings** > **Domains**, add `www.goodbizchemicals.com`, and follow Vercel's instructions to point it there at your domain registrar.
    2. Also add `goodbizchemicals.com` (without `www`) and choose to **redirect** it to `www.goodbizchemicals.com`.
