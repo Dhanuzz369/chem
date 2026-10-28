@@ -23,7 +23,9 @@ var SUMMARY_SHEET_NAME = 'Summary';
 // new version (Deploy → Manage deployments → Edit → Version: New version → Deploy).
 var MAX_NEW_LEADS_PER_HOUR = 60;          // new rows; over this, the buyer sees the WhatsApp/email buttons
 var MAX_UPDATES_PER_LEAD_PER_HOUR = 40;   // later steps for one buyer
-var MAX_ALERT_EMAILS_PER_HOUR = 30;       // over this, rows are still saved but no email is sent
+var MAX_ALERT_EMAILS_PER_HOUR = 30;       // "New lead" emails; over this, rows are still saved but no email is sent
+var MAX_COMPLETED_ALERTS_PER_HOUR = 60;   // "Quote request completed" emails, counted separately
+var MIN_DAILY_MAIL_QUOTA = 5;             // no alert email unless Google's daily quota has more than this left
 var MAX_BODY_BYTES = 20 * 1024;           // bigger posts are refused
 
 // ── Do not change below unless you also change the website ────────────────
@@ -43,6 +45,8 @@ var LIMITS = {
   newLeadsPerHour: MAX_NEW_LEADS_PER_HOUR,
   updatesPerLeadPerHour: MAX_UPDATES_PER_LEAD_PER_HOUR,
   alertEmailsPerHour: MAX_ALERT_EMAILS_PER_HOUR,
+  completedAlertsPerHour: MAX_COMPLETED_ALERTS_PER_HOUR,
+  minDailyMailQuota: MIN_DAILY_MAIL_QUOTA,
   maxBodyBytes: MAX_BODY_BYTES
 };
 var CACHE_SECONDS = 2 * 60 * 60; // longer than an hour bucket, so a count never expires mid-hour
@@ -119,15 +123,19 @@ function doPost(e) {
       cache.put(capKey, String(count + 1), CACHE_SECONDS);
       result = upsert_(sheet, leadId, data, new Date().toISOString(), rowIndex);
       alert = alertKind(result.previousStage, result.row.stage, result.isNew);
-      // Only "New lead" alerts count toward the cap: a completed request always emails.
-      if (alert === 'contact') {
-        var sent = Number(cache.get(keys.alert)) || 0;
-        if (overLimit(sent, MAX_ALERT_EMAILS_PER_HOUR)) {
-          console.warn('Alert email skipped: ' + MAX_ALERT_EMAILS_PER_HOUR + ' alerts already sent this hour. Lead ' +
-            leadId + ' is saved in the sheet.');
+      // "New lead" and "completed" alerts have separate hourly budgets, so a flood of new
+      // leads can never hold back the email for a buyer who finished their request.
+      if (alert) {
+        var completed = alert === 'submitted';
+        var mailKey = completed ? keys.completed : keys.alert;
+        var mailCap = completed ? MAX_COMPLETED_ALERTS_PER_HOUR : MAX_ALERT_EMAILS_PER_HOUR;
+        var sent = Number(cache.get(mailKey)) || 0;
+        if (overLimit(sent, mailCap)) {
+          console.warn((completed ? 'Completed-request alert skipped: ' : 'Alert email skipped: ') + mailCap +
+            ' already sent this hour. Lead ' + leadId + ' is saved in the sheet.');
           alert = null;
         } else {
-          cache.put(keys.alert, String(sent + 1), CACHE_SECONDS);
+          cache.put(mailKey, String(sent + 1), CACHE_SECONDS);
         }
       }
     }
@@ -140,7 +148,11 @@ function doPost(e) {
     return reply_(isForm, false, 'rate_limited');
   }
   try {
-    if (alert) sendAlert_(alert, result.row);
+    if (alert && MailApp.getRemainingDailyQuota() <= MIN_DAILY_MAIL_QUOTA) {
+      console.warn('Alert email skipped: the daily email quota is nearly used up. Lead ' + leadId + ' is saved in the sheet.');
+    } else if (alert) {
+      sendAlert_(alert, result.row);
+    }
   } catch (err) {
     console.error('Alert email failed: ' + err); // the row is saved; never fail the buyer over email
   }
@@ -262,9 +274,14 @@ function overLimit(count, max) {
   return n >= max;
 }
 
-/** Cache keys for this hour: all new leads, this lead's updates, and alert emails. */
+/** Cache keys for this hour: all new leads, this lead's updates, "New lead" emails and "completed" emails. */
 function rateKeys(bucket, leadId) {
-  return { newLead: 'new:' + bucket, update: 'upd:' + leadId + ':' + bucket, alert: 'mail:' + bucket };
+  return {
+    newLead: 'new:' + bucket,
+    update: 'upd:' + leadId + ':' + bucket,
+    alert: 'mail:' + bucket,
+    completed: 'done:' + bucket
+  };
 }
 
 /** True when the post is bigger than `maxBytes` in UTF-8. Text that cannot be encoded counts as too big. */

@@ -15,10 +15,17 @@ type Script = {
   alertKind(prev: string, next: string, isNew: boolean): string | null;
   toObject(values: unknown[]): Row;
   formFields(parameters: Record<string, string[]>): Record<string, string>;
-  LIMITS: { newLeadsPerHour: number; updatesPerLeadPerHour: number; alertEmailsPerHour: number; maxBodyBytes: number };
+  LIMITS: {
+    newLeadsPerHour: number;
+    updatesPerLeadPerHour: number;
+    alertEmailsPerHour: number;
+    completedAlertsPerHour: number;
+    minDailyMailQuota: number;
+    maxBodyBytes: number;
+  };
   hourBucket(date: Date): string;
   overLimit(count: number, max: number): boolean;
-  rateKeys(bucket: string, leadId: string): { newLead: string; update: string; alert: string };
+  rateKeys(bucket: string, leadId: string): { newLead: string; update: string; alert: string; completed: string };
   bodyTooLarge(contents: string, maxBytes: number): boolean;
   validLeadId(id: string): boolean;
   alertSubject(kind: string, row: Row): string;
@@ -50,7 +57,14 @@ describe("Apps Script helpers", () => {
   });
 
   it("abuse caps default to 60 new leads, 40 updates per lead and 30 alert emails an hour, and 20 KB bodies", () => {
-    expect(gs.LIMITS).toEqual({ newLeadsPerHour: 60, updatesPerLeadPerHour: 40, alertEmailsPerHour: 30, maxBodyBytes: 20 * 1024 });
+    expect(gs.LIMITS).toEqual({
+      newLeadsPerHour: 60,
+      updatesPerLeadPerHour: 40,
+      alertEmailsPerHour: 30,
+      completedAlertsPerHour: 60,
+      minDailyMailQuota: 5,
+      maxBodyBytes: 20 * 1024,
+    });
   });
 
   it("hourBucket is the UTC hour as yyyyMMddHH", () => {
@@ -73,6 +87,7 @@ describe("Apps Script helpers", () => {
       newLead: "new:2026102807",
       update: "upd:lead-1234:2026102807",
       alert: "mail:2026102807",
+      completed: "done:2026102807",
     });
   });
 
@@ -183,6 +198,7 @@ function loadWithFakes() {
   const mails: string[] = [];
   const warn = vi.fn();
   const matchCase: boolean[] = [];
+  const quota = { remaining: 100 };
   const range = (row: number) => ({
     getValues: () => [rows[row - 2] ?? []],
     setNumberFormat() {
@@ -221,7 +237,10 @@ function loadWithFakes() {
       getScriptCache: () => ({ get: (k: string) => cache.get(k) ?? null, put: (k: string, v: string) => void cache.set(k, v) }),
     },
     SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: () => sheet, getUrl: () => "https://sheet" }) },
-    MailApp: { sendEmail: (_to: string, subject: string) => void mails.push(subject) },
+    MailApp: {
+      sendEmail: (_to: string, subject: string) => void mails.push(subject),
+      getRemainingDailyQuota: () => quota.remaining,
+    },
     ContentService: { createTextOutput: (text: string) => ({ setMimeType: () => ({ text }) }), MimeType: { JSON: "json" } },
     Utilities: { getUuid: () => "00000000-0000-4000-8000-000000000000" },
   };
@@ -233,7 +252,10 @@ function loadWithFakes() {
         postData: { type: "text/plain", contents: typeof body === "string" ? body : JSON.stringify(body) },
       }).text,
     ) as { ok: boolean; error?: string };
-  return { post, rows, mails, warn, matchCase };
+  const exports = sandbox.module.exports;
+  /** This hour's cache key for one of the counters. */
+  const key = (name: "completed" | "alert") => exports.rateKeys(exports.hourBucket(new Date()), "")[name];
+  return { post, rows, mails, warn, matchCase, cache, quota, key };
 }
 
 describe("Apps Script doPost caps", () => {
@@ -278,6 +300,36 @@ describe("Apps Script doPost caps", () => {
     expect(mails).toHaveLength(31);
     // The row lookup is case-sensitive.
     expect(matchCase.every(Boolean) && matchCase.length > 0).toBe(true);
+  });
+
+  it("completed-request alerts have their own cap of MAX_COMPLETED_ALERTS_PER_HOUR", () => {
+    const { post, rows, mails, warn, cache, key } = loadWithFakes();
+    expect(post(lead(1))).toEqual({ ok: true });
+    cache.set(key("completed"), "59");
+    expect(post(lead(1, "submitted"))).toEqual({ ok: true });
+    expect(mails.at(-1)).toMatch(/^Quote request completed/);
+    expect(mails).toHaveLength(2);
+
+    expect(post(lead(2))).toEqual({ ok: true });
+    expect(mails).toHaveLength(3);
+    expect(post(lead(2, "submitted"))).toEqual({ ok: true });
+    // The 61st completed alert this hour: the row is saved, the email skipped and logged.
+    expect(mails).toHaveLength(3);
+    expect(rows.find((r) => r[0] === lead(2).leadId)?.[1]).toBe("submitted");
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Completed-request alert skipped"));
+  });
+
+  it("skips every alert email when the daily mail quota is nearly used up", () => {
+    const { post, rows, mails, warn, quota } = loadWithFakes();
+    quota.remaining = 5;
+    expect(post(lead(1))).toEqual({ ok: true });
+    expect(post(lead(1, "submitted"))).toEqual({ ok: true });
+    expect(rows).toHaveLength(1);
+    expect(mails).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("daily email quota"));
+    quota.remaining = 6;
+    expect(post(lead(2))).toEqual({ ok: true });
+    expect(mails).toHaveLength(1);
   });
 
   it("refuses a leadId that is not a UUID", () => {
