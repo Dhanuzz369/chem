@@ -69,12 +69,16 @@ If the alert lands only in **Sent** and not in your inbox, add a Gmail filter. T
 |---|---|
 | `ALERT_TO` | The address that receives the alerts |
 | `SITE_URL` | The "Back to Goodbiz Chem" link shown to buyers |
-| `MAX_NEW_LEADS_PER_HOUR` | Default `60`. New buyers accepted per hour. Over it, no row is added and the website shows the buyer **Send on WhatsApp** and **Send by email** buttons instead, so a real buyer still reaches you. |
+| `MAX_NEW_LEADS_PER_HOUR` | Default `60`. New buyers accepted per hour. Over it, no row is added, and the website shows the WhatsApp/email buttons when the buyer presses Send, so a real buyer still reaches you. |
 | `MAX_UPDATES_PER_LEAD_PER_HOUR` | Default `40`. Later-step updates accepted for one buyer per hour. A real buyer sends about seven. |
-| `MAX_ALERT_EMAILS_PER_HOUR` | Default `30`. Alert emails per hour. Over it, rows are still saved but no email is sent; the skip is logged under **Executions** in the Apps Script editor. |
+| `MAX_ALERT_EMAILS_PER_HOUR` | Default `30`. "New lead" emails per hour. Over it, rows are still saved but no email is sent. |
+| `MAX_COMPLETED_ALERTS_PER_HOUR` | Default `60`. "Quote request completed" emails per hour, counted separately, so a flood of new leads never holds back the email for a buyer who finished. Over it, rows are still saved but no email is sent. |
+| `MIN_DAILY_MAIL_QUOTA` | Default `5`. Google limits how many emails a script may send per day. When `5` or fewer are left, alerts are skipped (rows are still saved), so the quota is never fully used up. |
 | `MAX_BODY_BYTES` | Default `20 * 1024` (20 KB). Bigger posts are refused. |
 
 **Why the limits:** the web-app address is public, so anyone could post to it. The limits stop a flood of fake posts from filling the sheet or your inbox. Counts reset at the start of every hour (UTC) and are kept in the script's cache, not in the sheet. To change a limit, edit the number, **Save**, and re-deploy as a new version (below); the change only takes effect after that.
+
+**Checking whether a limit was hit:** in the Apps Script editor open **Executions** and look at the logs. Search for `Rate limited` (a post was refused) or `skipped` (an alert email was not sent; the row is in the sheet).
 
 **Re-deploying after an edit** (any change to the script, including the limits, takes effect only after this)
 
@@ -102,4 +106,4 @@ The `/exec` URL stays the same.
 | notes | The buyer's notes. |
 | sourcePage, userAgent | The page the form was sent from, and the buyer's browser. |
 
-Values starting with `=`, `+`, `-` or `@` are saved with a leading `'`, so Sheets never treats them as formulas. Phone numbers like `+91…` therefore show a small `'` in the cell, which is harmless.
+Values starting with `=`, `+`, `-` or `@` are saved with a leading `'`, so Sheets never treats them as formulas. Sheets hides that `'` in the cell; you only see it in the formula bar when you select the cell (for example on phone numbers like `+91…`). It is harmless.
