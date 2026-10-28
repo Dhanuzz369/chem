@@ -68,6 +68,8 @@ test("no axe violations on shell", async ({ page }, testInfo) => {
   if (testInfo.project.name === "mobile") {
     await page.getByRole("button", { name: "Menu" }).click();
     await expect(page.getByRole("navigation", { name: "Site" })).toBeVisible();
+    // The menu fades in over 180ms; mid-fade text would read as low contrast.
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
     const open = await new AxeBuilder({ page }).analyze();
     expect(open.violations).toEqual([]);
   }
