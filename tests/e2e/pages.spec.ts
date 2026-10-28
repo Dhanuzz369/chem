@@ -27,16 +27,15 @@ test("about group tiles link to the filtered catalogue", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Amines" })).toHaveAttribute("aria-pressed", "true");
 });
 
-test("contact shows quote form and only the contact fields that are set", async ({ page }) => {
+test("contact shows the quote form and the owner's contact details", async ({ page }) => {
   await page.goto("/contact");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("button", { name: /send/i })).toBeVisible();
-  const main = page.getByRole("main");
-  const { email, phone, whatsapp } = site.contact;
-  // Empty fields render nothing; once the owner fills one in, its link appears.
-  await expect(main.locator('a[href^="mailto:"]')).toHaveCount(email ? 1 : 0);
-  await expect(main.locator('a[href^="tel:"]')).toHaveCount(phone ? 1 : 0);
-  await expect(main.locator('a[href*="wa.me"]')).toHaveCount(whatsapp ? 1 : 0);
+  await expect(page.getByRole("button", { name: "Next" })).toBeVisible();
+  const details = page.getByRole("complementary", { name: "Contact details" });
+  await expect(details.getByRole("link", { name: "chemicals@goodbizglobal.com" })).toHaveAttribute("href", "mailto:chemicals@goodbizglobal.com");
+  await expect(details.locator('a[href="tel:+918884799369"]')).toHaveCount(1);
+  await expect(details.locator('a[href="https://wa.me/918884799369"]')).toHaveCount(1);
+  await expect(details.getByText("Bengaluru, Karnataka, India")).toBeVisible();
 });
 
 test("404 page offers products and quote links", async ({ page }) => {

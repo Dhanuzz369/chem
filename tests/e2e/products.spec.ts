@@ -115,7 +115,9 @@ test("product page has answer-first summary, HSN, SDS note, FAQ, related links a
   const related = page.getByRole("region", { name: "Related products" });
   await expect(related.getByRole("link", { name: /Ethyl Acetate/ })).toHaveAttribute("href", "/products/ethyl-acetate");
 
-  await expect(page.getByRole("button", { name: "Remove Methanol" })).toBeVisible();
+  // The quote form already knows the product: five steps, starting with contact details.
+  const quote = page.getByRole("region", { name: "Request a quote for Methanol" });
+  await expect(quote.getByText("Step 1 of 5")).toBeVisible();
 });
 
 test("no product page shows its form description", async ({ page }) => {

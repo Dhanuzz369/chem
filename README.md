@@ -1,6 +1,6 @@
 # Goodbiz Chem website
 
-The Goodbiz Chem website: a product catalogue of industrial chemicals listed by HSN code, a quote request form that saves every request to a Google Sheet, a blog, and About and Contact pages.
+The Goodbiz Chem website: a product catalogue of industrial chemicals listed by HSN code, a step-by-step quote request form that saves every buyer to a Google Sheet (through a Google Apps Script web app), a blog, and About and Contact pages.
 
 This guide is written for the business owner. You do not need to be a developer to follow it, but a few steps use the Terminal app on a Mac.
 
@@ -10,9 +10,9 @@ This guide is written for the business owner. You do not need to be a developer 
 
 Do these in order. Each step links to the section that explains it.
 
-1. [ ] **Fill in the contact details** (at least an email) in `src/config/site.ts`. See [section 5](#5-contact-details).
-2. [ ] **Set the Google Sheets settings** (`GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEET_ID`). See [sections 2 and 3](#2-settings-environment-variables).
-3. [ ] **Set `SITE_URL`** to the real web address. See [section 2](#2-settings-environment-variables).
+1. [x] **Contact details** are filled in `src/config/site.ts` (chemicals@goodbizglobal.com, +91 8884799369, Bengaluru). See [section 5](#5-contact-details).
+2. [ ] **Set up the leads Sheet** and put its web-app address in `NEXT_PUBLIC_LEADS_ENDPOINT`. See [section 3](#3-quote-requests-the-leads-sheet).
+3. [ ] **Move to www.goodbizchemicals.com** and set `SITE_URL=https://www.goodbizchemicals.com`. See [Going live](#going-live-waits-for-your-go-ahead), step 3.
 4. [ ] **Deploy**, only once you have given the go-ahead. See [Going live](#going-live-waits-for-your-go-ahead).
 5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet.
 6. [ ] **Run `npm audit --omit=dev`** in Terminal and deal with anything it reports.
@@ -47,7 +47,7 @@ Other commands you may hear about:
 | Command | What it does |
 | --- | --- |
 | `npm test` | Runs the quick checks on the product data, blog posts and SEO. |
-| `npm run e2e` | Opens the site in a test browser (phone and desktop sizes) and checks every page. Before the first run, install the test browser once with `npx playwright install chromium`. |
+| `npm run e2e` | Opens the site in a test browser (phone and desktop sizes) and checks every page. It builds the site twice and serves it on ports 3100 and 3101: once with a stand-in quote-form address, once with none, to check the WhatsApp and email fallback. Before the first run, install the test browser once with `npx playwright install chromium`. |
 | `npm run build` | Builds the finished site, exactly as it will run when live. |
 | `npm run lint` | Checks the code for common mistakes. |
 
@@ -61,52 +61,20 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | --- | --- | --- |
 | `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. After setting or changing it on Vercel, **redeploy** (it is read when the site is built). If `ALLOW_INDEXING` is `true` and `SITE_URL` is empty, the build stops with a message saying so. | `https://www.example.com` |
 | `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | The email address of the Google service account that writes quote requests to your sheet. | `quotes@goodbiz-site.iam.gserviceaccount.com` |
-| `GOOGLE_PRIVATE_KEY` | The private key from that service account's JSON key file (the `private_key` value). Keep the `\n` sequences as they are. In `.env.local`, put it in double quotes. In the Vercel dashboard, paste it **without** the surrounding quotes. | `"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"` |
-| `GOOGLE_SHEET_ID` | The long ID in your Google Sheet's web address, between `/d/` and `/edit`. | `1AbC...xYz` |
-| `GOOGLE_SHEET_RANGE` | Optional. Where new rows go. Leave empty to use the tab called `Quotes`, columns A to N. | `Quotes!A:N` |
+| `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret: the browser sends quote requests straight to it. It is read when the site is built, so **redeploy** after setting or changing it. While it is empty, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
 | `GOOGLE_SITE_VERIFICATION` | Optional. The code Google Search Console gives you if you choose the **HTML tag** way of proving you own the site (only the `content="…"` value). Leave empty if you verify with a DNS record instead. Redeploy after setting it. | `abc123XYZ` |
 | `BING_SITE_VERIFICATION` | Optional. The code Bing Webmaster Tools gives you for its **meta tag** check (the `content="…"` value of `msvalidate.01`). Redeploy after setting it. | `0123456789ABCDEF` |
 
-If the Google settings are missing or wrong, the quote form still shows, but sending fails with a polite "please try again" message, so set them up before going live. The reason (for example `Missing env var GOOGLE_SHEET_ID`, `Google auth failed: invalid_grant`, `Google auth timed out` or `Sheets request timed out`) appears in the Vercel logs under **Logs**; it never includes what the buyer typed.
 
 ---
 
-## 3. Quote requests: the Google service account and Sheet
+## 3. Quote requests: the leads Sheet
 
-Every quote request becomes one new row in a Google Sheet you own. A "service account" is a robot Google user that the website signs in as to add those rows.
+The quote form asks one small thing per screen. Each buyer becomes **one row** in a Google Sheet in your goodbizglobal.com Workspace: the row is created as soon as they enter their contact details on the first screen, and it is updated as they go. The `stage` column shows how far they got. An alert email goes to chemicals@goodbizglobal.com when a new lead arrives and when a request is completed.
 
-### Create the service account (one time)
+The Sheet is written by a small Google Apps Script web app that you own. Follow **[docs/leads-apps-script.md](docs/leads-apps-script.md)** to set it up (about ten minutes, one time), then put its `/exec` address in `NEXT_PUBLIC_LEADS_ENDPOINT` ([section 2](#2-settings-environment-variables)) and redeploy.
 
-1. Go to the [Google Cloud console](https://console.cloud.google.com) and sign in with the Google account that should own this.
-2. Create a project (top bar, **Select a project** > **New project**), for example "Goodbiz website".
-3. In the search bar, open **Google Sheets API** and click **Enable**.
-4. Open **IAM & Admin** > **Service Accounts** > **Create service account**. Give it a name such as "quotes" and click **Done** (it needs no roles).
-5. Click the new service account, open the **Keys** tab, then **Add key** > **Create new key** > **JSON**. A file downloads. Keep it safe: anyone with this file can write to sheets shared with the account.
-6. From that file, copy `client_email` into `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `private_key` into `GOOGLE_PRIVATE_KEY`.
-
-### Create the Sheet (one time)
-
-1. Create a new Google Sheet, for example "Goodbiz quote requests".
-2. Rename the first tab to **Quotes** (exactly, with a capital Q).
-3. Type this header row into row 1, one heading per column from A to N:
-
-   | A | B | C | D | E | F | G | H | I | J | K | L | M | N |
-   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-   | Submitted at | Name | Company | Email | Phone | Country | Products | Quantity | Unit | Packaging | Port | Message | Source | Other chemical requested |
-
-   Or paste this line into cell A1 and use **Data** > **Split text to columns** (comma):
-   ```
-   Submitted at,Name,Company,Email,Phone,Country,Products,Quantity,Unit,Packaging,Port,Message,Source,Other chemical requested
-   ```
-
-   **Already set up with columns A to M?** Keep them as they are and type `Other chemical requested` into cell N1. If you set `GOOGLE_SHEET_RANGE` to `Quotes!A:M` yourself, change it to `Quotes!A:N`.
-4. Click **Share**, paste the service account's email address, give it **Editor** access and untick "Notify people".
-5. Copy the Sheet ID from the address bar into `GOOGLE_SHEET_ID`.
-
-"Submitted at" is in UTC (international time). "Products" lists the product names separated by commas. "Source" is always `website`. "Other chemical requested" holds what the buyer typed in the quote form's "Chemical not on our list?" field (name, grade, CAS number or specification), and is empty when they only chose listed products. A request always has at least one listed product or an other chemical. Do not reorder the columns; the website writes them in this order.
-
-To test it, run the site, send a quote request from <http://localhost:3000/quote> and check that a row appears.
+If the address is missing, or a request cannot reach the Sheet, the buyer is never stuck: the form shows **Send on WhatsApp** and **Send by email** buttons with the whole request already written in.
 
 ---
 
@@ -126,20 +94,18 @@ While `ALLOW_INDEXING` is anything other than `true`, every page tells search en
 
 ## 5. Contact details
 
-The site never shows made-up contact details, so the email, phone, WhatsApp and address are empty until you add them. Anything left empty is simply not shown.
-
-Open `src/config/site.ts` and fill in the `contact` block:
+The contact details live in the `contact` block of `src/config/site.ts`:
 
 ```ts
 contact: {
-  email: "sales@example.com",
-  phone: "+91 98765 43210",
-  whatsapp: "+91 98765 43210",
-  address: "Unit 4, Example Industrial Estate, City, State, PIN, India",
+  email: "chemicals@goodbizglobal.com",
+  phone: "+91 8884799369",
+  whatsapp: "+91 8884799369",
+  address: "Bengaluru, Karnataka, India",
 },
 ```
 
-Delete any line you do not want to show. Phone and WhatsApp numbers should include the country code. These details then appear on the Contact page, in the footer, in the quote form's error message and in the search-engine data for the company.
+They appear on the Contact page, in the footer, in `llms.txt`, in the search-engine data for the company, and in the quote form's WhatsApp and email buttons. Delete a line to stop showing it; anything empty is simply not shown. Phone and WhatsApp numbers should include the country code. The city and state for search engines are in `origin` in the same file.
 
 ---
 
@@ -262,11 +228,15 @@ Change both values (the code is the two-letter country code), run `npm test`, an
 
 The site has **not** been deployed, and nothing in this project deploys it automatically. When you are ready and have given the go-ahead, going live on [Vercel](https://vercel.com) looks like this:
 
-0. **Fill in the contact details first**, before any deploy: at least an email in `src/config/site.ts` (see [section 5](#5-contact-details)). Until then buyers have no way to reach you except the quote form. A production build with no contact details prints a warning in the Vercel build log.
+0. **Set up the leads Sheet first** ([section 3](#3-quote-requests-the-leads-sheet)) so you have the `/exec` address for `NEXT_PUBLIC_LEADS_ENDPOINT`.
 1. **Connect the code to Vercel.** Sign in to Vercel, choose **Add New** > **Project** and import this project's Git repository. Vercel recognises it as a Next.js site; the default build settings are correct.
 2. **Add the settings.** In the project's **Settings** > **Environment Variables**, add every setting from [section 2](#2-settings-environment-variables) with its real value. Leave `ALLOW_INDEXING` empty for now.
-3. **Add the domain.** In **Settings** > **Domains**, add your domain and follow Vercel's instructions to point it there at your registrar. Set `SITE_URL` to that domain, then **redeploy** (Deployments > Redeploy) so links, the sitemap and `llms.txt` use it.
-4. **Check the live site** with a real quote request and confirm the row lands in the Sheet. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
+3. **Add the domain www.goodbizchemicals.com.**
+   1. In **Settings** > **Domains**, add `www.goodbizchemicals.com`, and follow Vercel's instructions to point it there at your domain registrar.
+   2. Also add `goodbizchemicals.com` (without `www`) and choose to **redirect** it to `www.goodbizchemicals.com`.
+   3. In **Settings** > **Environment Variables**, set `SITE_URL=https://www.goodbizchemicals.com`.
+   4. **Redeploy** (Deployments > Redeploy), so links, the sitemap and `llms.txt` use the new address.
+4. **Check the live site** with a real quote request: the row appears in the Leads tab and the alert email reaches chemicals@goodbizglobal.com. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
 5. **Open the site to Google.** Once the real contact details are in and you are happy with the content, set `ALLOW_INDEXING=true` and redeploy (see [section 4](#4-the-allow_indexing-switch)).
 6. **Submit the sitemap** in Google Search Console ([section 9](#9-google-search-console)) and enable Web Analytics ([section 8](#8-vercel-web-analytics)).
 
@@ -280,5 +250,6 @@ The site has **not** been deployed, and nothing in this project deploys it autom
 | Company name, tagline and contact details | `src/config/site.ts` |
 | Blog posts | `content/blog/` |
 | Colours and fonts | `src/app/globals.css`, explained in `docs/design/direction.md` |
-| Where quote requests are saved | `src/lib/quote/` |
+| The quote form | `src/components/StepQuoteForm.tsx` (screens), `src/lib/leads/` (wording, options and sending) |
+| Where quote requests are saved | `apps-script/leads/Code.gs`, set up as in `docs/leads-apps-script.md` |
 | Automated checks | `tests/` |

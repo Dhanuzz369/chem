@@ -8,9 +8,10 @@ import { FaqList } from "@/components/FaqList";
 import { JsonLd } from "@/components/JsonLd";
 import { PostList } from "@/components/PostList";
 import { ProductCard, groupSwatch } from "@/components/ProductCard";
-import { QuoteForm } from "@/components/QuoteForm";
+import { StepQuoteForm } from "@/components/StepQuoteForm";
 import { getProduct, productFaqs, products, type Product } from "@/content/products";
 import { getPostsForProduct } from "@/lib/blog";
+import { parsePrefill } from "@/lib/leads/prefill";
 import { breadcrumbJsonLd, faqJsonLd, productJsonLd } from "@/lib/seo/jsonld";
 import {
   buildMetadata,
@@ -267,11 +268,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 Request a quote for {product.name}
               </h2>
               <p className="mt-3 max-w-[60ch] text-ink-muted">
-                {product.name} is already selected. Add quantity, packaging and destination, and the Goodbiz Chem team will
-                come back to you with pricing and availability.
+                {product.name} is already selected. Five short steps: your contact details, quantity, destination, shipping
+                terms and any notes. The Goodbiz Chem team will come back to you with pricing and availability.
               </p>
               <div className="mt-8 max-w-[40rem]">
-                <QuoteForm compact defaultProducts={[product.slug]} />
+                <StepQuoteForm compact initial={parsePrefill(new URLSearchParams({ product: product.slug }))} />
               </div>
             </section>
           </div>

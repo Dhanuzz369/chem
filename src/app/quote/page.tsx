@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
-import { QuoteForm } from "@/components/QuoteForm";
+import { StepQuoteForm } from "@/components/StepQuoteForm";
 import { site } from "@/config/site";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { QuoteFormFromQuery } from "./QuoteFormFromQuery";
+import { StepQuoteFormFromQuery } from "./StepQuoteFormFromQuery";
 
 export const metadata = buildMetadata({
   title: "Request a Quote for Industrial Chemicals",
@@ -40,9 +40,12 @@ export default function QuotePage() {
       </div>
 
       <div className="mt-10 grid gap-12 md:mt-14 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
-        <Suspense fallback={<QuoteForm />}>
-          <QuoteFormFromQuery />
-        </Suspense>
+        <div className="min-w-0 self-start">
+          {/* The fallback is the plain form: it is what the server HTML (and a no-JavaScript visitor) gets. */}
+          <Suspense fallback={<StepQuoteForm />}>
+            <StepQuoteFormFromQuery />
+          </Suspense>
+        </div>
 
         <aside aria-labelledby="quote-checklist" className="self-start rounded-lg bg-surface p-6 lg:sticky lg:top-24">
           <h2 id="quote-checklist" className="font-display text-lg font-semibold text-ink">

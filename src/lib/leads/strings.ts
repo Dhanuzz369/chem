@@ -47,6 +47,67 @@ export const strings = {
     terms: "Please choose shipping terms, or “Not sure”.",
   },
 
+  ui: {
+    stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
+    next: "Next",
+    back: "Back",
+    send: "Send request",
+    sending: "Sending…",
+    retry: "Try again",
+    optional: "Optional",
+    headings: {
+      contact: "Your contact details",
+      group: "What do you need?",
+      product: "Which product?",
+      quantity: "How much do you need?",
+      destination: "Where should it go?",
+      terms: "Which shipping terms?",
+      notes: "Anything else we should know?",
+    },
+    leads: {
+      contact: "We reply with pricing and availability.",
+      group: "Tap the product type.",
+      product: "Tap one. You can list more in the notes.",
+      quantity: "A rough idea is fine.",
+      destination: "The country you are buying for.",
+      terms: "Not sure? Pick “Not sure” and we will suggest one.",
+      notes: "Optional. Then send your request.",
+    },
+    fields: {
+      name: "Your name",
+      company: "Company",
+      email: "Email",
+      emailHint: "Email or WhatsApp is enough.",
+      phone: "WhatsApp or phone",
+      phoneHint: "With country code, e.g. +971 50 123 4567.",
+      otherProduct: "Which chemical?",
+      otherProductPlaceholder: "e.g. Glycerine, CAS 56-81-5",
+      quantityOther: "Amount",
+      quantityOtherPlaceholder: "e.g. 20 tonnes a month",
+      packaging: "Packaging",
+      country: "Destination country",
+      port: "Port or city",
+      notes: "Notes",
+      notesHint: "Grade, specification, documents you need, or timing.",
+    },
+    otherHint: "We source chemicals not listed here.",
+    groupSample: (names: string[]) => names.join(", "),
+    success: {
+      heading: "Thank you. Your request is in.",
+      body: (replyTo: string) =>
+        replyTo
+          ? `The Goodbiz Chem team will reply to ${replyTo} with pricing and availability.`
+          : "The Goodbiz Chem team will reply with pricing and availability.",
+    },
+    failed: {
+      heading: "Your request has not reached us yet",
+      body: "Send it to us directly instead. Your answers are already written in.",
+      whatsapp: "Send on WhatsApp",
+      email: "Send by email",
+    },
+    noScriptContact: "You can also send your request on WhatsApp or by email:",
+  },
+
   summary: {
     heading: "Quote request from the Goodbiz Chem website",
     name: "Name",

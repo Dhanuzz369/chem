@@ -2,7 +2,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ContactDetails, contactRows } from "@/components/ContactDetails";
 import { Container } from "@/components/Container";
 import { JsonLd } from "@/components/JsonLd";
-import { QuoteForm } from "@/components/QuoteForm";
+import { StepQuoteForm } from "@/components/StepQuoteForm";
 import { site } from "@/config/site";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -33,7 +33,9 @@ export default function ContactPage() {
       </div>
 
       <div className={`mt-10 grid gap-12 md:mt-14 lg:gap-16 ${hasDetails ? "lg:grid-cols-[minmax(0,1fr)_18rem]" : ""}`}>
-        <QuoteForm />
+        <div className="min-w-0 self-start">
+          <StepQuoteForm />
+        </div>
         {hasDetails && (
           <aside aria-labelledby="contact-details" className="self-start rounded-lg bg-surface p-6 lg:sticky lg:top-24">
             <h2 id="contact-details" className="font-display text-lg font-semibold text-ink">
