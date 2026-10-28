@@ -14,6 +14,7 @@ type Script = {
   furthestStage(a: string, b: string): string;
   alertKind(prev: string, next: string, isNew: boolean): string | null;
   toObject(values: unknown[]): Row;
+  formFields(parameters: Record<string, string[]>): Record<string, string>;
 };
 
 function loadScript(): Script {
@@ -31,6 +32,14 @@ describe("Apps Script helpers", () => {
     const server = ["firstSeen", "updated"];
     expect([...PAYLOAD_KEYS].sort()).toEqual(gs.HEADERS.filter((h) => !server.includes(h)).sort());
     expect(CLIENT_CLEAR).toBe(gs.CLEAR);
+  });
+
+  it("formFields joins repeated no-JavaScript form fields (packaging) with a comma", () => {
+    expect(gs.formFields({ name: ["Asha"], packaging: ["Drums", "IBC tanks"], leadId: [""] })).toEqual({
+      name: "Asha",
+      packaging: "Drums, IBC tanks",
+      leadId: "",
+    });
   });
 
   it("safeCell escapes formula starters only", () => {

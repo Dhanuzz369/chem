@@ -7,7 +7,8 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 /**
  * Posts lead payloads to the Apps Script web app. JSON goes as text/plain so the
  * browser sends no CORS preflight (Apps Script cannot answer one). Sends are
- * single-flight per stage: a second send of a stage already in flight shares its result.
+ * single-flight per stage and body: a second, identical send while the first is in flight
+ * (a double click) shares its result; a changed payload for the same stage is sent.
  */
 export function createSender(opts: { endpoint: string | undefined; fetchImpl?: typeof fetch; timeoutMs?: number }) {
   const endpoint = opts.endpoint?.trim() ?? "";
@@ -57,10 +58,11 @@ export function createSender(opts: { endpoint: string | undefined; fetchImpl?: t
   return {
     send(payload: LeadPayload, sendOpts: { keepalive: boolean }): Promise<SendResult> {
       if (!endpoint) return Promise.resolve({ ok: false, reason: "no-endpoint" });
-      const existing = inFlight.get(payload.stage);
+      const key = JSON.stringify(payload);
+      const existing = inFlight.get(key);
       if (existing) return existing;
-      const p = post(payload, sendOpts.keepalive).finally(() => inFlight.delete(payload.stage));
-      inFlight.set(payload.stage, p);
+      const p = post(payload, sendOpts.keepalive).finally(() => inFlight.delete(key));
+      inFlight.set(key, p);
       return p;
     },
   };

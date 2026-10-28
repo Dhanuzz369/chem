@@ -61,7 +61,7 @@ function doPost(e) {
   var isForm = !!(e && e.postData && /x-www-form-urlencoded|multipart/i.test(e.postData.type || ''));
   var data;
   try {
-    data = isForm ? e.parameter : JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    data = isForm ? formFields(e.parameters || {}) : JSON.parse((e && e.postData && e.postData.contents) || '{}');
   } catch (err) {
     return reply_(isForm, false, 'bad_request');
   }
@@ -101,6 +101,19 @@ function doPost(e) {
     console.error('Alert email failed: ' + err); // the row is saved; never fail the buyer over email
   }
   return reply_(isForm, true);
+}
+
+/**
+ * The no-JavaScript form posts one value per field, except packaging, which can repeat
+ * (one checkbox per option). Join repeats with ", ", as the website's JSON sends them.
+ */
+function formFields(parameters) {
+  var out = {};
+  Object.keys(parameters).forEach(function (k) {
+    var v = parameters[k];
+    out[k] = Array.isArray(v) ? v.join(', ') : String(v);
+  });
+  return out;
 }
 
 // ── Sheet writing ───────────────────────────────────────────────────────────
@@ -245,6 +258,7 @@ if (typeof module !== 'undefined') {
   module.exports = {
     HEADERS: HEADERS, STAGES: STAGES, CLEAR: CLEAR,
     safeCell: safeCell, mergeRow: mergeRow, furthestStage: furthestStage,
-    alertKind: alertKind, alertSubject: alertSubject, alertBody: alertBody, toObject: toObject
+    alertKind: alertKind, alertSubject: alertSubject, alertBody: alertBody, toObject: toObject,
+    formFields: formFields
   };
 }

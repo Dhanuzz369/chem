@@ -70,6 +70,15 @@ describe("createSender", () => {
     expect(fetchAgain).toHaveBeenCalledTimes(2);
   });
 
+  it("a changed payload for a stage in flight is sent, not merged into the old one", async () => {
+    const fetchImpl = vi.fn(() => new Promise<Response>(() => {}));
+    const sender = createSender({ endpoint: "https://script.example/exec", fetchImpl });
+    // Step 2 Next and step 3 Next both send stage "product"; the second carries the product.
+    void sender.send({ ...payload("product"), group: "Solvents" }, { keepalive: true });
+    void sender.send({ ...payload("product"), group: "Solvents", product: "Methanol" }, { keepalive: true });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
   it("sender treats {ok:false} or non-JSON as bad-response", async () => {
     const cases = [
       new Response(JSON.stringify({ ok: false, error: "busy" }), { status: 200 }),
