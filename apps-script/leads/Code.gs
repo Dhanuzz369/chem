@@ -18,6 +18,14 @@ var SITE_URL = 'https://www.goodbizchemicals.com';
 var SHEET_NAME = 'Leads';
 var SUMMARY_SHEET_NAME = 'Summary';
 
+// Abuse caps. The web address is public, so these stop a flood of fake posts from filling the
+// sheet or the inbox. Counts reset every clock hour (UTC). After changing a number, deploy a
+// new version (Deploy → Manage deployments → Edit → Version: New version → Deploy).
+var MAX_NEW_LEADS_PER_HOUR = 60;          // new rows; over this, the buyer sees the WhatsApp/email buttons
+var MAX_UPDATES_PER_LEAD_PER_HOUR = 40;   // later steps for one buyer
+var MAX_ALERT_EMAILS_PER_HOUR = 30;       // over this, rows are still saved but no email is sent
+var MAX_BODY_BYTES = 20 * 1024;           // bigger posts are refused
+
 // ── Do not change below unless you also change the website ────────────────
 var HEADERS = [
   'leadId', 'stage', 'firstSeen', 'updated',
@@ -31,6 +39,13 @@ var STAGES = ['contact', 'product', 'quantity', 'destination', 'terms', 'submitt
 var CLEAR = '__clear__';
 var MAX_LEN = 2000;
 var SYSTEM_FIELDS = ['leadId', 'stage', 'firstSeen', 'updated'];
+var LIMITS = {
+  newLeadsPerHour: MAX_NEW_LEADS_PER_HOUR,
+  updatesPerLeadPerHour: MAX_UPDATES_PER_LEAD_PER_HOUR,
+  alertEmailsPerHour: MAX_ALERT_EMAILS_PER_HOUR,
+  maxBodyBytes: MAX_BODY_BYTES
+};
+var CACHE_SECONDS = 2 * 60 * 60; // longer than an hour bucket, so a count never expires mid-hour
 
 /** Run once from the editor: creates the Leads and Summary sheets with headers. */
 function setup() {
@@ -59,6 +74,9 @@ function doGet() {
 
 function doPost(e) {
   var isForm = !!(e && e.postData && /x-www-form-urlencoded|multipart/i.test(e.postData.type || ''));
+  if (bodyTooLarge((e && e.postData && e.postData.contents) || '', MAX_BODY_BYTES)) {
+    return reply_(isForm, false, 'bad_request');
+  }
   var data;
   try {
     data = isForm ? formFields(e.parameters || {}) : JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -85,17 +103,42 @@ function doPost(e) {
     return reply_(isForm, false, 'busy');
   }
 
-  var result;
+  var result = null;
+  var alert = null;
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) { setup(); sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME); }
-    result = upsert_(sheet, leadId, data, new Date().toISOString());
+    // Counted inside the lock, so two posts at once cannot both slip under a cap.
+    var cache = CacheService.getScriptCache();
+    var keys = rateKeys(hourBucket(new Date()), leadId);
+    var rowIndex = findRow_(sheet, leadId);
+    var capKey = rowIndex ? keys.update : keys.newLead;
+    var cap = rowIndex ? MAX_UPDATES_PER_LEAD_PER_HOUR : MAX_NEW_LEADS_PER_HOUR;
+    var count = Number(cache.get(capKey)) || 0;
+    if (!overLimit(count, cap)) {
+      cache.put(capKey, String(count + 1), CACHE_SECONDS);
+      result = upsert_(sheet, leadId, data, new Date().toISOString(), rowIndex);
+      alert = alertKind(result.previousStage, result.row.stage, result.isNew);
+      if (alert) {
+        var sent = Number(cache.get(keys.alert)) || 0;
+        if (overLimit(sent, MAX_ALERT_EMAILS_PER_HOUR)) {
+          console.warn('Alert email skipped: ' + MAX_ALERT_EMAILS_PER_HOUR + ' alerts already sent this hour. Lead ' +
+            leadId + ' is saved in the sheet.');
+          alert = null;
+        } else {
+          cache.put(keys.alert, String(sent + 1), CACHE_SECONDS);
+        }
+      }
+    }
   } finally {
     lock.releaseLock();
   }
 
+  if (!result) {
+    console.warn('Rate limited: ' + (rowIndex ? 'updates for lead ' + leadId : 'new leads') + ' over the hourly cap.');
+    return reply_(isForm, false, 'rate_limited');
+  }
   try {
-    var alert = alertKind(result.previousStage, result.row.stage, result.isNew);
     if (alert) sendAlert_(alert, result.row);
   } catch (err) {
     console.error('Alert email failed: ' + err); // the row is saved; never fail the buyer over email
@@ -118,10 +161,15 @@ function formFields(parameters) {
 
 // ── Sheet writing ───────────────────────────────────────────────────────────
 
-function upsert_(sheet, leadId, data, nowIso) {
+/** The sheet row holding this lead, or 0 when it is new. */
+function findRow_(sheet, leadId) {
   var found = sheet.getRange('A:A').createTextFinder(leadId).matchEntireCell(true).findNext();
-  var isNew = !found;
-  var rowIndex = isNew ? sheet.getLastRow() + 1 : found.getRow();
+  return found ? found.getRow() : 0;
+}
+
+function upsert_(sheet, leadId, data, nowIso, foundRow) {
+  var isNew = !foundRow;
+  var rowIndex = isNew ? sheet.getLastRow() + 1 : foundRow;
   var existing = isNew
     ? HEADERS.map(function () { return ''; })
     : sheet.getRange(rowIndex, 1, 1, HEADERS.length).getValues()[0].map(String);
@@ -188,6 +236,33 @@ function alertKind(previousStage, newStage, isNew) {
   if (newStage === 'submitted' && previousStage !== 'submitted') return 'submitted';
   if (isNew) return 'contact';
   return null;
+}
+
+/** The UTC clock hour as yyyyMMddHH: the bucket every hourly count lives in. */
+function hourBucket(date) {
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+  return String(date.getUTCFullYear()) + two(date.getUTCMonth() + 1) + two(date.getUTCDate()) + two(date.getUTCHours());
+}
+
+/** True when `count` posts already used up a cap of `max`. A missing or garbled count is 0. */
+function overLimit(count, max) {
+  var n = Number(count);
+  if (!(n >= 0)) n = 0;
+  return n >= max;
+}
+
+/** Cache keys for this hour: all new leads, this lead's updates, and alert emails. */
+function rateKeys(bucket, leadId) {
+  return { newLead: 'new:' + bucket, update: 'upd:' + leadId + ':' + bucket, alert: 'mail:' + bucket };
+}
+
+/** True when the post is bigger than `maxBytes` in UTF-8. Text that cannot be encoded counts as too big. */
+function bodyTooLarge(contents, maxBytes) {
+  try {
+    return encodeURIComponent(String(contents)).replace(/%[0-9A-F]{2}/gi, 'x').length > maxBytes;
+  } catch (err) {
+    return true;
+  }
 }
 
 function isTruthy_(v) {
@@ -259,6 +334,7 @@ if (typeof module !== 'undefined') {
     HEADERS: HEADERS, STAGES: STAGES, CLEAR: CLEAR,
     safeCell: safeCell, mergeRow: mergeRow, furthestStage: furthestStage,
     alertKind: alertKind, alertSubject: alertSubject, alertBody: alertBody, toObject: toObject,
-    formFields: formFields
+    formFields: formFields, LIMITS: LIMITS, hourBucket: hourBucket, overLimit: overLimit,
+    rateKeys: rateKeys, bodyTooLarge: bodyTooLarge, doPost: doPost
   };
 }

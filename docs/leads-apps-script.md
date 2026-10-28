@@ -44,10 +44,9 @@ The script is in [`apps-script/leads/Code.gs`](../apps-script/leads/Code.gs).
 
 ## 4. Connect it to the website
 
-Send the `/exec` URL to your developer. To do it yourself:
+The website reads the `/exec` URL from `NEXT_PUBLIC_LEADS_ENDPOINT` in the project file `.env.production`. The current URL is already there. Only a **new deployment** (a new URL) needs that line changed; re-deploying a new **version** of the same deployment keeps the URL.
 
-1. In **Vercel → your project → Settings → Environment Variables**, add `NEXT_PUBLIC_LEADS_ENDPOINT` = the `/exec` URL.
-2. Redeploy.
+To change it without editing the file, add `NEXT_PUBLIC_LEADS_ENDPOINT` in **Vercel → your project → Settings → Environment Variables**; it overrides `.env.production`. Redeploy after either change.
 
 ## 5. Check that alerts arrive
 
@@ -70,8 +69,14 @@ If the alert lands only in **Sent** and not in your inbox, add a Gmail filter. T
 |---|---|
 | `ALERT_TO` | The address that receives the alerts |
 | `SITE_URL` | The "Back to Goodbiz Chem" link shown to buyers |
+| `MAX_NEW_LEADS_PER_HOUR` | Default `60`. New buyers accepted per hour. Over it, no row is added and the website shows the buyer **Send on WhatsApp** and **Send by email** buttons instead, so a real buyer still reaches you. |
+| `MAX_UPDATES_PER_LEAD_PER_HOUR` | Default `40`. Later-step updates accepted for one buyer per hour. A real buyer sends about seven. |
+| `MAX_ALERT_EMAILS_PER_HOUR` | Default `30`. Alert emails per hour. Over it, rows are still saved but no email is sent; the skip is logged under **Executions** in the Apps Script editor. |
+| `MAX_BODY_BYTES` | Default `20 * 1024` (20 KB). Bigger posts are refused. |
 
-**Re-deploying after an edit**
+**Why the limits:** the web-app address is public, so anyone could post to it. The limits stop a flood of fake posts from filling the sheet or your inbox. Counts reset at the start of every hour (UTC) and are kept in the script's cache, not in the sheet. To change a limit, edit the number, **Save**, and re-deploy as a new version (below); the change only takes effect after that.
+
+**Re-deploying after an edit** (any change to the script, including the limits, takes effect only after this)
 
 1. Click **Deploy → Manage deployments**.
 2. Click the pencil next to your deployment.
