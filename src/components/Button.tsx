@@ -4,18 +4,18 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "md" | "lg";
 
-// Press feedback (scale 0.97, 160ms ease-out) on every variant. Hover colour
-// changes only on devices that really hover, so taps never stick.
+// Press feedback (scale 0.97, 160ms ease-out) on every variant. Hover colour changes only
+// with a real mouse (hover-fine: hover and a fine pointer), so taps never stick.
 const base =
   "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium " +
   "transition-[transform,background-color,border-color] duration-(--duration-press) ease-(--ease-out) " +
   "active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-700 text-white [@media(hover:hover)]:hover:bg-brand-800",
+  primary: "bg-brand-700 text-white hover-fine:bg-brand-800",
   secondary:
-    "border border-brand-200 bg-brand-100 text-brand-800 [@media(hover:hover)]:hover:border-brand-300 [@media(hover:hover)]:hover:bg-brand-200",
-  ghost: "text-brand-700 [@media(hover:hover)]:hover:bg-brand-50",
+    "border border-brand-200 bg-brand-100 text-brand-800 hover-fine:border-brand-300 hover-fine:bg-brand-200",
+  ghost: "text-brand-700 hover-fine:bg-brand-50",
 };
 
 const sizes: Record<Size, string> = {

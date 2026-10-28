@@ -44,7 +44,7 @@ export function ChoiceCard({
   return (
     <label
       {...tap.label}
-      className={`group relative flex min-h-13 cursor-pointer select-none rounded-lg border border-line-strong bg-bg p-4 text-ink transition-[transform,background-color,border-color,box-shadow] duration-(--duration-press) ease-(--ease-out) active:scale-[0.97] hover-fine:not-has-checked:border-brand-600 hover-fine:not-has-checked:bg-brand-50 has-checked:border-brand-700 has-checked:bg-brand-50 has-checked:shadow-[inset_0_0_0_1px_var(--color-brand-700)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600 ${
+      className={`group relative flex min-h-13 cursor-pointer select-none rounded-lg border border-line-strong bg-bg p-4 text-ink transition-[transform,background-color,border-color,box-shadow] duration-(--duration-press) ease-(--ease-out) active:scale-[0.97] hover-fine:not-has-checked:border-brand-600 has-checked:border-brand-700 has-checked:bg-brand-50 has-checked:shadow-[inset_0_0_0_1px_var(--color-brand-700)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600 ${
         row ? "items-center gap-3.5" : "flex-col items-start gap-3"
       } ${className}`.trim()}
     >

@@ -20,7 +20,7 @@ export function Pill({ type = "radio", name, value, checked, label, id, required
   return (
     <label
       {...tap.label}
-      className="group inline-flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-pill border border-line-strong bg-bg px-4 py-2 text-[0.9375rem] leading-snug text-ink transition-[transform,background-color,border-color,color] duration-(--duration-press) ease-(--ease-out) active:scale-[0.97] hover-fine:not-has-checked:border-brand-600 hover-fine:not-has-checked:bg-brand-50 has-checked:border-brand-700 has-checked:bg-brand-700 has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600"
+      className="group inline-flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-pill border border-line-strong bg-bg px-4 py-2 text-[0.9375rem] leading-snug text-ink transition-[transform,background-color,border-color,color] duration-(--duration-press) ease-(--ease-out) active:scale-[0.97] hover-fine:not-has-checked:border-brand-600 has-checked:border-brand-700 has-checked:bg-brand-700 has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600"
     >
       <input
         {...(onTap ? tap.input : {})}
