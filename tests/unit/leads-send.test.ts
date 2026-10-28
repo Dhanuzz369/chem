@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createSender } from "@/lib/leads/send";
+import { createSender, leadsEndpoint } from "@/lib/leads/send";
 import type { LeadPayload } from "@/lib/leads/payload";
 
 const payload = (stage: string): LeadPayload => ({ leadId: "lead-1234", stage, name: "Asha" });
@@ -53,6 +53,14 @@ describe("createSender", () => {
     await expect(sender.send(payload("submitted"), { keepalive: false })).resolves.toEqual({ ok: true });
     const init = (fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1];
     expect(init.keepalive).toBe(false);
+  });
+
+  it("leadsEndpoint treats empty, blank and \"off\" as no endpoint", () => {
+    expect(leadsEndpoint(undefined)).toBe("");
+    expect(leadsEndpoint("  ")).toBe("");
+    expect(leadsEndpoint("off")).toBe("");
+    expect(leadsEndpoint(" OFF ")).toBe("");
+    expect(leadsEndpoint(" https://script.google.com/macros/s/x/exec ")).toBe("https://script.google.com/macros/s/x/exec");
   });
 
   it("sender with no endpoint fails fast", async () => {

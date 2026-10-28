@@ -4,17 +4,17 @@ The Goodbiz Chem website: a product catalogue of industrial chemicals listed by 
 
 This guide is written for the business owner. You do not need to be a developer to follow it, but a few steps use the Terminal app on a Mac.
 
-> **Nothing is live yet.** The site has not been deployed. Putting it on the internet waits for your go-ahead; see [Going live](#going-live-waits-for-your-go-ahead) at the end.
+> **The site is live** at <https://chem-phi.vercel.app>. Every push to the `main` branch redeploys it automatically, so only push what is ready to go live. Moving it to its own domain is described in [Move to goodbizchemicals.com](#move-to-goodbizchemicalscom) at the end.
 
-## Pre-launch checklist
+## Checklist
 
 Do these in order. Each step links to the section that explains it.
 
 1. [x] **Contact details** are filled in `src/config/site.ts` (chemicals@goodbizglobal.com, +91 8884799369, Bengaluru). See [section 5](#5-contact-details).
 2. [x] **The leads Sheet is set up**, and its web-app address is in `.env.production`. See [section 3](#3-quote-requests-the-leads-sheet).
-3. [ ] **Move to www.goodbizchemicals.com** and set `SITE_URL=https://www.goodbizchemicals.com`. See [Going live](#going-live-waits-for-your-go-ahead), step 3.
-4. [ ] **Deploy**, only once you have given the go-ahead. See [Going live](#going-live-waits-for-your-go-ahead).
-5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet.
+3. [ ] **Paste the latest `apps-script/leads/Code.gs` into Apps Script** and publish it: **Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy**. Do this again whenever `Code.gs` changes; the `/exec` address stays the same. See [docs/leads-apps-script.md](docs/leads-apps-script.md).
+4. [ ] **Move to www.goodbizchemicals.com** and set `SITE_URL=https://www.goodbizchemicals.com`. See [Move to goodbizchemicals.com](#move-to-goodbizchemicalscom).
+5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet and the alert email arrives.
 6. [ ] **Run `npm audit --omit=dev`** in Terminal and deal with anything it reports.
 7. [ ] **Only then set `ALLOW_INDEXING=true`** and redeploy. See [section 4](#4-the-allow_indexing-switch).
 
@@ -61,7 +61,7 @@ Settings live in a file called `.env.local` in the project folder on your comput
 | --- | --- | --- |
 | `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. After setting or changing it on Vercel, **redeploy** (it is read when the site is built). If `ALLOW_INDEXING` is `true` and `SITE_URL` is empty, the build stops with a message saying so. | `https://www.example.com` |
 | `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
-| `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret (the browser sends quote requests straight to it), so the live address is kept in the project file **`.env.production`**, and every production build uses it. A Vercel environment variable with the same name overrides that file. It is read when the site is built, so **redeploy** after changing it. If it is empty, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
+| `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret (the browser sends quote requests straight to it), so the live address is kept in the project file **`.env.production`**, and every production build uses it. A Vercel environment variable with the same name overrides that file. It is read when the site is built, so **redeploy** after changing it. If it is empty or `off`, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
 | `GOOGLE_SITE_VERIFICATION` | Optional. The code Google Search Console gives you if you choose the **HTML tag** way of proving you own the site (only the `content="…"` value). Leave empty if you verify with a DNS record instead. Redeploy after setting it. | `abc123XYZ` |
 | `BING_SITE_VERIFICATION` | Optional. The code Bing Webmaster Tools gives you for its **meta tag** check (the `content="…"` value of `msvalidate.01`). Redeploy after setting it. | `0123456789ABCDEF` |
 
@@ -224,20 +224,19 @@ Change both values (the code is the two-letter country code), run `npm test`, an
 
 ---
 
-## Going live (waits for your go-ahead)
+## Move to goodbizchemicals.com
 
-The site has **not** been deployed, and nothing in this project deploys it automatically. When you are ready and have given the go-ahead, going live on [Vercel](https://vercel.com) looks like this:
+The site already runs on [Vercel](https://vercel.com) at <https://chem-phi.vercel.app>, connected to this project's Git repository: every push to `main` builds and deploys it. The leads Sheet's `/exec` address comes from `.env.production` ([section 3](#3-quote-requests-the-leads-sheet)), so there is nothing to add for it in Vercel. The remaining steps:
 
-0. **The leads Sheet is set up** ([section 3](#3-quote-requests-the-leads-sheet)); its `/exec` address is in `.env.production`, so there is nothing to add for it in Vercel.
-1. **Connect the code to Vercel.** Sign in to Vercel, choose **Add New** > **Project** and import this project's Git repository. Vercel recognises it as a Next.js site; the default build settings are correct.
-2. **Add the settings.** In the project's **Settings** > **Environment Variables**, add every setting from [section 2](#2-settings-environment-variables) with its real value, except `NEXT_PUBLIC_LEADS_ENDPOINT`, which comes from `.env.production`. Leave `ALLOW_INDEXING` empty for now.
+1. **Check the settings.** In the project's **Settings** > **Environment Variables**, make sure every setting from [section 2](#2-settings-environment-variables) has its real value. `NEXT_PUBLIC_LEADS_ENDPOINT` is not needed there (see the Preview note below). Leave `ALLOW_INDEXING` empty for now.
+2. **Keep Preview builds away from the live Sheet.** Preview deployments (every branch and pull request) are production builds too, so they also read `.env.production` and **post test quotes to the live script**, creating real rows and alert emails. To stop that, in **Settings** > **Environment Variables** add `NEXT_PUBLIC_LEADS_ENDPOINT`, tick **Preview** only (not Production), and set the value to `off` (or to the `/exec` address of a separate test copy of the Sheet's script). With `off`, a Preview's form ends with the WhatsApp and email buttons instead of saving. Production keeps using `.env.production`.
 3. **Add the domain www.goodbizchemicals.com.**
    1. In **Settings** > **Domains**, add `www.goodbizchemicals.com`, and follow Vercel's instructions to point it there at your domain registrar.
    2. Also add `goodbizchemicals.com` (without `www`) and choose to **redirect** it to `www.goodbizchemicals.com`.
    3. In **Settings** > **Environment Variables**, set `SITE_URL=https://www.goodbizchemicals.com`.
    4. **Redeploy** (Deployments > Redeploy), so links, the sitemap and `llms.txt` use the new address.
-4. **Check the live site** with a real quote request: the row appears in the Leads tab and the alert email reaches chemicals@goodbizglobal.com. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
-5. **Open the site to Google.** Once the real contact details are in and you are happy with the content, set `ALLOW_INDEXING=true` and redeploy (see [section 4](#4-the-allow_indexing-switch)).
+4. **Check the site on its new address** with a real quote request: the row appears in the Leads tab and the alert email reaches chemicals@goodbizglobal.com. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
+5. **Open the site to Google.** Once you are happy with the content, set `ALLOW_INDEXING=true` and redeploy (see [section 4](#4-the-allow_indexing-switch)).
 6. **Submit the sitemap** in Google Search Console ([section 9](#9-google-search-console)) and enable Web Analytics ([section 8](#8-vercel-web-analytics)).
 
 ---

@@ -2,6 +2,16 @@ import type { LeadPayload } from "./payload";
 
 export type SendResult = { ok: true } | { ok: false; reason: "no-endpoint" | "timeout" | "network" | "bad-response" };
 
+/**
+ * The endpoint from NEXT_PUBLIC_LEADS_ENDPOINT. Empty, blank or "off" means none (the form then
+ * ends with the WhatsApp and email buttons). "off" exists because Vercel may not store an empty
+ * value, and Preview builds need a way to switch the live endpoint off.
+ */
+export function leadsEndpoint(raw: string | undefined): string {
+  const value = raw?.trim() ?? "";
+  return value.toLowerCase() === "off" ? "" : value;
+}
+
 const DEFAULT_TIMEOUT_MS = 15_000;
 /** The final send creates or completes the row and the alert email, so it gets longer. */
 const SUBMIT_TIMEOUT_MS = 30_000;
@@ -18,7 +28,7 @@ export function createSender(opts: {
   timeoutMs?: number;
   submitTimeoutMs?: number;
 }) {
-  const endpoint = opts.endpoint?.trim() ?? "";
+  const endpoint = leadsEndpoint(opts.endpoint);
   const inFlight = new Map<string, Promise<SendResult>>();
 
   async function post(payload: LeadPayload, keepalive: boolean): Promise<SendResult> {

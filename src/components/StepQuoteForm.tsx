@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEven
 import { fallbackLinks, LEADS_EMAIL, LEADS_WHATSAPP } from "@/lib/leads/fallback";
 import { productLabel } from "@/lib/leads/options";
 import { buildPayload, nextEverSent } from "@/lib/leads/payload";
-import { createSender } from "@/lib/leads/send";
+import { createSender, leadsEndpoint } from "@/lib/leads/send";
 import { newLeadId } from "@/lib/leads/uuid";
 import { emptyAnswers, stageFor, validateStep, visibleSteps, type Answers, type Stage, type StepId } from "@/lib/leads/steps";
 import { strings } from "@/lib/leads/strings";
@@ -21,7 +21,7 @@ import { TermsStep } from "./lead-steps/TermsStep";
 import type { Errors, FieldKey, StepProps } from "./lead-steps/shared";
 
 /** The Apps Script web app (/exec URL). Inlined at build time; empty means every send falls back. */
-const ENDPOINT = process.env.NEXT_PUBLIC_LEADS_ENDPOINT?.trim() ?? "";
+const ENDPOINT = leadsEndpoint(process.env.NEXT_PUBLIC_LEADS_ENDPOINT);
 const AUTO_ADVANCE_MS = 260;
 /** A valid submit faster than this after mount is delayed, never dropped. */
 const MIN_SUBMIT_MS = 3000;
