@@ -9,7 +9,7 @@ export function GET() {
   const lines = [
     `# ${site.name}`,
     "",
-    `> ${companySummary()} ${site.tagline} Product information, HSN codes and quote requests for industrial and specialty chemicals.`,
+    `> ${companySummary()} Based in ${site.origin.locality}, ${site.origin.region}. Product pages give HSN and CAS numbers, applications and packaging; buyers request quotes online.`,
     "",
     `${site.name} can also source and supply chemicals that are not listed. Describe what you need on the quote form: ${absoluteUrl("/quote#other")}`,
     "",
@@ -22,7 +22,7 @@ export function GET() {
     "## Pages",
     "",
     `- [All products](${absoluteUrl("/products")}): Browse and search the product list`,
-    `- [Request a quote](${absoluteUrl("/quote")}): Send an enquiry for one or more products`,
+    `- [Request a quote](${absoluteUrl("/quote")}): A short step-by-step form: product, quantity, packaging, destination and FOB/CFR/CIF terms`,
     `- [Blog](${absoluteUrl("/blog")}): Articles about the chemicals we supply`,
     `- [About](${absoluteUrl("/about")}): About ${site.name}`,
     `- [Contact](${absoluteUrl("/contact")}): Get in touch`,

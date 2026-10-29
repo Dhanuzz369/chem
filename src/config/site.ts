@@ -30,19 +30,28 @@ export const site: { name: "Goodbiz Chem"; tagline: string; contact: Contact; or
 };
 
 /** When the product data was last reviewed. Used as the sitemap's lastModified; bump it when products change. */
-export const SITE_UPDATED = "2026-10-24";
+export const SITE_UPDATED = "2026-10-29";
 
 type Env = Record<string, string | undefined>;
 
+/** The live address. Production builds on Vercel use it unless SITE_URL says otherwise. */
+export const PRODUCTION_SITE_URL = "https://www.goodbizchemicals.com";
 const DEFAULT_SITE_URL = "http://localhost:3000";
+
+const isProduction = (env: Env) => env.VERCEL_ENV === "production";
 
 export function getSiteUrl(env: Env = process.env): string {
   const raw = env.SITE_URL?.trim();
-  return (raw || DEFAULT_SITE_URL).replace(/\/+$/, "");
+  return (raw || (isProduction(env) ? PRODUCTION_SITE_URL : DEFAULT_SITE_URL)).replace(/\/+$/, "");
 }
 
+/**
+ * Production on Vercel is open to search engines; previews and local builds are not.
+ * ALLOW_INDEXING, when set, wins either way: "true" opens a build, anything else closes it.
+ */
 export function isIndexingAllowed(env: Env = process.env): boolean {
-  return env.ALLOW_INDEXING === "true";
+  const flag = env.ALLOW_INDEXING?.trim();
+  return flag ? flag === "true" : isProduction(env);
 }
 
 export function absoluteUrl(path: string): string {

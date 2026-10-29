@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { assertSiteUrlForIndexing, missingContactWarning } from "./src/config/build-checks";
-import { site } from "./src/config/site";
+import { PRODUCTION_SITE_URL, site } from "./src/config/site";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -19,6 +19,17 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // The old Vercel address keeps working but sends visitors and crawlers to the real domain.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "chem-phi.vercel.app" }],
+        destination: `${PRODUCTION_SITE_URL}/:path*`,
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

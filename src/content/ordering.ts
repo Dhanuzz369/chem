@@ -2,7 +2,7 @@
 export const orderingSteps: { title: string; body: string }[] = [
   {
     title: "Enquiry",
-    body: "Send the quote form with the products, quantity, packaging and destination. Grade or specification details help.",
+    body: "Send the quote form with the product, quantity, packaging, destination and delivery terms. Grade or specification details help.",
   },
   {
     title: "Quote",

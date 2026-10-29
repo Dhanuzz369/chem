@@ -7,8 +7,17 @@ describe("site config", () => {
     expect(getSiteUrl({ SITE_URL: "https://x.com/" })).toBe("https://x.com");
   });
 
-  it("only allows indexing when ALLOW_INDEXING is exactly 'true'", () => {
+  it("uses www.goodbizchemicals.com on Vercel production unless SITE_URL is set", () => {
+    expect(getSiteUrl({ VERCEL_ENV: "production" })).toBe("https://www.goodbizchemicals.com");
+    expect(getSiteUrl({ VERCEL_ENV: "preview" })).toBe("http://localhost:3000");
+    expect(getSiteUrl({ VERCEL_ENV: "production", SITE_URL: "https://x.com" })).toBe("https://x.com");
+  });
+
+  it("indexes Vercel production only, unless ALLOW_INDEXING says otherwise", () => {
     expect(isIndexingAllowed({})).toBe(false);
+    expect(isIndexingAllowed({ VERCEL_ENV: "preview" })).toBe(false);
+    expect(isIndexingAllowed({ VERCEL_ENV: "production" })).toBe(true);
+    expect(isIndexingAllowed({ VERCEL_ENV: "production", ALLOW_INDEXING: "false" })).toBe(false);
     expect(isIndexingAllowed({ ALLOW_INDEXING: "1" })).toBe(false);
     expect(isIndexingAllowed({ ALLOW_INDEXING: "true" })).toBe(true);
   });

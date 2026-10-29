@@ -2,16 +2,16 @@
  * Checks run once, when the site is built (see next.config.ts). They use
  * relative imports only, because next.config.ts loads this file directly.
  */
-import type { Contact } from "./site";
+import { getSiteUrl, isIndexingAllowed, type Contact } from "./site";
 
 type Env = Record<string, string | undefined>;
 
 /** Search engines must never be let in while every link still points at localhost. */
 export function assertSiteUrlForIndexing(env: Env): void {
-  if (env.ALLOW_INDEXING === "true" && !env.SITE_URL?.trim()) {
+  if (isIndexingAllowed(env) && /^https?:\/\/localhost\b/.test(getSiteUrl(env))) {
     throw new Error(
-      "ALLOW_INDEXING is \"true\" but SITE_URL is empty. Set SITE_URL to the live address " +
-        "(for example https://www.example.com) and build again, or leave ALLOW_INDEXING empty.",
+      "Indexing is on but SITE_URL is empty, so every link would point at localhost. Set SITE_URL to the live " +
+        "address (for example https://www.example.com) and build again, or leave ALLOW_INDEXING empty.",
     );
   }
 }

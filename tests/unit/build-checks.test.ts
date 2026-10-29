@@ -12,6 +12,7 @@ describe("assertSiteUrlForIndexing", () => {
     expect(() => assertSiteUrlForIndexing({ ALLOW_INDEXING: "true", SITE_URL: "https://x.com" })).not.toThrow();
     expect(() => assertSiteUrlForIndexing({})).not.toThrow();
     expect(() => assertSiteUrlForIndexing({ ALLOW_INDEXING: "false" })).not.toThrow();
+    expect(() => assertSiteUrlForIndexing({ VERCEL_ENV: "production" })).not.toThrow();
   });
 });
 
@@ -40,6 +41,18 @@ describe("next.config", () => {
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "X-Frame-Options": "DENY",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    });
+  });
+});
+
+describe("redirects", () => {
+  it("sends the old Vercel address to www.goodbizchemicals.com, keeping the path", async () => {
+    const rules = await nextConfig("phase-development-server").redirects!();
+    expect(rules).toContainEqual({
+      source: "/:path*",
+      has: [{ type: "host", value: "chem-phi.vercel.app" }],
+      destination: "https://www.goodbizchemicals.com/:path*",
+      permanent: true,
     });
   });
 });

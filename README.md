@@ -4,7 +4,7 @@ The Goodbiz Chem website: a product catalogue of industrial chemicals listed by 
 
 This guide is written for the business owner. You do not need to be a developer to follow it, but a few steps use the Terminal app on a Mac.
 
-> **The site is live** at <https://chem-phi.vercel.app>. Every push to the `main` branch redeploys it automatically, so only push what is ready to go live. Moving it to its own domain is described in [Move to goodbizchemicals.com](#move-to-goodbizchemicalscom) at the end.
+> **The site is live** at <https://www.goodbizchemicals.com> and open to search engines. Every push to the `main` branch redeploys it automatically, so only push what is ready to go live. The old address <https://chem-phi.vercel.app> redirects to it.
 
 ## Checklist
 
@@ -13,10 +13,10 @@ Do these in order. Each step links to the section that explains it.
 1. [x] **Contact details** are filled in `src/config/site.ts` (chemicals@goodbizglobal.com, +91 8884799369, Bengaluru). See [section 5](#5-contact-details).
 2. [x] **The leads Sheet is set up**, and its web-app address is in `.env.production`. See [section 3](#3-quote-requests-the-leads-sheet).
 3. [ ] **Paste the latest `apps-script/leads/Code.gs` into Apps Script** and publish it: **Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy**. Do this again whenever `Code.gs` changes; the `/exec` address stays the same. See [docs/leads-apps-script.md](docs/leads-apps-script.md).
-4. [ ] **Move to www.goodbizchemicals.com** and set `SITE_URL=https://www.goodbizchemicals.com`. See [Move to goodbizchemicals.com](#move-to-goodbizchemicalscom).
+4. [x] **Live on www.goodbizchemicals.com.** Production builds use this address by default; `SITE_URL` is only needed to change it. See [Move to goodbizchemicals.com](#move-to-goodbizchemicalscom).
 5. [ ] **Send a real test quote** from the live site and confirm the row appears in the Sheet and the alert email arrives.
 6. [ ] **Run `npm audit --omit=dev`** in Terminal and deal with anything it reports.
-7. [ ] **Only then set `ALLOW_INDEXING=true`** and redeploy. See [section 4](#4-the-allow_indexing-switch).
+7. [x] **Search engines are let in** on production (since 2026-10-29). Next: verify the site and submit the sitemap in [Google Search Console](#9-google-search-console) and Bing Webmaster Tools.
 
 ---
 
@@ -59,8 +59,8 @@ Settings live in a file called `.env.local` in the project folder on your comput
 
 | Setting | What to put in it | Example |
 | --- | --- | --- |
-| `SITE_URL` | The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Leave empty on your computer. After setting or changing it on Vercel, **redeploy** (it is read when the site is built). If `ALLOW_INDEXING` is `true` and `SITE_URL` is empty, the build stops with a message saying so. | `https://www.example.com` |
-| `ALLOW_INDEXING` | `true` lets Google list the site. Anything else (including empty) keeps it hidden. See [section 4](#4-the-allow_indexing-switch). | `true` |
+| `SITE_URL` | Optional. The full web address of the site, without a slash at the end. Used for links in search results, the sitemap and social previews. Production builds on Vercel use `https://www.goodbizchemicals.com` when it is empty (set in `PRODUCTION_SITE_URL` in `src/config/site.ts`); other builds use `http://localhost:3000`. Set it only to use a different address, then **redeploy**. If indexing is on and the address would be localhost, the build stops with a message saying so. | `https://www.example.com` |
+| `ALLOW_INDEXING` | Optional. Empty: production is listed by search engines, Preview and local builds are hidden. `true` opens any build; any other value (for example `false`) hides it. See [section 4](#4-the-allow_indexing-switch). | `false` |
 | `NEXT_PUBLIC_LEADS_ENDPOINT` | The web-app address (ending in `/exec`) of the leads Sheet's Apps Script. See [section 3](#3-quote-requests-the-leads-sheet). It is not secret (the browser sends quote requests straight to it), so the live address is kept in the project file **`.env.production`**, and every production build uses it. A Vercel environment variable with the same name overrides that file. It is read when the site is built, so **redeploy** after changing it. If it is empty or `off`, the form still works step by step, and at the end it offers to send the request on WhatsApp or by email instead. | `https://script.google.com/macros/s/AKfy…/exec` |
 | `GOOGLE_SITE_VERIFICATION` | Optional. The code Google Search Console gives you if you choose the **HTML tag** way of proving you own the site (only the `content="…"` value). Leave empty if you verify with a DNS record instead. Redeploy after setting it. | `abc123XYZ` |
 | `BING_SITE_VERIFICATION` | Optional. The code Bing Webmaster Tools gives you for its **meta tag** check (the `content="…"` value of `msvalidate.01`). Redeploy after setting it. | `0123456789ABCDEF` |
@@ -80,13 +80,9 @@ If the address is missing, or a request cannot reach the Sheet, the buyer is nev
 
 ## 4. The `ALLOW_INDEXING` switch
 
-While `ALLOW_INDEXING` is anything other than `true`, every page tells search engines "do not list this page" and `robots.txt` blocks crawlers. This keeps a half-finished site out of Google.
+Production (www.goodbizchemicals.com) is open to search engines. Preview and local builds tell search engines "do not list this page" and `robots.txt` blocks crawlers, so test copies never show up in Google.
 
-**Turn it on (`ALLOW_INDEXING=true`) only when:**
-
-- the real contact details are filled in (see [section 5](#5-contact-details)),
-- you have checked the product pages, About page and blog posts and are happy with every statement on them, and
-- `SITE_URL` is set to the real domain.
+To hide the live site again (for example while you fix something big), set `ALLOW_INDEXING=false` in Vercel for Production and redeploy. Delete the setting and redeploy to open it again.
 
 **Important:** changing `ALLOW_INDEXING` (or `SITE_URL`) needs a **rebuild and redeploy** to take effect. `robots.txt`, `sitemap.xml` and `llms.txt` are generated when the site is built, so editing the setting alone changes nothing until the next deployment. On Vercel: change the setting, then open **Deployments** and choose **Redeploy** on the latest one.
 
@@ -182,7 +178,7 @@ The site includes Vercel Web Analytics, which counts visits and page views witho
 
 Search Console shows how the site appears in Google and lets you ask Google to read it.
 
-1. When the site is live on its real domain and `ALLOW_INDEXING=true` is deployed, go to [Google Search Console](https://search.google.com/search-console) and click **Add property**.
+1. Go to [Google Search Console](https://search.google.com/search-console) and click **Add property**.
 2. Choose **Domain**, type your domain (for example `example.com`) and follow the instructions to add a TXT record at your domain registrar. This proves you own the domain and needs no change to the website.
 3. Once verified, open **Sitemaps**, enter `sitemap.xml` and click **Submit**. The sitemap lists every product page, blog post and main page.
 4. Use **URL inspection** on the home page and a product page and click **Request indexing** to speed things up.
@@ -198,14 +194,14 @@ Search Console shows how the site appears in Google and lets you ask Google to r
 - **Keywords** for each product, built from its own name, synonyms, HSN code and CAS numbers.
 - **Share images.** Every product and blog post has its own preview card (name, HSN code, group) for WhatsApp, LinkedIn, X and search results.
 - **Structured data** that Google and AI assistants read: the company (with country India), every product with its HSN and CAS numbers, related products and the articles that mention it, the product list, FAQs, breadcrumbs, articles and a site search box. No prices or ratings are claimed.
-- **For AI assistants** (ChatGPT, Perplexity, Gemini, Claude): `/llms.txt` is a short guide to the site and `/llms-full.txt` is the whole catalogue in one plain-text file. Once indexing is on, `robots.txt` names the main AI crawlers and lets them in. That list includes `Google-Extended` and `Applebot-Extended`, which are not search crawlers but signals that Google and Apple may use the site to train their AI models; if you would rather opt out of that, delete those two names from the `AI_CRAWLERS` list in `src/app/robots.ts`, add `{ userAgent: ["Google-Extended", "Applebot-Extended"], disallow: "/" },` to the `rules` list in the same file, and redeploy. Your Google and Apple search listings are not affected.
+- **For AI assistants** (ChatGPT, Perplexity, Gemini, Claude): `/llms.txt` is a short guide to the site and `/llms-full.txt` is the whole catalogue in one plain-text file. `robots.txt` names the main AI crawlers and lets them in. That list includes `Google-Extended` and `Applebot-Extended`, which are not search crawlers but signals that Google and Apple may use the site to train their AI models; if you would rather opt out of that, delete those two names from the `AI_CRAWLERS` list in `src/app/robots.ts`, add `{ userAgent: ["Google-Extended", "Applebot-Extended"], disallow: "/" },` to the `rules` list in the same file, and redeploy. Your Google and Apple search listings are not affected.
 - **Sitemap** with every page, the product share images and the home page image, plus a web app manifest and the usual technical tags.
 
 None of this guarantees a ranking. Search engines also weigh things outside the website, listed next.
 
 ### What only you can do (this matters more than the code)
 
-1. **Turn indexing on** with real contact details filled in ([section 4](#4-the-allow_indexing-switch) and [section 5](#5-contact-details)). Until then Google is told not to list the site.
+1. **Keep the contact details current** ([section 5](#5-contact-details)). Indexing is already on for the live site ([section 4](#4-the-allow_indexing-switch)).
 2. **Verify the site** in [Google Search Console](#9-google-search-console) and in [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT search and Copilot), and **submit `sitemap.xml`** in both. If you use the meta-tag method, put the codes in `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` ([section 2](#2-settings-environment-variables)).
 3. **Create a Google Business Profile** for the company, with the same name, website and contact details as the site.
 4. **Get listed on B2B directories** such as IndiaMART, TradeIndia, Alibaba and ExportersIndia, each linking back to the site. Use the same product names and HSN codes as the site.
@@ -226,18 +222,18 @@ Change both values (the code is the two-letter country code), run `npm test`, an
 
 ## Move to goodbizchemicals.com
 
-The site already runs on [Vercel](https://vercel.com) at <https://chem-phi.vercel.app>, connected to this project's Git repository: every push to `main` builds and deploys it. The leads Sheet's `/exec` address comes from `.env.production` ([section 3](#3-quote-requests-the-leads-sheet)), so there is nothing to add for it in Vercel. The remaining steps:
+Done on 2026-10-29. The site runs on [Vercel](https://vercel.com), connected to this project's Git repository: every push to `main` builds and deploys it.
 
-1. **Check the settings.** In the project's **Settings** > **Environment Variables**, make sure every setting from [section 2](#2-settings-environment-variables) has its real value. `NEXT_PUBLIC_LEADS_ENDPOINT` is not needed there (see the Preview note below). Leave `ALLOW_INDEXING` empty for now.
-2. **Keep Preview builds away from the live Sheet.** Preview deployments (every branch and pull request) are production builds too, so they also read `.env.production` and **post test quotes to the live script**, creating real rows and alert emails. To stop that, in **Settings** > **Environment Variables** add `NEXT_PUBLIC_LEADS_ENDPOINT`, tick **Preview** only (not Production), and set the value to `off` (or to the `/exec` address of a separate test copy of the Sheet's script). With `off`, a Preview's form ends with the WhatsApp and email buttons instead of saving. Production keeps using `.env.production`.
-3. **Add the domain www.goodbizchemicals.com.**
-   1. In **Settings** > **Domains**, add `www.goodbizchemicals.com`, and follow Vercel's instructions to point it there at your domain registrar.
-   2. Also add `goodbizchemicals.com` (without `www`) and choose to **redirect** it to `www.goodbizchemicals.com`.
-   3. In **Settings** > **Environment Variables**, set `SITE_URL=https://www.goodbizchemicals.com`.
-   4. **Redeploy** (Deployments > Redeploy), so links, the sitemap and `llms.txt` use the new address.
-4. **Check the site on its new address** with a real quote request: the row appears in the Leads tab and the alert email reaches chemicals@goodbizglobal.com. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
-5. **Open the site to Google.** Once you are happy with the content, set `ALLOW_INDEXING=true` and redeploy (see [section 4](#4-the-allow_indexing-switch)).
-6. **Submit the sitemap** in Google Search Console ([section 9](#9-google-search-console)) and enable Web Analytics ([section 8](#8-vercel-web-analytics)).
+- `www.goodbizchemicals.com` is the main address; `goodbizchemicals.com` (without `www`) redirects to it in Vercel's **Settings** > **Domains**.
+- `https://chem-phi.vercel.app` redirects to the same page on `www.goodbizchemicals.com` (in `next.config.ts`), so Google never sees two copies of the site.
+- Links, canonical tags, `sitemap.xml`, `robots.txt`, `llms.txt` and the structured data all use `https://www.goodbizchemicals.com`.
+- The leads Sheet's `/exec` address comes from `.env.production` ([section 3](#3-quote-requests-the-leads-sheet)), so there is nothing to add for it in Vercel.
+
+Still to do:
+
+1. **Keep Preview builds away from the live Sheet.** Preview deployments (every branch and pull request) are production builds too, so they also read `.env.production` and **post test quotes to the live script**, creating real rows and alert emails. To stop that, in **Settings** > **Environment Variables** add `NEXT_PUBLIC_LEADS_ENDPOINT`, tick **Preview** only (not Production), and set the value to `off` (or to the `/exec` address of a separate test copy of the Sheet's script). With `off`, a Preview's form ends with the WhatsApp and email buttons instead of saving. Production keeps using `.env.production`.
+2. **Check the live site** with a real quote request: the row appears in the Leads tab and the alert email reaches chemicals@goodbizglobal.com. Then run `npm audit --omit=dev` on your computer and deal with anything it reports.
+3. **Submit the sitemap** in Google Search Console ([section 9](#9-google-search-console)) and Bing Webmaster Tools, and enable Web Analytics ([section 8](#8-vercel-web-analytics)).
 
 ---
 

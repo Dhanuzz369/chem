@@ -25,7 +25,7 @@ export const metadata = buildMetadata({
 const faqs: Faq[] = [
   {
     q: "How do I request a quote?",
-    a: "Use the quote form. Choose one or more products, give the quantity and unit, and tell us the destination and any packaging or documents you need. We reply to the email address you give.",
+    a: "Use the step-by-step quote form. Start with your name and an email or WhatsApp number, then pick the product, quantity, packaging, destination and delivery terms (FOB, CFR or CIF). Most answers are a single tap. We reply by email or WhatsApp.",
   },
   {
     q: "What does a quote include?",
@@ -45,7 +45,7 @@ const faqs: Faq[] = [
   },
   {
     q: "Can you supply a chemical that isn't on your list?",
-    a: `Yes. ${sourcingLine} Use the “Chemical not on our list?” field on the quote form and give the name, grade, CAS number or specification.`,
+    a: `Yes. ${sourcingLine} Choose “Something else” on the quote form and give the name, grade, CAS number or specification.`,
   },
 ];
 
