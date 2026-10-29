@@ -1,4 +1,4 @@
-import { absoluteUrl, site } from "@/config/site";
+import { absoluteUrl, site, SITE_UPDATED } from "@/config/site";
 import { productGroups, products, type Faq, type Product } from "@/content/products";
 import type { PostMeta } from "@/lib/blog";
 import { DEFAULT_OG_IMAGE, postOgImagePath, productOgImagePath } from "@/lib/seo/metadata";
@@ -64,6 +64,8 @@ export function websiteJsonLd(): JsonLdObject {
     url: absoluteUrl("/"),
     description: site.tagline,
     inLanguage: "en",
+    // The same date the sitemap gives as lastmod.
+    dateModified: SITE_UPDATED,
     publisher: { "@id": absoluteUrl("/#organization") },
     potentialAction: {
       "@type": "SearchAction",

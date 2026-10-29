@@ -38,6 +38,16 @@ const slugs = [
   "labsa-in-detergent-manufacturing",
 ];
 
+test("the RSS feed lists every post and pages link to it", async ({ page, request }) => {
+  const res = await request.get("/blog/feed.xml");
+  expect(res.headers()["content-type"]).toContain("application/rss+xml");
+  const xml = await res.text();
+  for (const slug of slugs) expect(xml).toContain(`/blog/${slug}</link>`);
+
+  await page.goto(post);
+  await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", /\/blog\/feed\.xml$/);
+});
+
 test("sitemap includes posts", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
   for (const slug of slugs) {

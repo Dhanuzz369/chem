@@ -19,9 +19,9 @@ An HSN code is the number customs uses to classify a product. The first six digi
 
 ## What is the Harmonized System?
 
-The Harmonized Commodity Description and Coding System, usually shortened to HS, is a product nomenclature maintained by the World Customs Organization. Most countries and customs unions base their tariffs and trade statistics on it, so a product classified in one country lands in the same 6-digit subheading in another.
+The Harmonized Commodity Description and Coding System, usually shortened to HS, is a product nomenclature maintained by the [World Customs Organization](https://www.wcoomd.org/en/topics/nomenclature/overview/what-is-the-harmonized-system.aspx). Most countries and customs unions base their tariffs and trade statistics on it, so a product classified in one country lands in the same 6-digit subheading in another.
 
-The WCO revises the HS roughly every five years to reflect new products and trade patterns. The current edition is HS 2022. Each revision can split, merge or renumber subheadings, which is why an old invoice and a new one can show different codes for the same material.
+The WCO revises the HS roughly every five years to reflect new products and trade patterns. The current edition is [HS 2022](https://www.wcoomd.org/en/topics/nomenclature/instrument-and-tools/hs-nomenclature-2022-edition.aspx). Each revision can split, merge or renumber subheadings, which is why an old invoice and a new one can show different codes for the same material.
 
 "HSN" stands for Harmonized System of Nomenclature. In India the term is used widely, especially for GST, but it refers to the same HS structure.
 

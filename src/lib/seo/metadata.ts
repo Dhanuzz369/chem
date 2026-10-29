@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { absoluteUrl, isIndexingAllowed, site } from "@/config/site";
 import type { Product } from "@/content/products";
 import type { PostMeta } from "@/lib/blog";
+import { FEED_ALTERNATE } from "@/lib/seo/rss";
 
 export const DEFAULT_OG_IMAGE = "/og-default.png";
 
@@ -40,7 +41,7 @@ export function buildMetadata({
     title: absoluteTitle ? { absolute: title } : title,
     description,
     ...(keywords && keywords.length > 0 && { keywords }),
-    alternates: { canonical: url },
+    alternates: { canonical: url, types: FEED_ALTERNATE },
     robots: { index, follow: index },
     openGraph: {
       title,

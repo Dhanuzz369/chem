@@ -12,7 +12,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo/jsonld";
 import { buildMetadata, productMetaDescription } from "@/lib/seo/metadata";
-import { absoluteUrl, site } from "@/config/site";
+import { SITE_UPDATED, absoluteUrl, site } from "@/config/site";
 import { getAllPosts } from "@/lib/blog";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -24,6 +24,8 @@ describe("metadata", () => {
     vi.stubEnv("SITE_URL", "https://ex.com");
     const m = buildMetadata({ title: "T", description: "D", path: "/products/methanol" });
     expect(m.alternates?.canonical).toBe("https://ex.com/products/methanol");
+    // A page's alternates replace the layout's, so each one repeats the feed link.
+    expect(m.alternates?.types).toEqual({ "application/rss+xml": [{ url: "/blog/feed.xml", title: "Goodbiz Chem blog" }] });
   });
 
   it("robots noindex when indexing off", () => {
@@ -106,7 +108,7 @@ describe("json-ld", () => {
   });
 
   it("websiteJsonLd and breadcrumbJsonLd shapes", () => {
-    expect((websiteJsonLd() as { "@type": string })["@type"]).toBe("WebSite");
+    expect(websiteJsonLd()).toMatchObject({ "@type": "WebSite", dateModified: SITE_UPDATED });
     const b = breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Products", path: "/products" }]) as {
       itemListElement: { position: number }[];
     };

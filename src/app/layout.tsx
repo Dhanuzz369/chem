@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { getSiteUrl, site } from "@/config/site";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata, verificationMetadata } from "@/lib/seo/metadata";
+import { FEED_ALTERNATE } from "@/lib/seo/rss";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -45,6 +46,8 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
   // Search Console and Bing Webmaster ownership tags, read at build time; nothing renders while unset.
   verification: verificationMetadata(),
+  // Feed readers and AI crawlers find the blog feed from any page.
+  alternates: { types: FEED_ALTERNATE },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
