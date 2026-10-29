@@ -41,6 +41,7 @@ describe("next.config", () => {
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "X-Frame-Options": "DENY",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+      "Content-Security-Policy": expect.stringContaining("frame-ancestors 'none'"),
     });
   });
 });

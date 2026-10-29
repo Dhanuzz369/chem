@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtures";
 import sitemap from "../../src/app/sitemap";
 import { getSiteUrl } from "../../src/config/site";
+import { INDEXNOW_KEY } from "../../scripts/indexnow.mjs";
 
 /** Every indexable route, read from the sitemap so new pages are covered automatically. */
 const routes = sitemap().map((entry) => new URL(entry.url).pathname);
@@ -94,6 +95,15 @@ test("llms.txt and llms-full.txt are served as text", async ({ request }) => {
     expect(res.status(), path).toBe(200);
     expect(res.headers()["content-type"], path).toContain("text/plain");
   }
+});
+
+test("the IndexNow key file serves the key, and pages carry a Content-Security-Policy", async ({ request }) => {
+  const key = await request.get(`/${INDEXNOW_KEY}.txt`);
+  expect(key.status()).toBe(200);
+  expect(await key.text()).toBe(INDEXNOW_KEY);
+
+  const home = await request.get("/");
+  expect(home.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
 });
 
 test("titles and meta descriptions are unique across indexable pages", async ({ page }) => {

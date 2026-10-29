@@ -1,0 +1,25 @@
+# After Vercel finishes a production deploy of main, tell IndexNow search engines the pages changed.
+# Vercel reports deploys to GitHub as a commit status named "Vercel"; Preview deploys of other branches are skipped.
+name: IndexNow
+
+on:
+  status:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    if: >-
+      github.event.context == 'Vercel' &&
+      github.event.state == 'success' &&
+      contains(github.event.branches.*.name, 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # The script and key come from main, never from the commit the status names.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/indexnow.mjs

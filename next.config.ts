@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { assertSiteUrlForIndexing, missingContactWarning } from "./src/config/build-checks";
+import { contentSecurityPolicy } from "./src/config/csp";
 import { PRODUCTION_SITE_URL, site } from "./src/config/site";
 
 const securityHeaders = [
@@ -8,6 +9,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy() },
 ];
 
 // The e2e suite builds a second copy without NEXT_PUBLIC_LEADS_ENDPOINT (playwright.config.ts). It gets its own
