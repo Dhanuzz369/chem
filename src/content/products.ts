@@ -203,7 +203,7 @@ export const products: Product[] = [
       },
       {
         q: "What HSN code does isopropyl alcohol use?",
-        a: "Isopropyl alcohol is classified under HSN 29051220.",
+        a: "Isopropyl alcohol (CAS 67-63-0) is classified under HSN 29051220. The code reads from Chapter 29 (organic chemicals) to heading 2905 (acyclic alcohols) and subheading 290512, which covers both propyl and isopropyl alcohol. India's eighth digit separates them: 29051210 is propyl alcohol (propan-1-ol) and 29051220 is isopropyl alcohol (propan-2-ol).",
       },
       {
         q: "Is an SDS available for IPA?",
@@ -504,6 +504,7 @@ export const products: Product[] = [
   {
     slug: "caustic-soda-flakes",
     name: "Caustic Soda (solid)",
+    seoTitle: "Caustic Soda Flakes Exporter, HSN 281511",
     hsn: "281511",
     group: "Inorganics",
     cas: ["1310-73-2"],
@@ -1164,11 +1165,16 @@ export const products: Product[] = [
   },
 ];
 
-/** The generated "Do you export …?" question, phrased only from what the owner states: they export and supply it. */
-export function exportFaq(p: Pick<Product, "name" | "hsn">): Faq {
+/**
+ * The generated "Do you export …?" question, phrased only from what the owner states: they export and supply it,
+ * from Bengaluru, worldwide (confirmed 2026-10-29). It names the company, place and identifiers in one sentence,
+ * so it can be quoted on its own.
+ */
+export function exportFaq(p: Pick<Product, "name" | "hsn" | "cas">): Faq {
+  const cas = p.cas.length > 0 ? `, CAS ${p.cas.join(", ")}` : "";
   return {
     q: `Do you export ${p.name}?`,
-    a: `Yes. ${site.name} exports and supplies ${p.name} (HSN ${p.hsn}). Send a quote request with quantity, packaging and destination port; SDS available on request.`,
+    a: `Yes. ${site.name}, based in ${site.origin.locality}, ${site.origin.country}, exports and supplies ${p.name} (HSN ${p.hsn}${cas}) worldwide. Send a quote request with quantity, packaging and destination port; SDS available on request.`,
   };
 }
 

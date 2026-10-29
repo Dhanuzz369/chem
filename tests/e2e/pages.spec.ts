@@ -5,10 +5,10 @@ import { bannedPageClaims as banned } from "../helpers/claims";
 
 test("about renders without claims", async ({ page }) => {
   await page.goto("/about");
-  await expect(page).toHaveTitle(`About Us: Chemical Exporter from ${site.origin.country} | ${site.name}`);
+  await expect(page).toHaveTitle(`About Us: ${site.origin.locality} Chemical Exporter | ${site.name}`);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    `${site.name} is a chemical exporter and supplier from ${site.origin.country}. See what we supply and how we work with buyers from enquiry to dispatch.`,
+    `${site.name} is a chemical exporter and supplier based in ${site.origin.locality}, ${site.origin.region}, ${site.origin.country}. See what we supply and how we work with buyers from enquiry to dispatch.`,
   );
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.getByRole("main").innerText()).not.toMatch(banned);

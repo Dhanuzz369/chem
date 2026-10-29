@@ -9,7 +9,7 @@ export function GET() {
   const lines = [
     `# ${site.name}`,
     "",
-    `> ${companySummary()} Based in ${site.origin.locality}, ${site.origin.region}. Product pages give HSN and CAS numbers, applications and packaging; buyers request quotes online.`,
+    `> ${companySummary()} ${site.tagline} Product pages give HSN and CAS numbers, applications and packaging; buyers request quotes online.`,
     "",
     `${site.name} can also source and supply chemicals that are not listed. Describe what you need on the quote form: ${absoluteUrl("/quote#other")}`,
     "",

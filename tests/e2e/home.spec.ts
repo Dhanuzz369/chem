@@ -31,6 +31,14 @@ test("canvas mounts with motion allowed", async ({ page }, testInfo) => {
   await expect(page.locator("canvas")).toHaveCount(1, { timeout: 5000 });
 });
 
+test("phones keep the still frame instead of the 3D scene", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "mobile only");
+  await page.goto("/");
+  await expect(page.locator(fallback)).toBeVisible();
+  await page.waitForTimeout(1500);
+  await expect(page.locator("canvas")).toHaveCount(0);
+});
+
 test("home sections present", async ({ page }) => {
   await page.goto("/");
   const main = page.getByRole("main");

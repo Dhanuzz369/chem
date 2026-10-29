@@ -9,8 +9,8 @@ import { site } from "@/config/site";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
-  title: `About Us: Chemical Exporter from ${site.origin.country}`,
-  description: `${site.name} is a chemical exporter and supplier from ${site.origin.country}. See what we supply and how we work with buyers from enquiry to dispatch.`,
+  title: `About Us: ${site.origin.locality} Chemical Exporter`,
+  description: `${site.name} is a chemical exporter and supplier based in ${site.origin.locality}, ${site.origin.region}, ${site.origin.country}. See what we supply and how we work with buyers from enquiry to dispatch.`,
   path: "/about",
 });
 
@@ -40,8 +40,9 @@ export default function AboutPage() {
       <div className="mt-6 max-w-[44rem]">
         <h1 className="text-[clamp(2.25rem,3vw+1.25rem,3.5rem)] font-semibold text-ink">About Goodbiz Chem</h1>
         <p className="mt-4 max-w-[58ch] text-lg text-ink-muted">
-          Goodbiz Chem supplies industrial and specialty chemicals to manufacturers. This site lists the range by name and
-          HSN code so a buyer can confirm a product quickly and ask for a quote.
+          Goodbiz Chem supplies industrial and specialty chemicals to manufacturers and exports them worldwide from{" "}
+          {site.origin.locality}, {site.origin.region}, {site.origin.country}. This site lists the range by name and HSN
+          code so a buyer can confirm a product quickly and ask for a quote.
         </p>
       </div>
 

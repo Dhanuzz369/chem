@@ -227,6 +227,18 @@ async function startScene(host: HTMLElement, onFirstFrame: () => void) {
   };
 }
 
+/**
+ * Phone-width screens, data-saver mode and low-memory devices keep the still frame. On a mid-range phone the
+ * scene's start-up blocks the main thread for over a second, which slows the first tap and the
+ * page's Core Web Vitals; the still looks the same at that size.
+ */
+function prefersStill(): boolean {
+  const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
+  if (nav.connection?.saveData) return true;
+  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) return true;
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
 /** The hero's 3D panel: a static frame first, the live scene once it is cheap and welcome. */
 export function HeroScene() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -236,7 +248,7 @@ export function HeroScene() {
     const host = hostRef.current;
     if (!host) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches) return;
+    if (reduce.matches || prefersStill()) return;
 
     let cancelled = false;
     let stop: (() => void) | undefined;
@@ -264,14 +276,19 @@ export function HeroScene() {
         });
     };
 
-    // Wait until the panel is on screen, then until the browser has nothing better to do.
+    // Wait until the page has loaded and the panel is on screen, then until the browser has
+    // nothing better to do.
     const view = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       view.disconnect();
-      if ("requestIdleCallback" in window) idle = window.requestIdleCallback(begin, { timeout: 2000 });
+      if ("requestIdleCallback" in window) idle = window.requestIdleCallback(begin, { timeout: 4000 });
       else timer = setTimeout(begin, 200);
     });
-    view.observe(host);
+    const observe = () => {
+      if (!cancelled) view.observe(host);
+    };
+    if (document.readyState === "complete") observe();
+    else window.addEventListener("load", observe, { once: true });
 
     // Turning reduced motion on mid-visit removes the scene again.
     const onReduce = () => {
@@ -288,6 +305,7 @@ export function HeroScene() {
     return () => {
       cancelled = true;
       view.disconnect();
+      window.removeEventListener("load", observe);
       reduce.removeEventListener("change", onReduce);
       cancelPending();
       stop?.();
@@ -305,6 +323,7 @@ export function HeroScene() {
         alt=""
         fill
         loading="eager"
+        fetchPriority="high"
         sizes="(min-width: 1024px) 45vw, 100vw"
         // Once the canvas has faded in over it, the still steps out so the two never double up.
         // The delay applies only to hiding; when the scene is removed the still returns at once.

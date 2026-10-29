@@ -5,6 +5,7 @@ description: "How HS and HSN codes are built, why India uses 8 digits where the 
 date: "2026-10-02"
 products:
   - methanol
+  - isopropyl-alcohol
   - ethyl-acetate
   - toluene
   - titanium-dioxide
@@ -40,6 +41,17 @@ Chapters group whole families of goods. For the products on this site, three cha
 - **Chapter 28** covers inorganic chemicals, such as [titanium dioxide](/products/titanium-dioxide) (2823) and sodium hydroxide, sold as [caustic soda flakes](/products/caustic-soda-flakes) (281511) or [liquid caustic soda](/products/liquid-caustic-soda) (281512).
 - **Chapter 29** covers organic chemicals, such as [methanol](/products/methanol), [ethyl acetate](/products/ethyl-acetate) (291531) and [toluene](/products/toluene) (290230).
 - **Chapter 34** covers soaps and organic surface-active agents, which is where surfactants like [LABSA](/products/labsa) and [SLES 70%](/products/sles-70) sit, under heading 3402.
+
+The same chain works for [isopropyl alcohol](/products/isopropyl-alcohol), CAS 67-63-0:
+
+| Digits | Level | Example: isopropyl alcohol, 29051220 |
+| --- | --- | --- |
+| 2 | Chapter | 29: organic chemicals |
+| 4 | Heading | 2905: acyclic alcohols and their derivatives |
+| 6 | Subheading | 290512: propan-1-ol (propyl alcohol) and propan-2-ol (isopropyl alcohol) |
+| 8 | Indian tariff line | 29051220: isopropyl alcohol |
+
+Propyl alcohol and isopropyl alcohol share the 6-digit subheading 290512. India's eighth digit separates them: 29051210 is propyl alcohol and 29051220 is isopropyl alcohol. If an invoice or a shipping bill shows 29051210 for IPA, it names the wrong chemical.
 
 Notice how sodium hydroxide splits at the sixth digit: 281511 is the solid, and 281512 is the aqueous solution. The same chemical can sit in two subheadings depending on its form, so it pays to read the full code rather than the heading alone.
 

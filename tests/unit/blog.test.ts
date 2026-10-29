@@ -71,9 +71,9 @@ describe("blog", () => {
     expect(html).toContain("&lt;span");
   });
 
-  it("wraps tables in a focusable scroll region", () => {
+  it("wraps tables in a focusable scroll region named after the column headings", () => {
     const html = renderMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |");
-    expect(html).toMatch(/^<div class="table-scroll" role="region" aria-label="Table" tabindex="0"><table>/);
+    expect(html).toMatch(/^<div class="table-scroll" role="region" aria-label="Table: a, b" tabindex="0"><table>/);
   });
 
   it("accepts real dates and rejects impossible ones", () => {

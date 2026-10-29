@@ -12,6 +12,8 @@ function productRef(p: Pick<Product, "slug" | "name">): JsonLdObject {
 }
 
 const postId = (slug: string) => `${absoluteUrl(`/blog/${slug}`)}#article`;
+/** A square PNG of the site icon: Google's logo guidelines ask for a raster image of at least 112 px. */
+const LOGO_PATH = "/logo.png";
 
 export function organizationJsonLd(): JsonLdObject {
   const { email, phone, whatsapp } = site.contact;
@@ -27,7 +29,7 @@ export function organizationJsonLd(): JsonLdObject {
     "@id": absoluteUrl("/#organization"),
     name: site.name,
     url: absoluteUrl("/"),
-    logo: absoluteUrl("/icon.svg"),
+    logo: absoluteUrl(LOGO_PATH),
     image: absoluteUrl(DEFAULT_OG_IMAGE),
     description: site.tagline,
     // City, state and country as the owner gave them; no street address is published.
@@ -40,6 +42,8 @@ export function organizationJsonLd(): JsonLdObject {
     ...(email && { email }),
     ...(phone && { telephone: phone }),
     ...(contactPoint.length > 0 && { contactPoint }),
+    // The owner confirmed the business exports worldwide (2026-10-29).
+    areaServed: "Worldwide",
     knowsAbout: [...productGroups, ...products.map((p) => p.name)],
     // An OfferCatalog of priceless Offers rather than makesOffer: the site shows no prices, and this is
     // schema.org's own shape for "the things this seller offers". See the change-2 report for the reasoning.
@@ -84,7 +88,6 @@ export function productJsonLd(p: Product, posts: PostMeta[] = []): JsonLdObject 
     description: p.summary,
     url,
     image: absoluteUrl(productOgImagePath(p.slug)),
-    sku: p.slug,
     category: p.group,
     ...(p.synonyms.length > 0 && { alternateName: p.synonyms }),
     additionalProperty: [
@@ -155,6 +158,7 @@ export function blogPostingJsonLd(post: PostMeta): JsonLdObject {
     "@id": absoluteUrl("/#organization"),
     name: site.name,
     url: absoluteUrl("/"),
+    logo: absoluteUrl(LOGO_PATH),
   };
   return {
     "@context": "https://schema.org",
@@ -170,6 +174,13 @@ export function blogPostingJsonLd(post: PostMeta): JsonLdObject {
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     author: organization,
     publisher: organization,
+    isPartOf: { "@type": "Blog", "@id": `${absoluteUrl("/blog")}#blog`, name: `${site.name} blog`, url: absoluteUrl("/blog") },
+    ...(post.products.length > 0 && {
+      about: post.products
+        .map((slug) => products.find((p) => p.slug === slug))
+        .filter((p): p is Product => Boolean(p))
+        .map(productRef),
+    }),
     inLanguage: "en",
   };
 }

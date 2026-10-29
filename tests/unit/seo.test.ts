@@ -85,7 +85,7 @@ describe("json-ld", () => {
       expect(empty).not.toHaveProperty("email");
       expect(empty).not.toHaveProperty("telephone");
       expect(empty.name).toBe("Goodbiz Chem");
-      expect(String(empty.logo)).toMatch(/\/icon\.svg$/);
+      expect(String(empty.logo)).toMatch(/\/logo\.png$/);
 
       site.contact = { email: "sales@example.com", phone: "+1 555 010 0000" };
       const filled = organizationJsonLd() as Record<string, unknown>;
@@ -128,6 +128,8 @@ describe("json-ld", () => {
       dateModified: "2026-10-05",
       author: { "@type": "Organization", "@id": "https://ex.com/#organization", name: "Goodbiz Chem", url: "https://ex.com/" },
       publisher: { "@type": "Organization", "@id": "https://ex.com/#organization", name: "Goodbiz Chem", url: "https://ex.com/" },
+      isPartOf: { "@type": "Blog", "@id": "https://ex.com/blog#blog", url: "https://ex.com/blog" },
+      about: [{ "@type": "Product", "@id": "https://ex.com/products/methanol#product", name: "Methanol" }],
       inLanguage: "en",
     });
   });

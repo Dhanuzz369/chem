@@ -104,7 +104,7 @@ test("product page has answer-first summary, HSN, SDS note, FAQ, related links a
 
   const exportQuestion = page.getByRole("heading", { name: "Do you export Methanol?" });
   await exportQuestion.click();
-  await expect(page.getByText("Yes. Goodbiz Chem exports and supplies Methanol (HSN 29051100).", { exact: false })).toBeVisible();
+  await expect(page.getByText("Yes. Goodbiz Chem, based in Bengaluru, India, exports and supplies Methanol (HSN 29051100, CAS 67-56-1) worldwide.", { exact: false })).toBeVisible();
 
   const reading = page.getByRole("region", { name: "Further reading" });
   await expect(reading.getByRole("link", { name: "How do you choose an industrial solvent?" })).toHaveAttribute(

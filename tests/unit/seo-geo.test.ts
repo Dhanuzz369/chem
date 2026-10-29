@@ -169,7 +169,7 @@ describe("export FAQ", () => {
     const faq = exportFaq(methanol);
     expect(faq.q).toBe("Do you export Methanol?");
     expect(faq.a).toBe(
-      "Yes. Goodbiz Chem exports and supplies Methanol (HSN 29051100). Send a quote request with quantity, packaging and destination port; SDS available on request.",
+      "Yes. Goodbiz Chem, based in Bengaluru, India, exports and supplies Methanol (HSN 29051100, CAS 67-56-1) worldwide. Send a quote request with quantity, packaging and destination port; SDS available on request.",
     );
     const all = productFaqs(methanol);
     expect(all).toHaveLength(methanol.faqs.length + 1);
@@ -223,13 +223,13 @@ describe("json-ld", () => {
     for (const p of products) expect(productJsonLd(p)).not.toHaveProperty("offers");
   });
 
-  it("product has image, category, sku, related products and the posts that mention it", () => {
+  it("product has image, category, related products and the posts that mention it", () => {
     vi.stubEnv("SITE_URL", "https://ex.com");
     const posts = getPostsForProduct("methanol");
     const ld = productJsonLd(methanol, posts) as Record<string, unknown>;
     expect(ld.image).toBe("https://ex.com/products/methanol/opengraph-image/card");
     expect(ld.category).toBe("Solvents");
-    expect(ld.sku).toBe("methanol");
+    expect(ld).not.toHaveProperty("sku");
     expect(ld.isRelatedTo).toEqual(
       methanol.related.map((s) => ({
         "@type": "Product",
@@ -266,7 +266,8 @@ describe("json-ld", () => {
     vi.stubEnv("SITE_URL", "https://ex.com");
     const ld = organizationJsonLd() as Record<string, unknown>;
     expect(ld["@id"]).toBe("https://ex.com/#organization");
-    expect(ld.logo).toBe("https://ex.com/icon.svg");
+    expect(ld.logo).toBe("https://ex.com/logo.png");
+    expect(ld.areaServed).toBe("Worldwide");
     expect(ld.image).toBe("https://ex.com/og-default.png");
     expect(ld.address).toEqual({
       "@type": "PostalAddress",

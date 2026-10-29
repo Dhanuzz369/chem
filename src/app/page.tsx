@@ -17,7 +17,7 @@ import { buildMetadata, catalogueKeywords } from "@/lib/seo/metadata";
 export const metadata = buildMetadata({
   title: `Industrial Chemicals Exporter from ${site.origin.country} | ${site.name}`,
   absoluteTitle: true,
-  description: `${site.name}, an industrial chemicals exporter and supplier from ${site.origin.country}: solvents, amines, inorganics and surfactants by HSN and CAS. SDS on request.`,
+  description: `${site.name}, an industrial chemicals exporter and supplier from ${site.origin.locality}, ${site.origin.country}: solvents, amines, inorganics and surfactants by HSN and CAS. SDS on request.`,
   path: "/",
   keywords: catalogueKeywords(productGroups, products),
 });
@@ -101,7 +101,7 @@ export default function Home() {
         intro={
           <p>
             Filter by group or search by name, synonym, HSN code or CAS number. Each row opens the product page with
-            its specification summary and handling notes.
+            its HSN and CAS numbers, uses, packaging and handling notes.
           </p>
         }
       >

@@ -7,7 +7,7 @@ import { getAllPosts } from "@/lib/blog";
 
 /** One sentence an assistant can quote: who the company is, from the owner's own description. */
 export function companySummary(): string {
-  return `${site.name} is an exporter and supplier of industrial and specialty chemicals from ${site.origin.country}.`;
+  return `${site.name} is an exporter and supplier of industrial and specialty chemicals, based in ${site.origin.locality}, ${site.origin.region}, ${site.origin.country}.`;
 }
 
 const list = (items: string[]) => items.map((item) => `- ${item}`);

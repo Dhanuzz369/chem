@@ -31,7 +31,8 @@ function escapeHtml(text: string) {
 /**
  * Posts are trusted local files, but raw HTML is still escaped rather than passed through,
  * so a stray tag in Markdown renders as text and only Markdown syntax produces markup.
- * Tables are wrapped so a wide one scrolls inside the article instead of widening the page.
+ * Tables are wrapped so a wide one scrolls inside the article instead of widening the page. Each wrapper is
+ * named after its column headings, so two tables in one post are two distinct regions.
  */
 const markdown = new Marked({
   gfm: true,
@@ -39,7 +40,8 @@ const markdown = new Marked({
     html: ({ text }) => escapeHtml(text),
     table(token: Tokens.Table) {
       const table = Renderer.prototype.table.call(this, token);
-      return `<div class="table-scroll" role="region" aria-label="Table" tabindex="0">${table}</div>\n`;
+      const label = escapeHtml(`Table: ${token.header.map((cell) => cell.text).join(", ")}`);
+      return `<div class="table-scroll" role="region" aria-label="${label}" tabindex="0">${table}</div>\n`;
     },
   },
 });
