@@ -45,3 +45,20 @@ describe("contentSecurityPolicy", () => {
     expect(policy).not.toContain("upgrade-insecure-requests");
   });
 });
+
+describe("contentSecurityPolicy with Google Analytics", () => {
+  it("allows the Google tag and its collection hosts on the live site", () => {
+    const policy = contentSecurityPolicy({ VERCEL_ENV: "production", NODE_ENV: "production" });
+    expect(directive(policy, "script-src")).toBe("script-src 'self' 'unsafe-inline' https://*.googletagmanager.com");
+    expect(directive(policy, "img-src")).toBe("img-src 'self' blob: data: https://*.google-analytics.com https://*.googletagmanager.com");
+    expect(directive(policy, "connect-src")).toBe(
+      "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
+    );
+  });
+
+  it("leaves Google out of Preview and local builds, where the tag is not loaded", () => {
+    for (const VERCEL_ENV of [undefined, "preview", "development"]) {
+      expect(contentSecurityPolicy({ VERCEL_ENV, NODE_ENV: "production" })).not.toContain("google");
+    }
+  });
+});

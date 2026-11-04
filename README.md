@@ -172,6 +172,17 @@ Posts are plain text files in `content/blog/`. Each file becomes a page at `/blo
 
 The site includes Vercel Web Analytics, which counts visits and page views without cookies or cookie banners. It only runs on Vercel; on your computer it is switched off. It relies on Vercel's default **Automatically expose System Environment Variables** setting (under **Settings** > **Environment Variables**), so leave that switched on. After the site is live, open the project in the Vercel dashboard, go to the **Analytics** tab and click **Enable**. Numbers start appearing after the next deployment.
 
+### Google Analytics 4
+
+The live site (production deploys only, never Preview or your computer) also loads Google Analytics with the measurement ID `G-4WJVCQDVY1`, set in `src/lib/analytics.ts`. Page views, including moves between pages, are counted automatically. The quote form adds two events, with no names, emails or phone numbers in them:
+
+| Event | When |
+| --- | --- |
+| `quote_contact_shared` | A buyer finishes the first step (name and email or WhatsApp). The lead is already saved in the Sheet at this point. |
+| `generate_lead` | A buyer sends the whole quote request and it reaches the Sheet. Carries `product_group`. |
+
+To count enquiries as conversions, open Google Analytics > **Admin** > **Events** after the first real enquiry and switch on **Mark as key event** for `generate_lead` (and `quote_contact_shared` if you want partial leads too). Live visits show under **Reports** > **Realtime**. If you change the ID or add another Google tool, update `src/config/csp.ts` too, or the browser will block it.
+
 ---
 
 ## 9. Google Search Console

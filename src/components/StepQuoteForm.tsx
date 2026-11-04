@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { fallbackLinks, LEADS_EMAIL, LEADS_WHATSAPP } from "@/lib/leads/fallback";
 import { productLabel } from "@/lib/leads/options";
 import { buildPayload, nextEverSent } from "@/lib/leads/payload";
@@ -185,6 +186,7 @@ export function StepQuoteForm({ initial, compact = false, chooseOther = false }:
     await waitUntil(mountedAt.current + MIN_SUBMIT_MS);
     const result = await send("submitted", a, false);
     submitting.current = false;
+    if (result.ok) trackEvent("generate_lead", { form: "quote", product_group: a.group || "none" });
     focusTarget.current = result.ok ? "success" : "failed";
     setPhase(result.ok ? "success" : "failed");
   }
@@ -206,6 +208,8 @@ export function StepQuoteForm({ initial, compact = false, chooseOther = false }:
     }
     // Fire and forget: a failed intermediate send never blocks the buyer; the next one carries everything.
     void send(stageFor(step), a, true);
+    // The contact step is where the lead is first saved, so it counts even if the buyer stops there.
+    if (step === "contact") trackEvent("quote_contact_shared", { form: "quote" });
     const list = visibleSteps(a, skip);
     goTo(list[list.indexOf(step) + 1], "forward", a);
   }
