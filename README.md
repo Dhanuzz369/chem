@@ -174,7 +174,11 @@ The site includes Vercel Web Analytics, which counts visits and page views witho
 
 ### Google Analytics 4
 
-The live site (production deploys only, never Preview or your computer) also loads Google Analytics with the measurement ID `G-4WJVCQDVY1`, set in `src/lib/analytics.ts`. Page views, including moves between pages, are counted automatically. The quote form adds two events, with no names, emails or phone numbers in them:
+Google Analytics uses the measurement ID `G-4WJVCQDVY1` (set in `src/lib/analytics.ts`). It only ever loads on `www.goodbizchemicals.com`, never on Preview deploys or your computer, and advertising features stay off.
+
+**Consent works like goodbizhygiene.com.** In Europe and the countries in `src/lib/consent-regions.ts` (where the group's site languages are spoken), visitors see a banner and nothing loads from Google until they click Accept. Everywhere else, India and the USA included, Analytics runs by default, and Google is also told to keep cookies off for any visitor whose IP address is in one of those countries. The banner decides from the browser's time zone; the zone list is generated: after changing the country list, run `npm run consent-zones`. Every footer has **Cookie settings** to change the choice, and `/privacy` explains it. The choice is remembered for 12 months.
+
+Page views, including moves between pages, are counted automatically. The quote form adds two events, with no names, emails or phone numbers in them:
 
 | Event | When |
 | --- | --- |

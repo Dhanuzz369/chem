@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { getSiteUrl, site } from "@/config/site";
-import { GA_MEASUREMENT_ID, isAnalyticsEnabled } from "@/lib/analytics";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata, verificationMetadata } from "@/lib/seo/metadata";
 import { FEED_ALTERNATE } from "@/lib/seo/rss";
@@ -64,8 +63,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         {/* The analytics script is served by Vercel; elsewhere (local, CI) it would only 404. */}
         {process.env.VERCEL === "1" && <Analytics />}
-        {/* Google Analytics 4 on the live site only; it loads after the page is interactive. */}
-        {isAnalyticsEnabled() && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
+        {/* Google Analytics 4, by consent region; it only ever loads on the live host. */}
+        <CookieConsent />
       </body>
     </html>
   );

@@ -21,7 +21,8 @@ const desktop = { viewport: { width: 1440, height: 900 } };
 
 export default defineConfig({
   testDir: "tests/e2e",
-  use: { baseURL: `http://localhost:${PORT}` },
+  // A fixed zone where analytics is on by default, so the cookie banner only shows in tests that ask for it.
+  use: { baseURL: `http://localhost:${PORT}`, timezoneId: "Asia/Kolkata" },
   webServer: [
     {
       command: `npm run build && npm run start -- -p ${PORT}`,

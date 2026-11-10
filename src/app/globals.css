@@ -91,6 +91,29 @@ html {
   }
 }
 
+/* While the cookie banner shows, the page gets room below it and the product quote bar rides above it. */
+html:has([data-consent-banner]) {
+  scroll-padding-bottom: calc(var(--consent-h, 0px) + 6rem);
+}
+html:has([data-consent-banner]) body {
+  padding-bottom: var(--consent-h, 0px);
+}
+html:has([data-consent-banner]) [data-sticky-quote-bar] {
+  bottom: var(--consent-h, 0px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .consent-banner {
+    animation: consent-in 240ms var(--ease-out) both;
+  }
+}
+@keyframes consent-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-ink);

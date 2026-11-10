@@ -2,6 +2,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { Button } from "./Button";
 import { ContactDetails } from "./ContactDetails";
+import { CookieSettingsButton } from "./CookieConsent";
 import { Container } from "./Container";
 import { Logo } from "./Logo";
 
@@ -86,8 +87,12 @@ export function Footer() {
       </Container>
 
       <div className="border-t border-line">
-        <Container className="py-5 text-sm text-ink-muted">
-          <p>© {site.name}</p>
+        <Container className="flex flex-wrap items-center gap-x-6 gap-y-1 py-3 text-sm text-ink-muted">
+          <p className="mr-auto py-2">© {site.name}</p>
+          <Link href="/privacy" className="inline-flex h-11 items-center underline-offset-4 [@media(hover:hover)]:hover:text-brand-700 [@media(hover:hover)]:hover:underline">
+            Privacy and cookies
+          </Link>
+          <CookieSettingsButton className="inline-flex h-11 cursor-pointer items-center underline-offset-4 [@media(hover:hover)]:hover:text-brand-700 [@media(hover:hover)]:hover:underline" />
         </Container>
       </div>
     </footer>

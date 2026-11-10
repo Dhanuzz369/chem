@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "consent-zones": "node scripts/generate-consent-zones.mjs"
   },
   "dependencies": {
-    "@next/third-parties": "16.4.2",
     "@vercel/analytics": "^2.0.1",
     "gray-matter": "^4.0.3",
     "marked": "^18.1.1",
