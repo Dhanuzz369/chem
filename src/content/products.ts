@@ -19,8 +19,8 @@ export interface Product {
   slug: string;
   name: string;
   /**
-   * Page title (before " | Goodbiz Chem") for names too long for the generated
-   * "<Name> Exporter & Supplier, HSN <code>" pattern. Keep it at most 45 characters.
+   * Page title (before " | Goodbiz Chem") for long or compound names that read badly in the
+   * generated "<Name> – HSN <code>" pattern. Keep it at most 45 characters, with the HSN code.
    */
   seoTitle?: string;
   /** Shown exactly as given by the owner; some codes are 6 digits, some 8. */
@@ -159,7 +159,7 @@ export const products: Product[] = [
   {
     slug: "isopropyl-alcohol",
     name: "IPA (Isopropyl Alcohol)",
-    seoTitle: "Isopropyl Alcohol IPA Exporter, HSN 29051220",
+    seoTitle: "Isopropyl Alcohol (IPA) – HSN Code 29051220",
     hsn: "29051220",
     group: "Solvents",
     cas: ["67-63-0"],
@@ -215,7 +215,7 @@ export const products: Product[] = [
   {
     slug: "methylene-chloride",
     name: "DCM / Methylene Chloride",
-    seoTitle: "Methylene Chloride DCM Exporter, HSN 29031200",
+    seoTitle: "Methylene Chloride (DCM) – HSN Code 29031200",
     hsn: "29031200",
     group: "Solvents",
     cas: ["75-09-2"],
@@ -504,7 +504,7 @@ export const products: Product[] = [
   {
     slug: "caustic-soda-flakes",
     name: "Caustic Soda (solid)",
-    seoTitle: "Caustic Soda Flakes Exporter, HSN 281511",
+    seoTitle: "Caustic Soda Flakes – HSN Code 281511",
     hsn: "281511",
     group: "Inorganics",
     cas: ["1310-73-2"],
@@ -854,7 +854,7 @@ export const products: Product[] = [
   {
     slug: "sodium-lauryl-sulphate",
     name: "SLS / Sodium Lauryl Sulphate",
-    seoTitle: "Sodium Lauryl Sulphate Exporter, HSN 340239",
+    seoTitle: "Sodium Lauryl Sulphate (SLS) – HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["151-21-3", "68585-47-7"],
@@ -918,7 +918,6 @@ export const products: Product[] = [
   {
     slug: "alpha-olefin-sulphonate",
     name: "Alpha Olefin Sulphonate (AOS)",
-    seoTitle: "Alpha Olefin Sulphonate Exporter, HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["68439-57-6"],
@@ -979,7 +978,6 @@ export const products: Product[] = [
   {
     slug: "sodium-lauryl-sulphoacetate",
     name: "Sodium Lauryl Sulphoacetate",
-    seoTitle: "SLSA Exporter & Supplier, HSN 340239",
     hsn: "340239",
     group: "Surfactants",
     cas: ["1847-58-1"],
@@ -1100,7 +1098,6 @@ export const products: Product[] = [
   {
     slug: "nonylphenol-ethoxylates",
     name: "Nonylphenol Ethoxylates (NPE)",
-    seoTitle: "Nonylphenol Ethoxylates Exporter, HSN 340242",
     hsn: "340242",
     group: "Surfactants",
     cas: ["9016-45-9", "127087-87-0", "26027-38-3"],

@@ -77,7 +77,7 @@ test("both SLES pages render", async ({ page }) => {
 
 test("product page has answer-first summary, HSN, SDS note, FAQ, related links and prefilled form", async ({ page }) => {
   await page.goto("/products/methanol");
-  await expect(page).toHaveTitle("Methanol Exporter & Supplier, HSN 29051100 | Goodbiz Chem");
+  await expect(page).toHaveTitle("Methanol – HSN 29051100, CAS 67-56-1 | Goodbiz Chem");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Methanol");
 
   // The subtitle sits with the h1 in an hgroup; the answer-first summary is the first paragraph after it.

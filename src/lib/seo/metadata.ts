@@ -68,14 +68,20 @@ export function verificationMetadata(env: Record<string, string | undefined> = p
 }
 
 /**
- * "<Name> Exporter & Supplier, HSN <code>", or the shorter "<Name> Exporter, HSN <code>" when the
- * long form plus the brand passes 60 characters. Very long names set `seoTitle` instead.
+ * The HSN code buyers search for, in the first title that fits 60 characters with the brand:
+ * "<Name> – HSN <code>, CAS <cas>", "<Name> Exporter – HSN Code <code>", "<Name> – HSN Code <code>",
+ * then "<Name> – HSN <code>".
+ * CAS only when the product has exactly one. Very long or compound names set `seoTitle` instead.
  */
-export function productTitle(p: Pick<Product, "name" | "hsn" | "seoTitle">): string {
+export function productTitle(p: Pick<Product, "name" | "hsn" | "cas" | "seoTitle">): string {
   if (p.seoTitle) return p.seoTitle;
-  const long = `${p.name} Exporter & Supplier, HSN ${p.hsn}`;
-  if (long.length + TITLE_SUFFIX.length <= MAX_TITLE) return long;
-  return `${p.name} Exporter, HSN ${p.hsn}`;
+  const short = `${p.name} – HSN ${p.hsn}`;
+  const options = [
+    p.cas.length === 1 ? `${short}, CAS ${p.cas[0]}` : "",
+    `${p.name} Exporter – HSN Code ${p.hsn}`,
+    `${p.name} – HSN Code ${p.hsn}`,
+  ];
+  return options.find((t) => t && t.length + TITLE_SUFFIX.length <= MAX_TITLE) ?? short;
 }
 
 /** HSN first and under 160 characters, so search snippets show the code buyers search for. */

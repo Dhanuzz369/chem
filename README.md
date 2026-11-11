@@ -131,9 +131,9 @@ All products live in one file, `src/content/products.ts`. Each product is one bl
    | `faqs` | At least 4 questions and answers (`q` and `a`). |
    | `related` | At least 2 other products' `slug`s, for the "Related products" links. Each must match an existing slug exactly, and not the product's own. |
    | `notes` | Optional. Extra points such as market restrictions. |
-   | `seoTitle` | Optional. Only for long names: the page title shown in Google, at most 45 characters, with the name, the word "Exporter" and the HSN code. Without it the title is made for you (see below). |
+   | `seoTitle` | Optional. Only for long or compound names: the page title shown in Google, at most 45 characters, with the name and the HSN code. Without it the title is made for you (see below). |
 
-3. **`metaSummary` and the 160-character rule.** Google's snippet is built as `<name> (HSN <hsn>) — <metaSummary>. Exporter from India. SDS available on request.` The whole line must be 160 characters or fewer, so keep `metaSummary` to a short lowercase phrase with no full stop, for example `a water-miscible solvent for disinfectants, cleaning, inks and coatings`. The page title is made the same way: `<name> Exporter & Supplier, HSN <hsn>`, or `<name> Exporter, HSN <hsn>` when the long one does not fit in 60 characters. If even the short one is too long, `npm test` says so; add a `seoTitle`.
+3. **`metaSummary` and the 160-character rule.** Google's snippet is built as `<name> (HSN <hsn>) — <metaSummary>. Exporter from India. SDS available on request.` The whole line must be 160 characters or fewer, so keep `metaSummary` to a short lowercase phrase with no full stop, for example `a water-miscible solvent for disinfectants, cleaning, inks and coatings`. The page title is made for you as the first of these that fits in 60 characters with " | Goodbiz Chem": `<name> – HSN <hsn>, CAS <cas>` (one CAS number only), `<name> Exporter – HSN Code <hsn>`, `<name> – HSN Code <hsn>`, `<name> – HSN <hsn>`. If even the last is too long, `npm test` says so; add a `seoTitle`.
 4. **No claims.** Write only general facts about the chemical. Do not mention certifications, years in business, volumes, countries served, purity guarantees or regulatory compliance. The checks reject the most common ones.
 5. **"SDS available on request"** is added to every product page and snippet automatically.
 6. **Run the checks**: `npm test` (and `npm run e2e` if you can). They confirm every field is filled in, slugs are unique, `related` slugs exist, snippets fit in 160 characters and no banned claims slipped in. Then look at the page at `http://localhost:3000/products/<slug>`.
@@ -204,7 +204,7 @@ Search Console shows how the site appears in Google and lets you ask Google to r
 
 ### What the site already does
 
-- **Titles that match buyer searches.** Every product page title reads like "Methanol Exporter & Supplier, HSN 29051100 | Goodbiz Chem", within the 60 characters Google shows. Descriptions start with the name and HSN code and say "Exporter from India".
+- **Titles that match buyer searches.** Every product page title reads like "Methanol – HSN 29051100, CAS 67-56-1 | Goodbiz Chem", within the 60 characters Google shows. Descriptions start with the name and HSN code and say "Exporter from India".
 - **A visible line under each product name**: "Exporter & supplier · HSN code · group", plus a generated question on every product page: "Do you export …?", answered from your own description (you export and supply it; send a quote request).
 - **Keywords** for each product, built from its own name, synonyms, HSN code and CAS numbers.
 - **Share images.** Every product and blog post has its own preview card (name, HSN code, group) for WhatsApp, LinkedIn, X and search results.

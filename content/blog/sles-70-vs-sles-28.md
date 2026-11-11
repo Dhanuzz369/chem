@@ -1,7 +1,7 @@
 ---
 title: "SLES 70% vs SLES 28%: which grade should you buy?"
-seoTitle: "SLES 70% vs SLES 28%: which grade to buy?"
-description: "Why SLES is sold at 70% and 28% active, how the two grades differ in handling and freight, and how to choose between them for your plant."
+seoTitle: "SLES 70% vs SLES 28%: Paste vs Liquid Grade"
+description: "SLES 70% is a pumpable paste with about 700 kg active matter per tonne; SLES 28% is a pourable liquid with about 280 kg. How to choose for your plant."
 date: "2026-10-07"
 products:
   - sles-70
@@ -10,6 +10,8 @@ products:
   - labsa
   - alpha-olefin-sulphonate
 ---
+
+**Short answer: SLES 70% is a paste with about 70% active matter (700 kg per tonne); SLES 28% is a pourable liquid with about 28% (280 kg per tonne). Buy 70% to ship less water if you can dilute on site; buy 28% to dose it as received.**
 
 Buy [SLES 70%](/products/sles-70) if you have mixing equipment and want to ship less water. Buy [SLES 28%](/products/sles-28) if you want a pourable liquid you can dose straight into a formulation. Both are the same surfactant, sodium laureth sulphate, at different concentrations. The choice comes down to freight cost, equipment and how much handling your plant can take on.
 

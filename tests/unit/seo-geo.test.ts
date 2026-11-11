@@ -46,22 +46,25 @@ describe("site.origin", () => {
 });
 
 describe("product titles", () => {
-  it("every product title with the brand is at most 60 characters and names the product, HSN and Exporter", () => {
+  it("every product title with the brand is at most 60 characters and names the product and HSN", () => {
     for (const p of products) {
       const title = productTitle(p);
       const full = `${title}${BRAND}`;
       expect(full.length, `${p.slug}: ${full}`).toBeLessThanOrEqual(60);
       expect(title, p.slug).toContain(p.hsn);
-      expect(title, p.slug).toContain("Exporter");
       if (p.seoTitle) expect(nameForms(p).some((n) => title.includes(n)), p.slug).toBe(true);
       else expect(title, p.slug).toContain(p.name);
     }
   });
 
-  it("prefers the long pattern and falls back when it does not fit", () => {
-    expect(productTitle(methanol)).toBe("Methanol Exporter & Supplier, HSN 29051100");
-    const ethyl = products.find((p) => p.slug === "ethyl-acetate")!;
-    expect(productTitle(ethyl)).toBe("Ethyl Acetate Exporter, HSN 29153100");
+  it("adds the CAS number when it fits and falls back to HSN alone", () => {
+    expect(productTitle(methanol)).toBe("Methanol – HSN 29051100, CAS 67-56-1");
+    const bySlug = (slug: string) => products.find((p) => p.slug === slug)!;
+    expect(productTitle(bySlug("labsa"))).toBe("LABSA Exporter – HSN Code 340231");
+    expect(productTitle(bySlug("alcohol-ethoxylates"))).toBe("Alcohol Ethoxylates – HSN Code 340242");
+    expect(productTitle({ name: "A Very Long Chemical Name Indeed Here", hsn: "29051100", cas: ["67-56-1"] })).toBe(
+      "A Very Long Chemical Name Indeed Here – HSN 29051100",
+    );
   });
 
   it("every product title is unique", () => {
